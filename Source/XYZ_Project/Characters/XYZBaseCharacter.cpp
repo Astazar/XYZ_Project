@@ -20,14 +20,51 @@ AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer
 
 void AXYZBaseCharacter::ChangeCrouchState()
 {
-	if (GetCharacterMovement()->IsCrouching())
-	{
-		UnCrouch();
-	}
-	else
+	if (!XYZBaseCharacterMovementComponent->IsCrouching() && !XYZBaseCharacterMovementComponent->IsCrawling())
 	{
 		Crouch();
 	}
+	else if (XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsCrouching()) 
+	{
+		if (XYZBaseCharacterMovementComponent->IsEnoughSpaceToUncrawl())
+		{
+			Uncrawl();
+			Crouch();
+		}
+	}
+}
+
+void AXYZBaseCharacter::ChangeCrawlState()
+{
+	if (!XYZBaseCharacterMovementComponent->IsCrawling() && XYZBaseCharacterMovementComponent->IsCrouching())
+	{
+		if(XYZBaseCharacterMovementComponent->PreviousMovementState == EMovementState::Standing)
+		{ 
+			UnCrouch();
+			Crawl();
+			XYZBaseCharacterMovementComponent->PreviousMovementState = EMovementState::Crawling;
+		}
+		else if (XYZBaseCharacterMovementComponent->PreviousMovementState == EMovementState::Crawling)
+		{
+			if (XYZBaseCharacterMovementComponent->IsEnoughSpaceToUncrouch())
+			{
+				UnCrouch();
+				XYZBaseCharacterMovementComponent->PreviousMovementState = EMovementState::Standing;
+			}
+		}
+	}
+
+
+}
+
+void AXYZBaseCharacter::Crawl()
+{
+	XYZBaseCharacterMovementComponent->bWantsToCrawl=true;
+}
+
+void AXYZBaseCharacter::Uncrawl()
+{
+	XYZBaseCharacterMovementComponent->bWantsToCrawl=false;
 }
 
 void AXYZBaseCharacter::OnJumped_Implementation()
@@ -49,6 +86,7 @@ void AXYZBaseCharacter::StartSprint()
 	if (bIsCrouched)
 	{
 		UnCrouch();
+		XYZBaseCharacterMovementComponent->PreviousMovementState = EMovementState::Standing;
 	}
 }
 
@@ -108,7 +146,7 @@ void AXYZBaseCharacter::OnSprintEnd_Implementation()
 
 bool AXYZBaseCharacter::CanSprint()
 {
-	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina();
+	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsCrawling();
 }
 
 void AXYZBaseCharacter::UpdateIKOffsets(float DeltaSeconds)

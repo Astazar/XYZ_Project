@@ -7,6 +7,7 @@
 #include <Components/TimelineComponent.h>
 #include "XYZBaseCharacter.generated.h"
 
+
 class UXYZBaseMovementComponent;
 
 UCLASS(Abstract, NotBlueprintable)
@@ -23,6 +24,10 @@ public:
 	virtual void LookUp(float Value) {};
 
 	virtual void ChangeCrouchState();
+	virtual void ChangeCrawlState();
+
+	virtual void Crawl();
+	virtual void Uncrawl();
 
 	virtual bool CanJumpInternal_Implementation() const override;
 	virtual void OnJumped_Implementation() override;
@@ -54,11 +59,11 @@ protected:
 
 	virtual bool CanSprint();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	float MaxStamina = 1000.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	float StaminaRestoreVelocity = 200.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	float SprintStaminaConsumptionVelocity = 200.0f;
 
 	UXYZBaseMovementComponent* XYZBaseCharacterMovementComponent;

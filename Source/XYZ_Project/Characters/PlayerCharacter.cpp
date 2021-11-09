@@ -66,6 +66,19 @@ void APlayerCharacter::LookUp(float Value)
 	AddControllerPitchInput(Value);
 }
 
+void APlayerCharacter::Jump()
+{
+	if (!XYZBaseCharacterMovementComponent->IsCrawling())
+	{
+		Super::Jump();
+	}
+	else
+	{
+		Uncrawl();
+		XYZBaseCharacterMovementComponent->PreviousMovementState = EMovementState::Standing;
+	}
+}
+
 void APlayerCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
 	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
@@ -75,6 +88,38 @@ void APlayerCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHei
 void APlayerCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
 	Super::OnEndCrouch(HalfHeightAdjust,ScaledHalfHeightAdjust);
+	SpringArmComponent->TargetOffset -= FVector(0.0f, 0.0f, HalfHeightAdjust);
+}
+
+void APlayerCharacter::OnStartCrawl(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	USkeletalMeshComponent* PlayerMesh = GetMesh();
+	if (PlayerMesh)
+	{
+		FVector& MeshRelativeLocation = PlayerMesh->GetRelativeLocation_DirectMutable();
+		MeshRelativeLocation.Z = PlayerMesh->GetRelativeLocation().Z + HalfHeightAdjust;
+		MeshRelativeLocation.X = MeshRelativeLocation.X - ToHeadOffset;
+		BaseTranslationOffset.Z = MeshRelativeLocation.Z;
+		BaseTranslationOffset.X = MeshRelativeLocation.X;
+	}
+
+	SpringArmComponent->TargetOffset += FVector(0.0f, 0.0f, HalfHeightAdjust);
+}
+
+void APlayerCharacter::OnEndCrawl(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	const APlayerCharacter* DefaultChar = GetDefault<APlayerCharacter>(GetClass());
+	USkeletalMeshComponent* DefaultCharMesh = DefaultChar->GetMesh();
+	USkeletalMeshComponent* PlayerMesh = GetMesh();
+	if (PlayerMesh && DefaultCharMesh)
+	{
+		FVector& MeshRelativeLocation = PlayerMesh->GetRelativeLocation_DirectMutable();
+		MeshRelativeLocation.Z = DefaultCharMesh->GetRelativeLocation().Z;
+		MeshRelativeLocation.X = DefaultCharMesh->GetRelativeLocation().X;
+		BaseTranslationOffset.Z = MeshRelativeLocation.Z;
+		BaseTranslationOffset.X = MeshRelativeLocation.X;
+	}
+
 	SpringArmComponent->TargetOffset -= FVector(0.0f, 0.0f, HalfHeightAdjust);
 }
 

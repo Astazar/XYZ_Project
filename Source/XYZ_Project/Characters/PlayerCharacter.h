@@ -23,9 +23,17 @@ public:
 	virtual void MoveRight(float Value) override;
 	virtual void Turn(float Value) override;
 	virtual void LookUp(float Value) override;
+	virtual void Jump() override;
 	
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+
+	virtual void OnStartCrawl(float HalfHeightAdjust, float ScaledHalfHeightAdjust);
+	virtual void OnEndCrawl(float HalfHeightAdjust, float ScaledHalfHeightAdjust);
+
+	//The value by which to move the mesh so that the collision matches the mesh.
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Character | Movement | Crawl")
+	float ToHeadOffset = 50.0f;
 
 protected:
 	virtual void BeginPlay() override;
@@ -40,10 +48,10 @@ protected:
 
 	FTimeline CameraSprintTimeline;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	UCurveFloat* CameraSprintTimelineCurve;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	float SprintSpringArmLenght = 400.0f;
 
 private:

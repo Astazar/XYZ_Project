@@ -27,6 +27,7 @@ private:
 	void LookUp(float Value);
 	void Jump();
 	void ChangeCrouchState();
+	void ChangeCrawlState();
 
 	void StartSprint();
 	void StopSprint();

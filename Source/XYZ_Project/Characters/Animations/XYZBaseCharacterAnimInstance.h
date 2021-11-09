@@ -25,6 +25,8 @@ protected:
 	bool bIsCrouching = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsSprinting = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsCrawling = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	float Speed = 0.0f;
