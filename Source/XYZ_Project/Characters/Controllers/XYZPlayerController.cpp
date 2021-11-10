@@ -17,6 +17,9 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveRight", this, &AXYZPlayerController::MoveRight);
 	InputComponent->BindAxis("Turn", this, &AXYZPlayerController::Turn);
 	InputComponent->BindAxis("LookUp", this, &AXYZPlayerController::LookUp);
+	InputComponent->BindAxis("SwimForward", this, &AXYZPlayerController::SwimForward);
+	InputComponent->BindAxis("SwimRight", this, &AXYZPlayerController::SwimRight);
+	InputComponent->BindAxis("SwimUp", this, &AXYZPlayerController::SwimUp);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ChangeCrouchState);
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AXYZPlayerController::StartSprint);
@@ -93,5 +96,29 @@ void AXYZPlayerController::StopSprint()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->StopSprint();
+	}
+}
+
+void AXYZPlayerController::SwimForward(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SwimForward(Value);
+	}
+}
+
+void AXYZPlayerController::SwimRight(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SwimRight(Value);
+	}
+}
+
+void AXYZPlayerController::SwimUp(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SwimUp(Value);
 	}
 }

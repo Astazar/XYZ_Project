@@ -45,6 +45,11 @@ void UXYZBaseMovementComponent::Crawl()
 		return;
 	}
 
+	if (!CanCrawlInCurrentState())
+	{
+		return;
+	}
+
 	const float ComponentScale = CharacterOwner->GetCapsuleComponent()->GetShapeScale();
 	const float OldUnscaledHalfHeight = CharacterOwner->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();/**/
 	const float OldUnscaledRadius = CharacterOwner->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
@@ -85,6 +90,11 @@ void UXYZBaseMovementComponent::Uncrawl()
 	APlayerCharacter* CachedCharacter = StaticCast<APlayerCharacter*>(GetOwner());
 	CachedCharacter->OnEndCrawl(HalfHeightAdjust, ScaledHalfHeightAdjust);
 	bIsCrawling = false;
+}
+
+bool UXYZBaseMovementComponent::CanCrawlInCurrentState()
+{
+	return IsMovingOnGround() && UpdatedComponent && !UpdatedComponent->IsSimulatingPhysics();
 }
 
 bool UXYZBaseMovementComponent::IsEnoughSpaceToUncrouch()
@@ -133,15 +143,28 @@ void UXYZBaseMovementComponent::SetIsOutOfStamina(bool bIsOutOfStamina_In)
 void UXYZBaseMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
 {
 	//must be before base method. Uncrawling and uncrouching should calls before crawling and crouching.
-	if (!bWantsToCrawl && IsCrawling())
+	if ((!bWantsToCrawl || !CanCrawlInCurrentState()) && IsCrawling())
 	{
 		Uncrawl();
 	}
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
-	if (bWantsToCrawl && !IsCrawling())
+	if (bWantsToCrawl && CanCrawlInCurrentState() && !IsCrawling())
 	{
 		Crawl();
 	}
+}
 
+void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
+	if (MovementMode == MOVE_Swimming)
+	{
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(SwimmingCapsuleRadius,SwimmingCapsuleHalfHeight);
+	}
+	else if (PreviousMovementMode == MOVE_Swimming)
+	{
+		ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight());
+	}
 }
 

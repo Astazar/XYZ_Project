@@ -24,6 +24,10 @@ public:
 	virtual void Turn(float Value) override;
 	virtual void LookUp(float Value) override;
 	virtual void Jump() override;
+
+	virtual void SwimForward(float Value) override;
+	virtual void SwimRight(float Value) override;
+	virtual void SwimUp(float Value) override;
 	
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;

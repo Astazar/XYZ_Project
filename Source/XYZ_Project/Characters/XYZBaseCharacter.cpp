@@ -128,6 +128,7 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 	GEngine->AddOnScreenDebugMessage(-1, 0 , FColor::Orange,FString::Printf(TEXT("Stamina: %f"),CurrentStamina));
 }
 
+
 void AXYZBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();

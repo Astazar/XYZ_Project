@@ -32,6 +32,7 @@ public:
 
 	virtual void Crawl();
 	virtual void Uncrawl();
+	virtual bool CanCrawlInCurrentState();
 
 	virtual bool IsEnoughSpaceToUncrouch();
 	virtual bool IsEnoughSpaceToUncrawl();
@@ -49,6 +50,14 @@ public:
 	float CrawlingHalfHeight = 34.0f;
 
 protected:
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+
+	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float SwimmingCapsuleRadius = 60.0f;
+	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float SwimmingCapsuleHalfHeight = 60.0f;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float SprintSpeed = 1200.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))

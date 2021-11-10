@@ -39,6 +39,10 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void SwimForward(float Value) {};
+	virtual void SwimRight(float Value) {};
+	virtual void SwimUp(float Value) {};
+
 	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const { return XYZBaseCharacterMovementComponent; }
 
 	float GetIKRightFootOffset() const { return IKRightFootOffset; }
