@@ -36,5 +36,7 @@ private:
 	void SwimRight(float Value);
 	void SwimUp(float Value);
 
+	void Mantle();
+
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };

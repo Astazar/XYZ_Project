@@ -6,6 +6,7 @@
 #include "../Components/MovementComponents/XYZBaseMovementComponent.h"
 #include <Components/CapsuleComponent.h>
 #include <Kismet/KismetSystemLibrary.h>
+#include "../Components/LedgeDetectorComponent.h"
 
 
 
@@ -16,6 +17,7 @@ AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer
 	IKScale = GetActorScale().Z;
 	IKTraceDistance = (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + UnderFeetTraceLenght)/IKScale;
 	
+	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
 }
 
 void AXYZBaseCharacter::ChangeCrouchState()
@@ -128,6 +130,15 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 	GEngine->AddOnScreenDebugMessage(-1, 0 , FColor::Orange,FString::Printf(TEXT("Stamina: %f"),CurrentStamina));
 }
 
+
+void AXYZBaseCharacter::Mantle()
+{
+	FLedgeDescription LedgeDescription;
+	if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
+	{
+		// TODO activate mantling
+	}
+}
 
 void AXYZBaseCharacter::BeginPlay()
 {

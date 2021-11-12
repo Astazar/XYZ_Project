@@ -43,6 +43,8 @@ public:
 	virtual void SwimRight(float Value) {};
 	virtual void SwimUp(float Value) {};
 
+	virtual void Mantle();
+
 	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const { return XYZBaseCharacterMovementComponent; }
 
 	float GetIKRightFootOffset() const { return IKRightFootOffset; }
@@ -80,6 +82,9 @@ protected:
 	float IKInterpSpeed = 30.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character | IK settings")
 	float UnderFeetTraceLenght = 50.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	class ULedgeDetectorComponent* LedgeDetectorComponent;
 
 private:
 	void UpdateIKOffsets(float DeltaSeconds);

@@ -20,6 +20,7 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("SwimForward", this, &AXYZPlayerController::SwimForward);
 	InputComponent->BindAxis("SwimRight", this, &AXYZPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AXYZPlayerController::SwimUp);
+	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Mantle);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ChangeCrouchState);
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AXYZPlayerController::StartSprint);
@@ -120,5 +121,13 @@ void AXYZPlayerController::SwimUp(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->SwimUp(Value);
+	}
+}
+
+void AXYZPlayerController::Mantle()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Mantle();
 	}
 }
