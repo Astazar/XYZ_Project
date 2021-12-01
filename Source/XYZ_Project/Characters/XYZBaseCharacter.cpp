@@ -134,10 +134,12 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 void AXYZBaseCharacter::Mantle()
 {
 	FLedgeDescription LedgeDescription;
-	if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
+	bool IsDetected= LedgeDetectorComponent->DetectLedge(LedgeDescription);
+	if (IsDetected/*LedgeDetectorComponent->DetectLedge(LedgeDescription)*/)
 	{
 		// TODO activate mantling
 	}
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
 }
 
 void AXYZBaseCharacter::BeginPlay()
