@@ -50,7 +50,6 @@ public:
 	float GetIKRightFootOffset() const { return IKRightFootOffset; }
 	float GetIKLeftFootOffset() const { return IKLeftFootOffset; }
 	float GetIKPelvisOffset() const { return IKPelvisOffset; }
-	
 
 protected:
 	virtual void BeginPlay() override;
