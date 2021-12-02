@@ -82,8 +82,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character | IK settings")
 	float UnderFeetTraceLenght = 50.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
 	class ULedgeDetectorComponent* LedgeDetectorComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
+	class UAnimMontage* HighMantleMontage;
 
 private:
 	void UpdateIKOffsets(float DeltaSeconds);

@@ -138,6 +138,7 @@ void AXYZBaseCharacter::Mantle()
 	if (IsDetected/*LedgeDetectorComponent->DetectLedge(LedgeDescription)*/)
 	{
 		XYZBaseCharacterMovementComponent->StartMantle(LedgeDescription);
+		PlayAnimMontage(HighMantleMontage);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
 }
