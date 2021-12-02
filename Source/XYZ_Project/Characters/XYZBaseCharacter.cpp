@@ -79,7 +79,7 @@ void AXYZBaseCharacter::OnJumped_Implementation()
 
 bool AXYZBaseCharacter::CanJumpInternal_Implementation() const
 {
-	return (bIsCrouched || Super::CanJumpInternal_Implementation()) && (XYZBaseCharacterMovementComponent->IsEnoughSpaceToUncrouch()) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina();
+	return (bIsCrouched || Super::CanJumpInternal_Implementation()) && (XYZBaseCharacterMovementComponent->IsEnoughSpaceToUncrouch()) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsMantling();
 }
 
 void AXYZBaseCharacter::StartSprint()
@@ -134,10 +134,10 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 void AXYZBaseCharacter::Mantle()
 {
 	FLedgeDescription LedgeDescription;
-	bool IsDetected= LedgeDetectorComponent->DetectLedge(LedgeDescription);
+	bool IsDetected = LedgeDetectorComponent->DetectLedge(LedgeDescription);
 	if (IsDetected/*LedgeDetectorComponent->DetectLedge(LedgeDescription)*/)
 	{
-		// TODO activate mantling
+		XYZBaseCharacterMovementComponent->StartMantle(LedgeDescription);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
 }

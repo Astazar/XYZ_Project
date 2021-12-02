@@ -38,6 +38,22 @@ void UXYZBaseMovementComponent::StopSprint()
 	bForceMaxAccel = 0;
 }
 
+void UXYZBaseMovementComponent::StartMantle(const FLedgeDescription& LedgeDescription)
+{
+	TargetLedge = LedgeDescription;
+	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Mantling);
+}
+
+void UXYZBaseMovementComponent::EndMantle()
+{
+	SetMovementMode(MOVE_Walking);
+}
+
+bool UXYZBaseMovementComponent::IsMantling() const
+{
+	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Mantling;
+}
+
 void UXYZBaseMovementComponent::Crawl()
 {
 	if (!HasValidData())
@@ -166,5 +182,42 @@ void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 		ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight());
 	}
+
+	if (MovementMode == MOVE_Custom)
+	{
+		switch (CustomMovementMode)
+		{
+		case (uint8)ECustomMovementMode::CMOVE_Mantling:
+		{
+			InitialMantlingLocation = GetActorLocation();
+			InitialMantlingRotation = GetOwner()->GetActorRotation();
+			TargetMantlingTime = 0.25f;
+			GetWorld()->GetTimerManager().SetTimer(MantlingTimer, this, &UXYZBaseMovementComponent::EndMantle, TargetMantlingTime, false);
+			break;
+		}
+		default:
+			break;
+		}
+	}
+}
+
+void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
+{
+	switch (CustomMovementMode)
+	{
+	case (uint8)ECustomMovementMode::CMOVE_Mantling:
+	{
+		float ProgressRatio = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) / TargetMantlingTime;
+		FVector NewLocation = FMath::Lerp(InitialMantlingLocation, TargetLedge.Location, ProgressRatio);
+		FRotator NewRotation = FMath::Lerp(InitialMantlingRotation, TargetLedge.Rotation, ProgressRatio);
+		FVector Delta = NewLocation - GetActorLocation();
+		FHitResult Hit;
+		SafeMoveUpdatedComponent(Delta, NewRotation, false, Hit);
+		break;
+	}
+	default:
+		break;
+	}
+	Super::PhysCustom(deltaTime, Iterations);
 }
 

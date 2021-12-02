@@ -4,7 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "../LedgeDetectorComponent.h"
 #include "XYZBaseMovementComponent.generated.h"
+
+UENUM(BlueprintType)
+enum class ECustomMovementMode : uint8
+{
+	CMOVE_None = 0 UMETA(DisplayName = "None"),
+	CMOVE_Mantling UMETA(DisplayName = "Mantling"),
+	CMOVE_Max UMETA(Hidden)
+};
+
 
 
 
@@ -30,6 +40,10 @@ public:
 	void StartSprint();
 	void StopSprint();
 
+	void StartMantle(const FLedgeDescription& LedgeDescription);
+	void EndMantle();
+	bool IsMantling() const;
+
 	virtual void Crawl();
 	virtual void Uncrawl();
 	virtual bool CanCrawlInCurrentState();
@@ -52,6 +66,8 @@ public:
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
+	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
+
 	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float SwimmingCapsuleRadius = 60.0f;
 	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
@@ -70,4 +86,10 @@ private:
 	bool bIsOutOfStamina = false;
 	bool bIsCrawling = false;
 
+	FLedgeDescription TargetLedge;
+	FVector InitialMantlingLocation;
+	FRotator InitialMantlingRotation;
+	float TargetMantlingTime;
+
+	FTimerHandle MantlingTimer;
 };
