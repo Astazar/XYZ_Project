@@ -135,7 +135,7 @@ void AXYZBaseCharacter::Mantle()
 {
 	FLedgeDescription LedgeDescription;
 	bool IsDetected = LedgeDetectorComponent->DetectLedge(LedgeDescription);
-	if (IsDetected/*LedgeDetectorComponent->DetectLedge(LedgeDescription)*/)
+	if (IsDetected)
 	{
 		FMantlingMovementParameters MantlingParameters;
 		MantlingParameters.MantlingCurve = HighMantleSettings.MantlingCurve;
@@ -156,6 +156,7 @@ void AXYZBaseCharacter::Mantle()
 		FVector2D TargetRange(HighMantleSettings.MinHeightStartTime, HighMantleSettings.MaxHeightStartTime);
 		MantlingParameters.StartTime = FMath::GetMappedRangeValueClamped(SourceRange, TargetRange, MantlingHeight);
 
+		MantlingParameters.InitialAnimationLocation = MantlingParameters.TargetLocation - HighMantleSettings.AnimationCorrectionZ * FVector::UpVector + HighMantleSettings.AnimationCorrectionXY * LedgeDescription.LedgeNormal;
 
 		XYZBaseCharacterMovementComponent->StartMantle(MantlingParameters);
 
