@@ -7,6 +7,20 @@
 #include "../LedgeDetectorComponent.h"
 #include "XYZBaseMovementComponent.generated.h"
 
+struct FMantlingMovementParameters
+{
+	FVector InitialLocation = FVector::ZeroVector;
+	FRotator InitialRotation = FRotator::ZeroRotator;
+
+	FVector TargetLocation = FVector::ZeroVector;
+	FRotator TargetRotation = FRotator::ZeroRotator;
+
+	float Duration = 1.0f;
+	float StartTime = 0.0f;
+
+	UCurveVector* MantlingCurve;
+};
+
 UENUM(BlueprintType)
 enum class ECustomMovementMode : uint8
 {
@@ -14,8 +28,6 @@ enum class ECustomMovementMode : uint8
 	CMOVE_Mantling UMETA(DisplayName = "Mantling"),
 	CMOVE_Max UMETA(Hidden)
 };
-
-
 
 
 UENUM(BlueprintType)
@@ -40,7 +52,7 @@ public:
 	void StartSprint();
 	void StopSprint();
 
-	void StartMantle(const FLedgeDescription& LedgeDescription);
+	void StartMantle(const FMantlingMovementParameters& MantlingParameters);
 	void EndMantle();
 	bool IsMantling() const;
 
@@ -86,10 +98,7 @@ private:
 	bool bIsOutOfStamina = false;
 	bool bIsCrawling = false;
 
-	FLedgeDescription TargetLedge;
-	FVector InitialMantlingLocation;
-	FRotator InitialMantlingRotation;
-	float TargetMantlingTime;
+	FMantlingMovementParameters CurrentMantlingParameters;
 
 	FTimerHandle MantlingTimer;
 };

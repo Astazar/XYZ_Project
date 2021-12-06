@@ -38,9 +38,11 @@ void UXYZBaseMovementComponent::StopSprint()
 	bForceMaxAccel = 0;
 }
 
-void UXYZBaseMovementComponent::StartMantle(const FLedgeDescription& LedgeDescription)
+
+
+void UXYZBaseMovementComponent::StartMantle(const FMantlingMovementParameters& MantlingParameters)
 {
-	TargetLedge = LedgeDescription;
+	CurrentMantlingParameters = MantlingParameters;
 	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Mantling);
 }
 
@@ -189,10 +191,7 @@ void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 		{
 		case (uint8)ECustomMovementMode::CMOVE_Mantling:
 		{
-			InitialMantlingLocation = GetActorLocation();
-			InitialMantlingRotation = GetOwner()->GetActorRotation();
-			TargetMantlingTime = 0.25f;
-			GetWorld()->GetTimerManager().SetTimer(MantlingTimer, this, &UXYZBaseMovementComponent::EndMantle, TargetMantlingTime, false);
+			GetWorld()->GetTimerManager().SetTimer(MantlingTimer, this, &UXYZBaseMovementComponent::EndMantle, CurrentMantlingParameters.Duration, false);
 			break;
 		}
 		default:
@@ -207,9 +206,11 @@ void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 	{
 	case (uint8)ECustomMovementMode::CMOVE_Mantling:
 	{
-		float ProgressRatio = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) / TargetMantlingTime;
-		FVector NewLocation = FMath::Lerp(InitialMantlingLocation, TargetLedge.Location, ProgressRatio);
-		FRotator NewRotation = FMath::Lerp(InitialMantlingRotation, TargetLedge.Rotation, ProgressRatio);
+		float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) + CurrentMantlingParameters.StartTime;
+		FVector MantlingCurveValue = CurrentMantlingParameters.MantlingCurve->GetVectorValue(ElapsedTime);
+		float PositionAlpha = MantlingCurveValue.X;
+		FVector NewLocation = FMath::Lerp(CurrentMantlingParameters.InitialLocation, CurrentMantlingParameters.TargetLocation, PositionAlpha);
+		FRotator NewRotation = FMath::Lerp(CurrentMantlingParameters.InitialRotation, CurrentMantlingParameters.TargetRotation, PositionAlpha);
 		FVector Delta = NewLocation - GetActorLocation();
 		FHitResult Hit;
 		SafeMoveUpdatedComponent(Delta, NewRotation, false, Hit);

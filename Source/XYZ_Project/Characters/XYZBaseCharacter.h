@@ -5,7 +5,32 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <Components/TimelineComponent.h>
+#include <Curves/CurveVector.h>
 #include "XYZBaseCharacter.generated.h"
+
+USTRUCT(BlueprintType)
+struct FMantlingSettings
+{
+	GENERATED_BODY();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UAnimMontage* MantlingMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UCurveVector* MantlingCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHeight = 200.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MinHeight = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHeightStartTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MinHeightStartTime = 0.5f;
+};
 
 
 class UXYZBaseMovementComponent;
@@ -86,7 +111,7 @@ protected:
 	class ULedgeDetectorComponent* LedgeDetectorComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
-	class UAnimMontage* HighMantleMontage;
+	FMantlingSettings HighMantleSettings;
 
 private:
 	void UpdateIKOffsets(float DeltaSeconds);
