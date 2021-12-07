@@ -119,6 +119,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
 	FMantlingSettings HighMantleSettings;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
+	FMantlingSettings LowMantleSettings;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling", meta = (ClampMin = 0.0f , UIMin = 0.0f))
+	float LowMantleMaxHeight = 125.0f;
+
 private:
 	void UpdateIKOffsets(float DeltaSeconds);
 	void TryChangeSprintState(float DeltaSeconds);
@@ -128,6 +134,8 @@ private:
 
 	float GetIKOffsetForASocket(const FName& SocketName);
 	float CalculateIKPelvisOffset();
+
+	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
 
 	float IKRightFootOffset = 0.0f;
 	float IKLeftFootOffset = 0.0f;

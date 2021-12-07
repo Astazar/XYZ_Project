@@ -21,7 +21,7 @@ struct FMantlingMovementParameters
 	float StartTime = 0.0f;
 
 	UCurveVector* MantlingCurve;
-};
+};			
 
 UENUM(BlueprintType)
 enum class ECustomMovementMode : uint8
