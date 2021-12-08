@@ -14,6 +14,9 @@ struct FMantlingSettings
 	GENERATED_BODY();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FName SettingsName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class UAnimMontage* MantlingMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -117,13 +120,7 @@ protected:
 	class ULedgeDetectorComponent* LedgeDetectorComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
-	FMantlingSettings HighMantleSettings;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
-	FMantlingSettings LowMantleSettings;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling", meta = (ClampMin = 0.0f , UIMin = 0.0f))
-	float LowMantleMaxHeight = 125.0f;
+	TArray<FMantlingSettings> MantlingSettingsCollection;
 
 private:
 	void UpdateIKOffsets(float DeltaSeconds);
@@ -135,7 +132,7 @@ private:
 	float GetIKOffsetForASocket(const FName& SocketName);
 	float CalculateIKPelvisOffset();
 
-	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
+	const FMantlingSettings* GetMantlingSettings(float LedgeHeight) const;
 
 	float IKRightFootOffset = 0.0f;
 	float IKLeftFootOffset = 0.0f;

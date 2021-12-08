@@ -144,22 +144,25 @@ void AXYZBaseCharacter::Mantle()
 		MantlingParameters.TargetRotation = LedgeDescription.Rotation;
 
 		float MantlingHeight = (MantlingParameters.TargetLocation - MantlingParameters.InitialLocation).Z;
-		const FMantlingSettings& MantlingSettings = GetMantlingSettings(MantlingHeight);
-
+		const FMantlingSettings* MantlingSettings = GetMantlingSettings(MantlingHeight);
+		if (MantlingSettings == nullptr)
+		{
+			return;
+		}
 		float MinRange, MaxRange; 
-		MantlingSettings.MantlingCurve->GetTimeRange(MinRange, MaxRange);
+		MantlingSettings->MantlingCurve->GetTimeRange(MinRange, MaxRange);
 		MantlingParameters.Duration = MaxRange - MinRange;
-		MantlingParameters.MantlingCurve = MantlingSettings.MantlingCurve;
+		MantlingParameters.MantlingCurve = MantlingSettings->MantlingCurve;
 
-		FVector2D SourceRange(MantlingSettings.MinHeight, MantlingSettings.MaxHeight);
-		FVector2D TargetRange(MantlingSettings.MinHeightStartTime, MantlingSettings.MaxHeightStartTime);
+		FVector2D SourceRange(MantlingSettings->MinHeight, MantlingSettings->MaxHeight);
+		FVector2D TargetRange(MantlingSettings->MinHeightStartTime, MantlingSettings->MaxHeightStartTime);
 		MantlingParameters.StartTime = FMath::GetMappedRangeValueClamped(SourceRange, TargetRange, MantlingHeight);
-		MantlingParameters.InitialAnimationLocation = MantlingParameters.TargetLocation - MantlingSettings.AnimationCorrectionZ * FVector::UpVector + MantlingSettings.AnimationCorrectionXY * LedgeDescription.LedgeNormal;
+		MantlingParameters.InitialAnimationLocation = MantlingParameters.TargetLocation - MantlingSettings->AnimationCorrectionZ * FVector::UpVector + MantlingSettings->AnimationCorrectionXY * LedgeDescription.LedgeNormal;
 
 		XYZBaseCharacterMovementComponent->StartMantle(MantlingParameters);
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		AnimInstance->Montage_Play(MantlingSettings.MantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingParameters.StartTime);
+		AnimInstance->Montage_Play(MantlingSettings->MantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingParameters.StartTime);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
 }
@@ -240,7 +243,16 @@ float AXYZBaseCharacter::CalculateIKPelvisOffset()
 	return OffsetTernary;
 }
 
-const FMantlingSettings& AXYZBaseCharacter::GetMantlingSettings(float LedgeHeight) const
+const FMantlingSettings* AXYZBaseCharacter::GetMantlingSettings(float LedgeHeight) const
 {
-	return LedgeHeight > LowMantleMaxHeight ? HighMantleSettings : LowMantleSettings;
+	float SmallOffset=3.0f;
+	for (const FMantlingSettings& Setting : MantlingSettingsCollection)
+	{
+		if ((LedgeHeight > Setting.MinHeight-SmallOffset) && (LedgeHeight < Setting.MaxHeight+SmallOffset))
+		{
+			const FMantlingSettings* ResultSetting = &Setting;
+			return ResultSetting;
+		}
+	}
+	return nullptr;
 }
