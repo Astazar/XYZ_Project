@@ -35,13 +35,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ladder parameters")
 	float BottomStepOffset = 25.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ladder parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ladder parameters")
 	UStaticMeshComponent* RightRailMeshComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ladder parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ladder parameters")
 	UStaticMeshComponent* LeftRailMeshComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ladder parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ladder parameters")
 	UInstancedStaticMeshComponent* StepsMeshComponent;
 
 	UBoxComponent* GetLadderInteractionBox() const;

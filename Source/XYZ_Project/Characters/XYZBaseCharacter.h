@@ -93,6 +93,10 @@ public:
 	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
 	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
 
+	void ClimbLadderUp(float Value);
+	void InteractWithLadder();
+	const class ALadder* GetAvailableLadder() const; 
+
 protected:
 	virtual void BeginPlay() override;
 

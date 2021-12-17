@@ -6,6 +6,7 @@
 #include <Components/StaticMeshComponent.h>
 #include <Components/InstancedStaticMeshComponent.h>
 #include <Components/BoxComponent.h>
+#include <XYZ_Project/XYZ_ProjectTypes.h>
 
 ALadder::ALadder()
 {
@@ -22,6 +23,8 @@ ALadder::ALadder()
 
 	InteractionVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionBox"));
 	InteractionVolume->SetupAttachment(RootComponent);
+	InteractionVolume->SetCollisionProfileName(CollisionProfilePawnInteractionVolume);
+	InteractionVolume->SetGenerateOverlapEvents(true);
 }
 
 void ALadder::OnConstruction(const FTransform& Transform)

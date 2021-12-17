@@ -18,7 +18,7 @@ void AInteractiveActor::BeginPlay()
 void AInteractiveActor::OnInteractionVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AXYZBaseCharacter* BaseCharacter = Cast<AXYZBaseCharacter>(OtherActor);
-	if (IsValid(BaseCharacter))
+	if (!IsValid(BaseCharacter))
 	{
 		return;
 	}
@@ -34,7 +34,7 @@ void AInteractiveActor::OnInteractionVolumeBeginOverlap(UPrimitiveComponent* Ove
 void AInteractiveActor::OnInteractionVolumeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	AXYZBaseCharacter* BaseCharacter = Cast<AXYZBaseCharacter>(OtherActor);
-	if (IsValid(BaseCharacter))
+	if (!IsValid(BaseCharacter))
 	{
 		return;
 	}

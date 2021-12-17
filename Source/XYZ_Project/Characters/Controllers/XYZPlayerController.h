@@ -38,5 +38,8 @@ private:
 
 	void Mantle();
 
+	void ClimbLadderUp(float Value);
+	void InteractWithLadder();
+
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };

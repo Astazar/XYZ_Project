@@ -7,7 +7,7 @@
 #include <Components/CapsuleComponent.h>
 #include <Kismet/KismetSystemLibrary.h>
 #include "XYZ_Project/Components/LedgeDetectorComponent.h"
-
+#include "XYZ_Project/Actors/Interactive/Environment/Ladder.h"
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -199,6 +199,45 @@ void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveA
 void AXYZBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
 	AvailableInteractiveActors.Remove(InteractiveActor);
+}
+
+void AXYZBaseCharacter::ClimbLadderUp(float Value)
+{
+	if (XYZBaseCharacterMovementComponent->IsOnLadder() && !FMath::IsNearlyZero(Value))
+	{
+		FVector LadderUpVector = XYZBaseCharacterMovementComponent->GetCurrentLadder()->GetActorUpVector();
+		AddMovementInput(LadderUpVector, Value);
+	}
+}
+
+void AXYZBaseCharacter::InteractWithLadder()
+{
+	if (XYZBaseCharacterMovementComponent->IsOnLadder())
+	{
+		XYZBaseCharacterMovementComponent->DetachFromLadder();
+	}
+	else
+	{
+		const ALadder* AvailableLadder = GetAvailableLadder();
+		if (IsValid(AvailableLadder))
+		{
+			XYZBaseCharacterMovementComponent->AttachToLadder(AvailableLadder);
+		}
+	}
+}
+
+const class ALadder* AXYZBaseCharacter::GetAvailableLadder() const
+{
+	const ALadder* Result = nullptr;
+	for (const AInteractiveActor* InteractiveActor : AvailableInteractiveActors)
+	{
+		if (InteractiveActor->IsA<ALadder>())
+		{
+			Result = StaticCast<const ALadder*>(InteractiveActor);
+			break;
+		}
+	}
+	return Result;
 }
 
 void AXYZBaseCharacter::BeginPlay()

@@ -20,6 +20,8 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("SwimForward", this, &AXYZPlayerController::SwimForward);
 	InputComponent->BindAxis("SwimRight", this, &AXYZPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AXYZPlayerController::SwimUp);
+	InputComponent->BindAxis("ClimbLadderUp", this, &AXYZPlayerController::ClimbLadderUp);
+	InputComponent->BindAction("InteractWithLadder", EInputEvent::IE_Pressed, this, &AXYZPlayerController::InteractWithLadder);
 	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Mantle);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ChangeCrouchState);
@@ -129,5 +131,21 @@ void AXYZPlayerController::Mantle()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->Mantle();
+	}
+}
+
+void AXYZPlayerController::ClimbLadderUp(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ClimbLadderUp(Value);
+	}
+}
+
+void AXYZPlayerController::InteractWithLadder()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->InteractWithLadder();
 	}
 }
