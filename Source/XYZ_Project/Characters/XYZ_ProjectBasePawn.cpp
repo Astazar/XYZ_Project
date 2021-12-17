@@ -5,7 +5,7 @@
 #include <Components/SphereComponent.h>
 #include <GameFramework/FloatingPawnMovement.h>
 #include <Engine/CollisionProfile.h>
-#include "../Components/MovementComponents/XYZBasePawnMovementComponent.h"
+#include "XYZ_Project/Components/MovementComponents/XYZBasePawnMovementComponent.h"
 #include <Kismet/GameplayStatics.h>
 #include <Camera/PlayerCameraManager.h>
 #include <GameFramework/SpringArmComponent.h>

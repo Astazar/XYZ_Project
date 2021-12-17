@@ -2,7 +2,7 @@
 
 
 #include "XYZBasePawnMovementComponent.h"
-#include "../../Characters/XYZ_ProjectBasePawn.h"
+#include "XYZ_Project/Characters/XYZ_ProjectBasePawn.h"
 
 void UXYZBasePawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

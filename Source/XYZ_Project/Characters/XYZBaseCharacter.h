@@ -29,10 +29,13 @@ struct FMantlingSettings
 	float AnimationCorrectionZ = 200.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
-	float MaxHeight = 200.0f;
+	float AnimMaxHeight = 200.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
-	float MinHeight = 100.0f;
+	float AnimMinHeight = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxSettingApplyHeight = 250.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float MaxHeightStartTime = 0.0f;
@@ -78,6 +81,7 @@ public:
 	virtual void SwimUp(float Value) {};
 
 	virtual void Mantle();
+	virtual bool CanMantle();
 
 	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const { return XYZBaseCharacterMovementComponent; }
 

@@ -7,7 +7,7 @@
 #include <GameFramework/CharacterMovementComponent.h>
 #include <Kismet/KismetMathLibrary.h>
 #include <Components/CapsuleComponent.h>
-#include "../Components/MovementComponents/XYZBaseMovementComponent.h"
+#include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	:Super(ObjectInitializer)

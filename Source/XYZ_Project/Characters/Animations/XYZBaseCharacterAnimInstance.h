@@ -29,6 +29,8 @@ protected:
 	bool bIsCrawling = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsSwimming = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsMantling = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	float Speed = 0.0f;

@@ -2,8 +2,9 @@
 
 
 #include "XYZBaseCharacterAnimInstance.h"
-#include "../XYZBaseCharacter.h"
-#include "../../Components/MovementComponents/XYZBaseMovementComponent.h"
+#include "XYZ_Project/Characters/XYZBaseCharacter.h"
+#include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
+
 
 void UXYZBaseCharacterAnimInstance::NativeBeginPlay()
 {
@@ -28,6 +29,7 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsSprinting = CharacterMovement->IsSprinting();
 	bIsCrawling = CharacterMovement->IsCrawling();
 	bIsSwimming = CharacterMovement->IsSwimming();
+	bIsMantling = CharacterMovement->IsMantling();
 
 	RightFootEffectorLocation = FVector(CachedBaseCharacter->GetIKRightFootOffset() + CachedBaseCharacter->GetIKPelvisOffset(), 0.0f, 0.0f);
 	LeftFootEffectorLocation = FVector(-(CachedBaseCharacter->GetIKLeftFootOffset() + CachedBaseCharacter->GetIKPelvisOffset()), 0.0f, 0.0f);

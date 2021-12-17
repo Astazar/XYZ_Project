@@ -3,14 +3,14 @@
 
 #include "XYZBaseCharacter.h"
 #include <GameFramework/CharacterMovementComponent.h>
-#include "../Components/MovementComponents/XYZBaseMovementComponent.h"
+#include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
 #include <Components/CapsuleComponent.h>
 #include <Kismet/KismetSystemLibrary.h>
-#include "../Components/LedgeDetectorComponent.h"
+#include "XYZ_Project/Components/LedgeDetectorComponent.h"
 
 
 
-AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)
+AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
 	:Super(ObjectInitializer.SetDefaultSubobjectClass<UXYZBaseMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	XYZBaseCharacterMovementComponent = StaticCast<UXYZBaseMovementComponent*>(GetCharacterMovement());
@@ -133,28 +133,47 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 
 void AXYZBaseCharacter::Mantle()
 {
+	if (!CanMantle())
+	{
+		return;
+	}
+
+	ACharacter* DefaultChar = GetClass()->GetDefaultObject<ACharacter>();
+	float DefaultCapsuleHalfHeight = DefaultChar->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	float CrouchedOffset=0;
+	if(bIsCrouched)
+	{
+		UnCrouch();
+		float CurrentCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		CrouchedOffset = DefaultCapsuleHalfHeight-CurrentCapsuleHalfHeight;
+	}
+
 	FLedgeDescription LedgeDescription;
 	bool IsDetected = LedgeDetectorComponent->DetectLedge(LedgeDescription);
 	if (IsDetected)
 	{
 		FMantlingMovementParameters MantlingParameters;
-		MantlingParameters.InitialLocation = GetActorLocation();
+		MantlingParameters.InitialLocation = GetActorLocation() + CrouchedOffset;
 		MantlingParameters.InitialRotation = GetActorRotation();
 		MantlingParameters.TargetLocation = LedgeDescription.Location;
 		MantlingParameters.TargetRotation = LedgeDescription.Rotation;
+		MantlingParameters.Geometry = LedgeDescription.GeometryComponent;
+		MantlingParameters.InitialGeometryLocation = LedgeDescription.InitialGeometryLocation;
 
-		float MantlingHeight = (MantlingParameters.TargetLocation - MantlingParameters.InitialLocation).Z;
+		float MantlingHeight = ((MantlingParameters.TargetLocation - DefaultCapsuleHalfHeight * FVector::UpVector) - (MantlingParameters.InitialLocation - DefaultCapsuleHalfHeight * FVector::UpVector)).Z;
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));
+
 		const FMantlingSettings* MantlingSettings = GetMantlingSettings(MantlingHeight);
 		if (MantlingSettings == nullptr)
 		{
 			return;
 		}
-		float MinRange, MaxRange; 
+		float MinRange, MaxRange;
 		MantlingSettings->MantlingCurve->GetTimeRange(MinRange, MaxRange);
 		MantlingParameters.Duration = MaxRange - MinRange;
 		MantlingParameters.MantlingCurve = MantlingSettings->MantlingCurve;
 
-		FVector2D SourceRange(MantlingSettings->MinHeight, MantlingSettings->MaxHeight);
+		FVector2D SourceRange(MantlingSettings->AnimMinHeight, MantlingSettings->AnimMaxHeight);
 		FVector2D TargetRange(MantlingSettings->MinHeightStartTime, MantlingSettings->MaxHeightStartTime);
 		MantlingParameters.StartTime = FMath::GetMappedRangeValueClamped(SourceRange, TargetRange, MantlingHeight);
 		MantlingParameters.InitialAnimationLocation = MantlingParameters.TargetLocation - MantlingSettings->AnimationCorrectionZ * FVector::UpVector + MantlingSettings->AnimationCorrectionXY * LedgeDescription.LedgeNormal;
@@ -165,6 +184,11 @@ void AXYZBaseCharacter::Mantle()
 		AnimInstance->Montage_Play(MantlingSettings->MantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingParameters.StartTime);
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
+}
+
+bool AXYZBaseCharacter::CanMantle()
+{
+	return !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsCrawling();
 }
 
 void AXYZBaseCharacter::BeginPlay()
@@ -245,14 +269,18 @@ float AXYZBaseCharacter::CalculateIKPelvisOffset()
 
 const FMantlingSettings* AXYZBaseCharacter::GetMantlingSettings(float LedgeHeight) const
 {
-	float SmallOffset=3.0f;
+	const FMantlingSettings* ResultSetting = nullptr;
+
+	//this is the lowest of maximum applying heights
+	float LowestMaxSettingApplyHeight = BIG_NUMBER;
+	float SmallOfset = 3.0f;
 	for (const FMantlingSettings& Setting : MantlingSettingsCollection)
-	{
-		if ((LedgeHeight > Setting.MinHeight-SmallOffset) && (LedgeHeight < Setting.MaxHeight+SmallOffset))
+	{	
+		if ((LedgeHeight - SmallOfset < Setting.MaxSettingApplyHeight) && (Setting.MaxSettingApplyHeight < LowestMaxSettingApplyHeight))
 		{
-			const FMantlingSettings* ResultSetting = &Setting;
-			return ResultSetting;
+			LowestMaxSettingApplyHeight = Setting.MaxSettingApplyHeight;
+			ResultSetting = &Setting;
 		}
 	}
-	return nullptr;
+	return ResultSetting;
 }

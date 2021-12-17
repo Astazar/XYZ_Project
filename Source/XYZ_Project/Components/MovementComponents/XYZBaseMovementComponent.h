@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "../LedgeDetectorComponent.h"
+#include "XYZ_Project/Components/LedgeDetectorComponent.h"
 #include "XYZBaseMovementComponent.generated.h"
 
 struct FMantlingMovementParameters
@@ -14,6 +14,9 @@ struct FMantlingMovementParameters
 
 	FVector TargetLocation = FVector::ZeroVector;
 	FRotator TargetRotation = FRotator::ZeroRotator;
+
+	UPrimitiveComponent* Geometry;
+	FVector InitialGeometryLocation = FVector::ZeroVector;
 
 	FVector InitialAnimationLocation = FVector::ZeroVector;
 

@@ -5,7 +5,7 @@
 #include "GameFramework/Character.h"
 #include <Components/CapsuleComponent.h>
 #include <Kismet/KismetSystemLibrary.h>
-#include "../../Characters/PlayerCharacter.h"
+#include "XYZ_Project/Characters/PlayerCharacter.h"
 #include <DrawDebugHelpers.h>
 
 float UXYZBaseMovementComponent::GetMaxSpeed() const 
@@ -214,10 +214,12 @@ void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 
 		FVector CorrectedInitialLocation = FMath::Lerp(CurrentMantlingParameters.InitialLocation, CurrentMantlingParameters.InitialAnimationLocation, XYCorrectionAlpha);
 		CorrectedInitialLocation.Z = FMath::Lerp(CurrentMantlingParameters.InitialLocation.Z, CurrentMantlingParameters.InitialAnimationLocation.Z, ZCorrectionAlpha);
-
 		FVector NewLocation = FMath::Lerp(CorrectedInitialLocation, CurrentMantlingParameters.TargetLocation, PositionAlpha);
 		FRotator NewRotation = FMath::Lerp(CurrentMantlingParameters.InitialRotation, CurrentMantlingParameters.TargetRotation, PositionAlpha);
+		
 		FVector Delta = NewLocation - GetActorLocation();
+		FVector TargetDelta = CurrentMantlingParameters.Geometry->GetComponentLocation() - CurrentMantlingParameters.InitialGeometryLocation;
+		Delta+=TargetDelta;
 		FHitResult Hit;
 		SafeMoveUpdatedComponent(Delta, NewRotation, false, Hit);
 		break;

@@ -4,13 +4,14 @@
 #include "LedgeDetectorComponent.h"
 #include <GameFramework/Character.h>
 #include <Components/CapsuleComponent.h>
-#include "../XYZ_ProjectTypes.h"
+#include "XYZ_Project/XYZ_ProjectTypes.h"
 #include <DrawDebugHelpers.h>
-#include "../Utils/XYZTraceUtils.h"
-#include "../Characters/XYZBaseCharacter.h"
+#include "XYZ_Project/Utils/XYZTraceUtils.h"
+#include "XYZ_Project/Characters/XYZBaseCharacter.h"
 #include <Kismet/GameplayStatics.h>
-#include "../XYZGameInstance.h"
-#include "../Subsystems/DebugSubsystem.h"
+#include "XYZ_Project/XYZGameInstance.h"
+#include "XYZ_Project/Subsystems/DebugSubsystem.h"
+
 
 
 
@@ -73,8 +74,10 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	}
 	
 	//3. Overlap check
-	float OverlapCapsuleRadius = CapsuleComponent->GetScaledCapsuleRadius();
-	float OverlapCapsuleHalfHeight = CapsuleComponent->GetScaledCapsuleHalfHeight();
+	ACharacter* DefaultChar = CachedCharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
+	UCapsuleComponent* DefaultCapsule = DefaultChar->GetCapsuleComponent();
+	float OverlapCapsuleRadius = DefaultCapsule->GetScaledCapsuleRadius();
+	float OverlapCapsuleHalfHeight = DefaultCapsule->GetScaledCapsuleHalfHeight();
 	float OverlapCapsuleFloorOffset = 5.0f;
 	FVector OverlapLocation = DownwardCheckHitResult.ImpactPoint + (OverlapCapsuleHalfHeight + OverlapCapsuleFloorOffset)*FVector::UpVector;
 
@@ -86,6 +89,8 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	LedgeDescription.Location = OverlapLocation;
 	LedgeDescription.Rotation = (ForwardCheckHitResult.ImpactNormal * FVector(-1.0f, -1.0f, 0.0f)).ToOrientationRotator();
 	LedgeDescription.LedgeNormal = ForwardCheckHitResult.ImpactNormal; 
+	LedgeDescription.GeometryComponent = DownwardCheckHitResult.GetComponent();
+	LedgeDescription.InitialGeometryLocation = LedgeDescription.GeometryComponent->GetComponentLocation();
 
 	return true;
 }

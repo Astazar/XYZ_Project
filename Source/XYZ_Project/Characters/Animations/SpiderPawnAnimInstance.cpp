@@ -2,7 +2,7 @@
 
 
 #include "SpiderPawnAnimInstance.h"
-#include "../SpiderPawn.h"
+#include "XYZ_Project/Characters/SpiderPawn.h"
 
 void USpiderPawnAnimInstance::NativeBeginPlay()
 {

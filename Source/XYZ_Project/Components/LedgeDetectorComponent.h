@@ -20,6 +20,12 @@ struct FLedgeDescription
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ledge description")
 	FVector LedgeNormal;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ledge description")
+	UPrimitiveComponent* GeometryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ledge description")
+	FVector InitialGeometryLocation;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

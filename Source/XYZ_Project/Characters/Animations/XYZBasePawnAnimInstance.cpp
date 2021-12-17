@@ -2,8 +2,9 @@
 
 
 #include "XYZBasePawnAnimInstance.h"
-#include "../XYZ_ProjectBasePawn.h"
-#include "../../Components/MovementComponents/XYZBasePawnMovementComponent.h"
+#include "XYZ_Project/Characters/XYZ_ProjectBasePawn.h"
+#include "XYZ_Project/Components/MovementComponents/XYZBasePawnMovementComponent.h"
+
 
 void UXYZBasePawnAnimInstance::NativeBeginPlay()
 {

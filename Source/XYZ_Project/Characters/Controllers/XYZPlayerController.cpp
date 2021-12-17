@@ -2,7 +2,7 @@
 
 
 #include "XYZPlayerController.h"
-#include "../XYZBaseCharacter.h"
+#include "XYZ_Project/Characters/XYZBaseCharacter.h"
 
 void AXYZPlayerController::SetPawn(APawn* InPawn)
 {
