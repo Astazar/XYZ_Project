@@ -46,6 +46,7 @@ struct FMantlingSettings
 
 
 class UXYZBaseMovementComponent;
+class AInteractiveActor;
 
 UCLASS(Abstract, NotBlueprintable)
 class XYZ_PROJECT_API AXYZBaseCharacter : public ACharacter
@@ -88,6 +89,9 @@ public:
 	float GetIKRightFootOffset() const { return IKRightFootOffset; }
 	float GetIKLeftFootOffset() const { return IKLeftFootOffset; }
 	float GetIKPelvisOffset() const { return IKPelvisOffset; }
+
+	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
+	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
 
 protected:
 	virtual void BeginPlay() override;
@@ -137,6 +141,8 @@ private:
 	float CalculateIKPelvisOffset();
 
 	const FMantlingSettings* GetMantlingSettings(float LedgeHeight) const;
+
+	TArray<AInteractiveActor*> AvailableInteractiveActors;
 
 	float IKRightFootOffset = 0.0f;
 	float IKLeftFootOffset = 0.0f;

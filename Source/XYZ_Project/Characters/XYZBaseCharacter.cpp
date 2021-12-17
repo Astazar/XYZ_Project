@@ -191,6 +191,16 @@ bool AXYZBaseCharacter::CanMantle()
 	return !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsCrawling();
 }
 
+void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+	AvailableInteractiveActors.Add(InteractiveActor);
+}
+
+void AXYZBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+	AvailableInteractiveActors.Remove(InteractiveActor);
+}
+
 void AXYZBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
