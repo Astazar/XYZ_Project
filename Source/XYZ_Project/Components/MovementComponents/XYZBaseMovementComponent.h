@@ -63,9 +63,14 @@ public:
 	bool IsMantling() const;
 
 	void AttachToLadder(const class ALadder* Ladder);
+
+	float GetActorToCurrentLadderProjection(const FVector& Location);
+
 	void DetachFromLadder();
 	bool IsOnLadder() const;
 	const class ALadder* GetCurrentLadder() const;
+
+	virtual void PhysicsRotation(float DeltaTime) override;
 
 
 	virtual void Crawl();
@@ -105,6 +110,12 @@ protected:
 	float ClimbingOnLadderMaxSpeed = 200.0f;
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float ClimbingOnLadderBreakingDeseleration = 2048.0f;
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float LadderToCharacterOffset = 60.0f;
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float MaxLadderTopOffset = 90.0f;
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float MinLadderBottomOffset = 90.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float SprintSpeed = 1200.0f;
@@ -112,6 +123,8 @@ protected:
 	float OutOfStaminaSpeed = 300.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Crawl", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float CrawlSpeed = 100.0f;
+
+	class AXYZBaseCharacter* GetBaseCharacterOwner() const;
 
 private:
 	bool bIsSprinting = false;

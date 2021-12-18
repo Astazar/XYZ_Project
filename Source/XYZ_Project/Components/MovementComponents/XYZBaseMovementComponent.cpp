@@ -7,6 +7,8 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include "XYZ_Project/Characters/PlayerCharacter.h"
 #include <DrawDebugHelpers.h>
+#include "XYZ_Project/Actors/Interactive/Environment/Ladder.h"
+#include "XYZ_Project/Characters/XYZBaseCharacter.h"
 
 float UXYZBaseMovementComponent::GetMaxSpeed() const 
 {
@@ -63,7 +65,25 @@ bool UXYZBaseMovementComponent::IsMantling() const
 void UXYZBaseMovementComponent::AttachToLadder(const class ALadder* Ladder)
 {
 	CurrentLadder = Ladder;
+	FRotator TargetOrientationRotation = CurrentLadder->GetActorForwardVector().ToOrientationRotator();
+	TargetOrientationRotation.Yaw += 180.0f;
+
+	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+	FVector LadderForwardVector = CurrentLadder->GetActorForwardVector();
+	float Projection = GetActorToCurrentLadderProjection(GetActorLocation());
+	FVector NewCharacterLocation = CurrentLadder->GetActorLocation() + Projection * LadderUpVector + LadderToCharacterOffset * LadderForwardVector;
+
+	GetOwner()->SetActorLocation(NewCharacterLocation);
+	GetOwner()->SetActorRotation(TargetOrientationRotation);
 	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Ladder);
+}
+
+float UXYZBaseMovementComponent::GetActorToCurrentLadderProjection(const FVector& Location)
+{
+	checkf(IsValid(CurrentLadder), TEXT("UXYZBaseMovementComponent::GetCharacterToCurrentLadderProjection cannot be invoked when current ladder is null"));
+	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+	FVector LadderToCharacterDistance = Location - CurrentLadder->GetActorLocation();
+	return FVector::DotProduct(LadderUpVector, LadderToCharacterDistance);
 }
 
 void UXYZBaseMovementComponent::DetachFromLadder()
@@ -79,6 +99,15 @@ bool UXYZBaseMovementComponent::IsOnLadder() const
 const class ALadder* UXYZBaseMovementComponent::GetCurrentLadder() const
 {
 	return CurrentLadder;
+}
+
+void UXYZBaseMovementComponent::PhysicsRotation(float DeltaTime)
+{	
+	if (IsOnLadder())
+	{
+		return;
+	}
+	Super::PhysicsRotation(DeltaTime);
 }
 
 void UXYZBaseMovementComponent::Crawl()
@@ -275,7 +304,27 @@ void UXYZBaseMovementComponent::PhysLadder(float deltaTime, int32 Iterations)
 {
 	CalcVelocity(deltaTime, 1.0f, false, ClimbingOnLadderBreakingDeseleration);
 	FVector Delta = Velocity * deltaTime;
+
+	FVector NewPos = GetActorLocation() + Delta;
+	float NewPosProjection = GetActorToCurrentLadderProjection(NewPos);
+
+	if (NewPosProjection < MinLadderBottomOffset)
+	{
+		DetachFromLadder();
+		return;
+	}
+	else if (NewPosProjection > (CurrentLadder->GetLadderHeight() - MaxLadderTopOffset))
+	{
+		GetBaseCharacterOwner()->Mantle();
+		return;
+	}
+
 	FHitResult Hit;
 	SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, Hit);
+}
+
+AXYZBaseCharacter* UXYZBaseMovementComponent::GetBaseCharacterOwner() const
+{
+	return StaticCast<AXYZBaseCharacter*>(GetOwner());
 }
 
