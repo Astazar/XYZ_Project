@@ -78,7 +78,7 @@ void UXYZBaseMovementComponent::AttachToLadder(const class ALadder* Ladder)
 	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Ladder);
 }
 
-float UXYZBaseMovementComponent::GetActorToCurrentLadderProjection(const FVector& Location)
+float UXYZBaseMovementComponent::GetActorToCurrentLadderProjection(const FVector& Location) const
 {
 	checkf(IsValid(CurrentLadder), TEXT("UXYZBaseMovementComponent::GetCharacterToCurrentLadderProjection cannot be invoked when current ladder is null"));
 	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
@@ -99,6 +99,13 @@ bool UXYZBaseMovementComponent::IsOnLadder() const
 const class ALadder* UXYZBaseMovementComponent::GetCurrentLadder() const
 {
 	return CurrentLadder;
+}
+
+float UXYZBaseMovementComponent::GetLadderSpeedRatio() const
+{
+	checkf(IsValid(CurrentLadder), TEXT("UXYZBaseMovementComponent::GetLadderSpeedRatio cannot be invoked when current ladder is null"));
+	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+	return FVector::DotProduct(LadderUpVector, Velocity) / ClimbingOnLadderMaxSpeed;
 }
 
 void UXYZBaseMovementComponent::PhysicsRotation(float DeltaTime)

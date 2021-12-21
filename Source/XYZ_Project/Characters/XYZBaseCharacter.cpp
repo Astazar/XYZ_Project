@@ -224,6 +224,7 @@ void AXYZBaseCharacter::InteractWithLadder()
 			XYZBaseCharacterMovementComponent->AttachToLadder(AvailableLadder);
 		}
 	}
+	
 }
 
 const class ALadder* AXYZBaseCharacter::GetAvailableLadder() const

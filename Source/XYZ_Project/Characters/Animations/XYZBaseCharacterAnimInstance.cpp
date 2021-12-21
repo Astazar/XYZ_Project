@@ -30,6 +30,11 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsCrawling = CharacterMovement->IsCrawling();
 	bIsSwimming = CharacterMovement->IsSwimming();
 	bIsMantling = CharacterMovement->IsMantling();
+	bIsOnLadder = CharacterMovement->IsOnLadder();
+	if(bIsOnLadder)
+	{ 
+		LadderSpeedRatio = CharacterMovement->GetLadderSpeedRatio();
+	}
 
 	RightFootEffectorLocation = FVector(CachedBaseCharacter->GetIKRightFootOffset() + CachedBaseCharacter->GetIKPelvisOffset(), 0.0f, 0.0f);
 	LeftFootEffectorLocation = FVector(-(CachedBaseCharacter->GetIKLeftFootOffset() + CachedBaseCharacter->GetIKPelvisOffset()), 0.0f, 0.0f);

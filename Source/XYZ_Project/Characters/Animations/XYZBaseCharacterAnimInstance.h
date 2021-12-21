@@ -26,20 +26,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsSprinting = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsOutOfStamina = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsCrawling = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsSwimming = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsMantling = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsOnLadder = false;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	float Speed = 0.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	float Stamina = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
-	bool bIsOutOfStamina = false;
-
+	float LadderSpeedRatio = 0.0f;
 
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "Character | IK Settings")
 	FVector RightFootEffectorLocation = FVector::ZeroVector;
