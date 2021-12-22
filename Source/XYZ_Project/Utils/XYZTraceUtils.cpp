@@ -63,3 +63,18 @@ bool XYZTraceUtils::OverlapCapsuleAnyByProfile(const UWorld* World, const FVecto
 	return bResult;
 }
 
+bool XYZTraceUtils::OverlapCapsuleBlockingByProfile(const UWorld* World, const FVector& Pos, const float CapsuleRadius, const float CapsuleHalfHeight, const FQuat& Rot, FName ProfileName, const FCollisionQueryParams& Params /*= FCollisionQueryParams::DefaultQueryParam*/, bool bDrawDebug /*= false*/, float DrawTime /*= -1.0f*/, FColor HitColor /*= FColor::Red*/)
+{
+	bool bResult = false;
+
+	FCollisionShape CollisionShape = FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight);
+	bResult = World->OverlapBlockingTestByProfile(Pos, Rot, ProfileName, CollisionShape, Params);
+#if ENABLE_DRAW_DEBUG
+	if (bDrawDebug && bResult)
+	{
+		DrawDebugCapsule(World, Pos, CapsuleHalfHeight, CapsuleRadius, Rot, HitColor, false, DrawTime);
+	}
+#endif
+	return bResult;
+}
+
