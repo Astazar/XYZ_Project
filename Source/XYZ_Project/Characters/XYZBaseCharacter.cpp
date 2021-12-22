@@ -131,9 +131,9 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 }
 
 
-void AXYZBaseCharacter::Mantle()
+void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 {
-	if (!CanMantle())
+	if (!(CanMantle() || bForce))
 	{
 		return;
 	}
@@ -188,7 +188,7 @@ void AXYZBaseCharacter::Mantle()
 
 bool AXYZBaseCharacter::CanMantle() const
 {
-	return !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsCrawling();
+	return !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsOnLadder();
 }
 
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
@@ -214,7 +214,7 @@ void AXYZBaseCharacter::InteractWithLadder()
 {
 	if (XYZBaseCharacterMovementComponent->IsOnLadder())
 	{
-		XYZBaseCharacterMovementComponent->DetachFromLadder();
+		XYZBaseCharacterMovementComponent->DetachFromLadder(EDetachFromLadderMethod::JumpOff);
 	}
 	else
 	{

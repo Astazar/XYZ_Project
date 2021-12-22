@@ -43,6 +43,16 @@ enum class EMovementState : uint8
 	Crawling
 };
 
+UENUM(BlueprintType)
+enum class EDetachFromLadderMethod : uint8
+{
+	Fall = 0,
+	ReachingTheTop,
+	ReachingTheBottom,
+	JumpOff
+};
+
+
 
 UCLASS()
 class XYZ_PROJECT_API UXYZBaseMovementComponent : public UCharacterMovementComponent
@@ -65,7 +75,7 @@ public:
 	void AttachToLadder(const class ALadder* Ladder);
 
 	float GetActorToCurrentLadderProjection(const FVector& Location) const;
-	void DetachFromLadder();
+	void DetachFromLadder(EDetachFromLadderMethod DetachFromLadderMethod = EDetachFromLadderMethod::Fall);
 	bool IsOnLadder() const;
 	const class ALadder* GetCurrentLadder() const;
 	float GetLadderSpeedRatio() const;
@@ -116,6 +126,8 @@ protected:
 	float MaxLadderTopOffset = 90.0f;
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float MinLadderBottomOffset = 90.0f;
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float JumpOffFromLadderSpeed = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float SprintSpeed = 1200.0f;
@@ -132,8 +144,10 @@ private:
 	bool bIsCrawling = false;
 
 	FMantlingMovementParameters CurrentMantlingParameters;
+	FTimerHandle MantlingTimer;
 
 	const ALadder* CurrentLadder = nullptr;
 
-	FTimerHandle MantlingTimer;
+	FRotator ForceTargetRotation = FRotator::ZeroRotator;
+	bool bForceRotation = false;
 };
