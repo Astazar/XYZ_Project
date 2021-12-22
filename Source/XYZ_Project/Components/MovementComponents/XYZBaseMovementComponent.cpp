@@ -73,6 +73,11 @@ void UXYZBaseMovementComponent::AttachToLadder(const class ALadder* Ladder)
 	float Projection = GetActorToCurrentLadderProjection(GetActorLocation());
 	FVector NewCharacterLocation = CurrentLadder->GetActorLocation() + Projection * LadderUpVector + LadderToCharacterOffset * LadderForwardVector;
 
+	if (CurrentLadder->GetIsOnTop())
+	{
+		NewCharacterLocation = CurrentLadder->GetAttachFromTopAnimMontageStartingLocation();
+	}
+
 	GetOwner()->SetActorLocation(NewCharacterLocation);
 	GetOwner()->SetActorRotation(TargetOrientationRotation);
 	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Ladder);
@@ -311,6 +316,13 @@ void UXYZBaseMovementComponent::PhysLadder(float deltaTime, int32 Iterations)
 {
 	CalcVelocity(deltaTime, 1.0f, false, ClimbingOnLadderBreakingDeseleration);
 	FVector Delta = Velocity * deltaTime;
+
+	if (HasAnimRootMotion())
+	{
+		FHitResult Hit;
+		SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), false, Hit);
+		return;
+	}
 
 	FVector NewPos = GetActorLocation() + Delta;
 	float NewPosProjection = GetActorToCurrentLadderProjection(NewPos);

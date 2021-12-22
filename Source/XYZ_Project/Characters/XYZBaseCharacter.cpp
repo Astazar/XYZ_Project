@@ -186,19 +186,19 @@ void AXYZBaseCharacter::Mantle()
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
 }
 
-bool AXYZBaseCharacter::CanMantle()
+bool AXYZBaseCharacter::CanMantle() const
 {
 	return !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsCrawling();
 }
 
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
-	AvailableInteractiveActors.Add(InteractiveActor);
+	AvailableInteractiveActors.AddUnique(InteractiveActor);
 }
 
 void AXYZBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
-	AvailableInteractiveActors.Remove(InteractiveActor);
+	AvailableInteractiveActors.RemoveSingleSwap(InteractiveActor);
 }
 
 void AXYZBaseCharacter::ClimbLadderUp(float Value)
@@ -221,6 +221,10 @@ void AXYZBaseCharacter::InteractWithLadder()
 		const ALadder* AvailableLadder = GetAvailableLadder();
 		if (IsValid(AvailableLadder))
 		{
+			if (AvailableLadder->GetIsOnTop())
+			{
+				PlayAnimMontage(AvailableLadder->GetAttachFromTopAnimMontage());
+			}
 			XYZBaseCharacterMovementComponent->AttachToLadder(AvailableLadder);
 		}
 	}

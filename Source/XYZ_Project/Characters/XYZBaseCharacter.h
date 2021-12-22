@@ -82,7 +82,7 @@ public:
 	virtual void SwimUp(float Value) {};
 
 	virtual void Mantle();
-	virtual bool CanMantle();
+	virtual bool CanMantle() const;
 
 	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const { return XYZBaseCharacterMovementComponent; }
 
