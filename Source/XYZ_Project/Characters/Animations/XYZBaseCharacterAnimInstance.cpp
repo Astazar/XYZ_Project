@@ -31,6 +31,8 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsSwimming = CharacterMovement->IsSwimming();
 	bIsMantling = CharacterMovement->IsMantling();
 	bIsOnLadder = CharacterMovement->IsOnLadder();
+	bIsZiplining = CharacterMovement->IsZiplining();
+
 	if(bIsOnLadder)
 	{ 
 		LadderSpeedRatio = CharacterMovement->GetLadderSpeedRatio();

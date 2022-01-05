@@ -21,6 +21,9 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("SwimRight", this, &AXYZPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AXYZPlayerController::SwimUp);
 	InputComponent->BindAxis("ClimbLadderUp", this, &AXYZPlayerController::ClimbLadderUp);
+	InputComponent->BindAxis("ZiplineClimbForward", this, &AXYZPlayerController::ZiplineClimbForward);
+	InputComponent->BindAction("InteractWithZipline", EInputEvent::IE_Pressed, this, &AXYZPlayerController::InteractWithZipline);
+	InputComponent->BindAction("ZiplineTurnAround", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ZiplineTurnAround);
 	InputComponent->BindAction("InteractWithLadder", EInputEvent::IE_Pressed, this, &AXYZPlayerController::InteractWithLadder);
 	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Mantle);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Jump);
@@ -147,5 +150,29 @@ void AXYZPlayerController::InteractWithLadder()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->InteractWithLadder();
+	}
+}
+
+void AXYZPlayerController::InteractWithZipline()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->InteractWithZipline();
+	}
+}
+
+void AXYZPlayerController::ZiplineClimbForward(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ZiplineClimbForward(Value);
+	}
+}
+
+void AXYZPlayerController::ZiplineTurnAround()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ZiplineTurnAround();
 	}
 }

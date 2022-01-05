@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "XYZ_Project/Components/LedgeDetectorComponent.h"
+#include <../Plugins/Runtime/Database/SQLiteCore/Source/SQLiteCore/Private/sqlite/sqlite3.h>
 #include "XYZBaseMovementComponent.generated.h"
 
 struct FMantlingMovementParameters
@@ -32,6 +33,7 @@ enum class ECustomMovementMode : uint8
 	CMOVE_None = 0 UMETA(DisplayName = "None"),
 	CMOVE_Mantling UMETA(DisplayName = "Mantling"),
 	CMOVE_Ladder UMETA(DisplayName = "Ladder"),
+	CMOVE_Zipline UMETA(DisplayName = "Zipline"),
 	CMOVE_Max UMETA(Hidden)
 };
 
@@ -80,6 +82,13 @@ public:
 	const class ALadder* GetCurrentLadder() const;
 	float GetLadderSpeedRatio() const;
 
+	float GetActorToCurrentZiplineProjection(const FVector& Location);
+	void AttachToZipline(const class AZipline* Zipline);
+	void DetachFromZipline();
+	bool IsZiplining() const;
+	FVector CalcZiplineMovingDirection(const class AZipline* Zipline);
+
+
 	virtual void PhysicsRotation(float DeltaTime) override;
 
 
@@ -123,11 +132,20 @@ protected:
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float LadderToCharacterOffset = 60.0f;
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
-	float MaxLadderTopOffset = 90.0f;
+	float MaxLadderTopOffset = 50.0f;
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float MinLadderBottomOffset = 90.0f;
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float JumpOffFromLadderSpeed = 500.0f;
+
+	UPROPERTY(Category = "Character Movement: Zipline", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float ZiplineSlideSpeed = 500.0f;
+	UPROPERTY(Category = "Character Movement: Zipline", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float ZiplineClimbMaxSpeed = 400.0f;
+	UPROPERTY(Category = "Character Movement: Zipline", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float ZiplineCharacterZOffset = 125.0f;
+	UPROPERTY(Category = "Character Movement: Zipline", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float FromPillarOffset = 50.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float SprintSpeed = 1200.0f;
@@ -148,6 +166,9 @@ private:
 
 	const ALadder* CurrentLadder = nullptr;
 
+	const AZipline* CurrentZipline = nullptr;
+
 	FRotator ForceTargetRotation = FRotator::ZeroRotator;
 	bool bForceRotation = false;
+	void PhysZipline(float deltaTime, int32 Iterations);
 };

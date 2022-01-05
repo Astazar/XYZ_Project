@@ -35,6 +35,9 @@ protected:
 	bool bIsMantling = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsOnLadder = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsZiplining = false;
+
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")

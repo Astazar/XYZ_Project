@@ -9,6 +9,7 @@
 #include <DrawDebugHelpers.h>
 #include "XYZ_Project/Actors/Interactive/Environment/Ladder.h"
 #include "XYZ_Project/Characters/XYZBaseCharacter.h"
+#include "XYZ_Project/Actors/Interactive/Environment/Zipline.h"
 
 float UXYZBaseMovementComponent::GetMaxSpeed() const 
 {
@@ -28,6 +29,10 @@ float UXYZBaseMovementComponent::GetMaxSpeed() const
 	else if (IsOnLadder())
 	{
 		Result = ClimbingOnLadderMaxSpeed;
+	}
+	else if (IsZiplining() && CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Climb)
+	{
+		Result = ZiplineClimbMaxSpeed;
 	}
 	return Result;
 }
@@ -141,6 +146,64 @@ float UXYZBaseMovementComponent::GetLadderSpeedRatio() const
 	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
 	return FVector::DotProduct(LadderUpVector, Velocity) / ClimbingOnLadderMaxSpeed;
 }
+
+float UXYZBaseMovementComponent::GetActorToCurrentZiplineProjection(const FVector& Location)
+{
+	checkf(IsValid(CurrentZipline), TEXT("UXYZBaseMovementComponent::GetActorToCurrentZiplineProjection cannot be invoked when current zipline is null"));
+	FVector ZiplineToActorVector = Location - CurrentZipline->GetCableMeshLocation();
+	FVector ZiplineVector = CalcZiplineMovingDirection(CurrentZipline);
+	ZiplineVector.Normalize();
+	return FVector::DotProduct(ZiplineVector, ZiplineToActorVector);
+}
+
+void UXYZBaseMovementComponent::AttachToZipline(const class AZipline* Zipline)
+{
+	CurrentZipline = Zipline;
+	FVector MovingDirection = CalcZiplineMovingDirection(CurrentZipline);
+	FRotator TargetOrientationRotation = MovingDirection.ToOrientationRotator();
+	GetOwner()->SetActorRelativeRotation(TargetOrientationRotation);
+
+	FVector ZiplineUpVector = CurrentZipline->GetCableMesh()->GetUpVector();
+	float Projection = GetActorToCurrentZiplineProjection(GetActorLocation());
+	FVector NewCharacterLocation = CurrentZipline->GetCableMeshLocation() + Projection * MovingDirection - ZiplineCharacterZOffset * ZiplineUpVector;
+	GetOwner()->SetActorRelativeLocation(NewCharacterLocation);
+
+	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Zipline);
+}
+
+void UXYZBaseMovementComponent::DetachFromZipline()
+{
+	SetMovementMode(MOVE_Falling);
+}
+
+bool UXYZBaseMovementComponent::IsZiplining() const
+{
+	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Zipline;
+}
+
+FVector UXYZBaseMovementComponent::CalcZiplineMovingDirection(const class AZipline* Zipline)
+{
+	FVector MovingDirection;
+	if (Zipline->GetZiplineMovementType() == EZiplineMovementType::Slide)
+	{
+		//the direction of movement directed from higher to lower
+		Zipline->GetEndPillarTopWorldLocation().Z > Zipline->GetStartPillarTopWorldLocation().Z ? MovingDirection = Zipline->GetStartPillarTopWorldLocation() - Zipline->GetEndPillarTopWorldLocation() : MovingDirection = Zipline->GetEndPillarTopWorldLocation() - Zipline->GetStartPillarTopWorldLocation();
+	}
+	else if (Zipline->GetZiplineMovementType() == EZiplineMovementType::Climb)
+	{
+		//the direction of movement depends on the direction of the character
+		FVector CableDirection = Zipline->GetStartPillarTopWorldLocation() - Zipline->GetEndPillarTopWorldLocation();
+		FVector OwnerForwardVector = GetOwner()->GetActorForwardVector();
+		if (FVector::DotProduct(CableDirection, OwnerForwardVector) < 0.0f)
+		{
+			MovingDirection = CableDirection * (-1);
+		}
+		else MovingDirection = CableDirection;
+	}
+	MovingDirection.Normalize();
+	return MovingDirection;
+}
+
 
 void UXYZBaseMovementComponent::PhysicsRotation(float DeltaTime)
 {	
@@ -328,6 +391,11 @@ void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 		CurrentLadder = nullptr;
 	}
 
+	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Zipline)
+	{
+		CurrentZipline = nullptr;
+	}
+
 	if (MovementMode == MOVE_Custom)
 	{
 		switch (CustomMovementMode)
@@ -357,6 +425,9 @@ void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 		PhysLadder(deltaTime,Iterations);
 		break;
 	}
+	case (uint8)ECustomMovementMode::CMOVE_Zipline:
+		PhysZipline(deltaTime, Iterations);
+		break;
 	default:
 		break;
 	}
@@ -416,5 +487,38 @@ void UXYZBaseMovementComponent::PhysLadder(float deltaTime, int32 Iterations)
 AXYZBaseCharacter* UXYZBaseMovementComponent::GetBaseCharacterOwner() const
 {
 	return StaticCast<AXYZBaseCharacter*>(GetOwner());
+}
+
+void UXYZBaseMovementComponent::PhysZipline(float deltaTime, int32 Iterations)
+{
+	FVector MovingDirection = CalcZiplineMovingDirection(CurrentZipline);
+	if (CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Climb)
+	{
+		CalcVelocity(deltaTime, 1.0f, false, ClimbingOnLadderBreakingDeseleration);
+	}
+	else if (CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Slide)
+	{
+		Velocity = MovingDirection * ZiplineSlideSpeed;
+	}
+	FVector Delta = deltaTime * Velocity;
+	
+	FVector SupposedLocation = GetActorLocation() + Delta;
+	FVector OnZiplineSupposedLocation = SupposedLocation + GetOwner()->GetActorUpVector() * ZiplineCharacterZOffset;
+
+	float DistanceToEndPillar = (CurrentZipline->GetEndPillarTopWorldLocation() - OnZiplineSupposedLocation).Size();
+	float DistanceToStartPillar = (CurrentZipline->GetStartPillarTopWorldLocation() - OnZiplineSupposedLocation).Size();
+	if ((DistanceToEndPillar < FromPillarOffset) || (DistanceToStartPillar < FromPillarOffset))
+	{
+		Velocity = FVector::ZeroVector;
+		DetachFromZipline();
+	}
+
+	FHitResult Hit;
+
+	SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, Hit);
+	if (Hit.bBlockingHit)
+	{
+		DetachFromZipline();
+	}
 }
 

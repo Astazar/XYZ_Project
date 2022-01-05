@@ -8,6 +8,7 @@
 #include <Kismet/KismetSystemLibrary.h>
 #include "XYZ_Project/Components/LedgeDetectorComponent.h"
 #include "XYZ_Project/Actors/Interactive/Environment/Ladder.h"
+#include "XYZ_Project/Actors/Interactive/Environment/Zipline.h"
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -191,6 +192,54 @@ bool AXYZBaseCharacter::CanMantle() const
 	return !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsOnLadder();
 }
 
+void AXYZBaseCharacter::InteractWithZipline()
+{
+	if (XYZBaseCharacterMovementComponent->IsZiplining())
+	{
+		XYZBaseCharacterMovementComponent->DetachFromZipline();
+		return;
+	}
+	const AZipline* AvailableZipline = GetAvailableZipline();
+	if (IsValid(AvailableZipline))
+	{
+		XYZBaseCharacterMovementComponent->AttachToZipline(AvailableZipline);
+	}
+
+}
+
+void AXYZBaseCharacter::ZiplineClimbForward(float Value)
+{
+	if (XYZBaseCharacterMovementComponent->IsZiplining() && !FMath::IsNearlyZero(Value, 1e-6f) && GetAvailableZipline()->GetZiplineMovementType() == EZiplineMovementType::Climb)
+	{
+		AddMovementInput(GetActorForwardVector(), Value);
+	}
+}
+
+void AXYZBaseCharacter::ZiplineTurnAround()
+{
+	if (XYZBaseCharacterMovementComponent->IsZiplining() && GetAvailableZipline()->GetZiplineMovementType() == EZiplineMovementType::Climb)
+	{
+		FVector MovingDirection = XYZBaseCharacterMovementComponent->CalcZiplineMovingDirection(GetAvailableZipline());
+		MovingDirection *=-1;
+		FRotator MovingDirectionRotator = MovingDirection.ToOrientationRotator();
+		SetActorRotation(MovingDirectionRotator);
+	}
+}
+
+const class AZipline* AXYZBaseCharacter::GetAvailableZipline() const
+{
+	const AZipline* Result = nullptr;
+	for (const AInteractiveActor* InteractiveActor : AvailableInteractiveActors)
+	{
+		if (InteractiveActor->IsA<AZipline>())
+		{
+			Result = StaticCast<const AZipline*>(InteractiveActor);
+			break;
+		}
+	}
+	return Result;
+}
+
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
 	AvailableInteractiveActors.AddUnique(InteractiveActor);
@@ -263,7 +312,7 @@ void AXYZBaseCharacter::OnSprintEnd_Implementation()
 
 bool AXYZBaseCharacter::CanSprint()
 {
-	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsCrawling();
+	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsZiplining();
 }
 
 void AXYZBaseCharacter::UpdateIKOffsets(float DeltaSeconds)

@@ -45,8 +45,10 @@ struct FMantlingSettings
 };
 
 
+
 class UXYZBaseMovementComponent;
 class AInteractiveActor;
+typedef TArray<AInteractiveActor*, TInlineAllocator<10>> TInteractiveActorsArray; 
 
 UCLASS(Abstract, NotBlueprintable)
 class XYZ_PROJECT_API AXYZBaseCharacter : public ACharacter
@@ -97,6 +99,11 @@ public:
 	void InteractWithLadder();
 	const class ALadder* GetAvailableLadder() const; 
 
+	virtual void InteractWithZipline();
+	virtual void ZiplineClimbForward(float Value);
+	virtual void ZiplineTurnAround();
+	const class AZipline* GetAvailableZipline() const;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -146,7 +153,7 @@ private:
 
 	const FMantlingSettings* GetMantlingSettings(float LedgeHeight) const;
 
-	TArray<AInteractiveActor*> AvailableInteractiveActors;
+	TInteractiveActorsArray AvailableInteractiveActors;
 
 	float IKRightFootOffset = 0.0f;
 	float IKLeftFootOffset = 0.0f;
