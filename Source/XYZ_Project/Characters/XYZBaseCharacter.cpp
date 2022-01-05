@@ -250,6 +250,11 @@ void AXYZBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* Interactiv
 	AvailableInteractiveActors.RemoveSingleSwap(InteractiveActor);
 }
 
+bool AXYZBaseCharacter::CanInteractWithLadder()
+{
+	return !XYZBaseCharacterMovementComponent->IsSprinting();
+}
+
 void AXYZBaseCharacter::ClimbLadderUp(float Value)
 {
 	if (XYZBaseCharacterMovementComponent->IsOnLadder() && !FMath::IsNearlyZero(Value))
@@ -261,6 +266,10 @@ void AXYZBaseCharacter::ClimbLadderUp(float Value)
 
 void AXYZBaseCharacter::InteractWithLadder()
 {
+	if (!CanInteractWithLadder())
+	{
+		return;
+	}
 	if (XYZBaseCharacterMovementComponent->IsOnLadder())
 	{
 		XYZBaseCharacterMovementComponent->DetachFromLadder(EDetachFromLadderMethod::JumpOff);
@@ -312,7 +321,7 @@ void AXYZBaseCharacter::OnSprintEnd_Implementation()
 
 bool AXYZBaseCharacter::CanSprint()
 {
-	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsZiplining();
+	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsZiplining() && !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsOnLadder() && (XYZBaseCharacterMovementComponent->MovementMode != MOVE_Falling); 
 }
 
 void AXYZBaseCharacter::UpdateIKOffsets(float DeltaSeconds)
@@ -330,6 +339,11 @@ void AXYZBaseCharacter::TryChangeSprintState(float DeltaSeconds)
 		OnSprintStart();
 	}
 	if (!bIsSprintRequested && XYZBaseCharacterMovementComponent->IsSprinting())
+	{
+		XYZBaseCharacterMovementComponent->StopSprint();
+		OnSprintEnd();
+	}
+	else if (XYZBaseCharacterMovementComponent->GetIsOutOfStamina())
 	{
 		XYZBaseCharacterMovementComponent->StopSprint();
 		OnSprintEnd();

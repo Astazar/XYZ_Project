@@ -95,6 +95,7 @@ public:
 	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
 	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
 
+	bool CanInteractWithLadder();
 	void ClimbLadderUp(float Value);
 	void InteractWithLadder();
 	const class ALadder* GetAvailableLadder() const; 

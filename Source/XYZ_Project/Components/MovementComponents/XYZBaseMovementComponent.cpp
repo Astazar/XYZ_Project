@@ -398,6 +398,8 @@ void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 
 	if (MovementMode == MOVE_Custom)
 	{
+		//fixing wrong attaching position (ladder, zipline) because of initial velocity while attaching
+		Velocity = FVector::ZeroVector;
 		switch (CustomMovementMode)
 		{
 		case (uint8)ECustomMovementMode::CMOVE_Mantling:
