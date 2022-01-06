@@ -211,7 +211,7 @@ void AXYZBaseCharacter::ZiplineClimbForward(float Value)
 {
 	if (XYZBaseCharacterMovementComponent->IsZiplining() && !FMath::IsNearlyZero(Value, 1e-6f) && GetAvailableZipline()->GetZiplineMovementType() == EZiplineMovementType::Climb)
 	{
-		AddMovementInput(GetActorForwardVector(), Value);
+		XYZBaseCharacterMovementComponent->ZiplineClimbForward(Value);
 	}
 }
 
@@ -219,10 +219,7 @@ void AXYZBaseCharacter::ZiplineTurnAround()
 {
 	if (XYZBaseCharacterMovementComponent->IsZiplining() && GetAvailableZipline()->GetZiplineMovementType() == EZiplineMovementType::Climb)
 	{
-		FVector MovingDirection = XYZBaseCharacterMovementComponent->CalcZiplineMovingDirection(GetAvailableZipline());
-		MovingDirection *=-1;
-		FRotator MovingDirectionRotator = MovingDirection.ToOrientationRotator();
-		SetActorRotation(MovingDirectionRotator);
+		XYZBaseCharacterMovementComponent->ZiplineTurnAround();
 	}
 }
 

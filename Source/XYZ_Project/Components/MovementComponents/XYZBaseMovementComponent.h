@@ -87,7 +87,8 @@ public:
 	void DetachFromZipline();
 	bool IsZiplining() const;
 	FVector CalcZiplineMovingDirection(const class AZipline* Zipline);
-
+	void ZiplineClimbForward(float Value);
+	void ZiplineTurnAround();
 
 	virtual void PhysicsRotation(float DeltaTime) override;
 
@@ -170,5 +171,7 @@ private:
 
 	FRotator ForceTargetRotation = FRotator::ZeroRotator;
 	bool bForceRotation = false;
-	void PhysZipline(float deltaTime, int32 Iterations);
+	void PhysZiplineClimb(float deltaTime, int32 Iterations);
+	void PhysZiplineSlide(float deltaTime, int32 Iterations);
+	void PhysMoveAlongZipline(float deltaTime, int32 Iterations);
 };

@@ -205,6 +205,19 @@ FVector UXYZBaseMovementComponent::CalcZiplineMovingDirection(const class AZipli
 }
 
 
+void UXYZBaseMovementComponent::ZiplineClimbForward(float Value)
+{
+	GetBaseCharacterOwner()->AddMovementInput(GetOwner()->GetActorForwardVector(), Value);
+}
+
+void UXYZBaseMovementComponent::ZiplineTurnAround()
+{
+	FVector MovingDirection = CalcZiplineMovingDirection(GetBaseCharacterOwner()->GetAvailableZipline());
+	MovingDirection *= -1;
+	FRotator MovingDirectionRotator = MovingDirection.ToOrientationRotator();
+	GetOwner()->SetActorRotation(MovingDirectionRotator);
+}
+
 void UXYZBaseMovementComponent::PhysicsRotation(float DeltaTime)
 {	
 	if (bForceRotation)
@@ -428,8 +441,18 @@ void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 		break;
 	}
 	case (uint8)ECustomMovementMode::CMOVE_Zipline:
-		PhysZipline(deltaTime, Iterations);
+	{
+		FVector MovingDirection = CalcZiplineMovingDirection(CurrentZipline);
+		if (CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Climb)
+		{
+			PhysZiplineClimb(deltaTime, Iterations);
+		}
+		else if (CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Slide)
+		{
+			PhysZiplineSlide(deltaTime, Iterations);
+		}
 		break;
+	}
 	default:
 		break;
 	}
@@ -491,19 +514,22 @@ AXYZBaseCharacter* UXYZBaseMovementComponent::GetBaseCharacterOwner() const
 	return StaticCast<AXYZBaseCharacter*>(GetOwner());
 }
 
-void UXYZBaseMovementComponent::PhysZipline(float deltaTime, int32 Iterations)
+void UXYZBaseMovementComponent::PhysZiplineClimb(float deltaTime, int32 Iterations)
+{
+	CalcVelocity(deltaTime, 1.0f, false, ClimbingOnLadderBreakingDeseleration);
+	PhysMoveAlongZipline(deltaTime, Iterations);
+}
+
+void UXYZBaseMovementComponent::PhysZiplineSlide(float deltaTime, int32 Iterations)
 {
 	FVector MovingDirection = CalcZiplineMovingDirection(CurrentZipline);
-	if (CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Climb)
-	{
-		CalcVelocity(deltaTime, 1.0f, false, ClimbingOnLadderBreakingDeseleration);
-	}
-	else if (CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Slide)
-	{
-		Velocity = MovingDirection * ZiplineSlideSpeed;
-	}
+	Velocity = MovingDirection * ZiplineSlideSpeed;
+	PhysMoveAlongZipline(deltaTime, Iterations);
+}
+
+void UXYZBaseMovementComponent::PhysMoveAlongZipline(float deltaTime, int32 Iterations)
+{
 	FVector Delta = deltaTime * Velocity;
-	
 	FVector SupposedLocation = GetActorLocation() + Delta;
 	FVector OnZiplineSupposedLocation = SupposedLocation + GetOwner()->GetActorUpVector() * ZiplineCharacterZOffset;
 
@@ -516,7 +542,6 @@ void UXYZBaseMovementComponent::PhysZipline(float deltaTime, int32 Iterations)
 	}
 
 	FHitResult Hit;
-
 	SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, Hit);
 	if (Hit.bBlockingHit)
 	{
