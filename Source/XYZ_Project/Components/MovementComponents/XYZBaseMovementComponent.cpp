@@ -10,6 +10,144 @@
 #include "XYZ_Project/Actors/Interactive/Environment/Ladder.h"
 #include "XYZ_Project/Characters/XYZBaseCharacter.h"
 #include "XYZ_Project/Actors/Interactive/Environment/Zipline.h"
+#include "XYZ_Project/Utils/XYZTraceUtils.h"
+#include "XYZ_Project/XYZ_ProjectTypes.h"
+#include "XYZ_Project/Subsystems/DebugSubsystem.h"
+#include <Kismet/GameplayStatics.h>
+#include <Kismet/KismetMathLibrary.h>
+
+
+void UXYZBaseMovementComponent::Wallrun()
+{
+	UCapsuleComponent* CharacterCapsule = GetBaseCharacterOwner()->GetCapsuleComponent();
+	FHitResult TraceHitResult;	
+
+#if ENABLE_DRAW_DEBUG
+	UDebugSubsystem* DebugSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UDebugSubsystem>();
+	bool IsDebugEnabled = DebugSubsystem->IsCategoryEnabled(DebugCategoryWallrun);
+#else
+	bool IsDebugEnabled = false;
+#endif
+
+	if (!DetectWall(TraceHitResult, CharacterCapsule->GetComponentLocation()))
+	{
+		return;
+	}
+	FVector HitNormal = TraceHitResult.ImpactNormal.GetSafeNormal();
+	
+	bool bIsAngleCorrect=false;
+	float CharacterAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(-HitNormal, CharacterCapsule->GetForwardVector())));
+	if ((CharacterAngle > WallrunMinAngleDeg) && (CharacterAngle < WallrunMaxAngleDeg))
+	{
+		bIsAngleCorrect=true;
+	}
+	else
+	{
+		if (IsDebugEnabled)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 5, FColor::Purple, FString::Printf(TEXT("Angle is not correct. Angle = %s"), *FString::SanitizeFloat(CharacterAngle)));
+		}
+		return;
+	}
+	if (IsDebugEnabled)
+	{
+		GEngine->AddOnScreenDebugMessage(1, 5, FColor::Purple, FString::Printf(TEXT("Angle is correct. Angle = %s"), *FString::SanitizeFloat(CharacterAngle)));
+	}
+	
+	if (FVector::DotProduct(HitNormal, CharacterCapsule->GetRightVector()) > 0)
+	{
+		CurrentWallrunSide = EWallrunSide::Left;
+	}
+	else
+	{
+		CurrentWallrunSide = EWallrunSide::Right;
+	}
+	if (CurrentWallrunSide == PreviousWallrunSide)
+	{
+		return;
+	}
+
+	if (IsDebugEnabled)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Purple, FString::Printf(TEXT("Wallrun side: %s"), *UEnum::GetValueAsString(CurrentWallrunSide)));
+	}
+
+	StartWallrun(CharacterCapsule, TraceHitResult);
+}
+
+bool UXYZBaseMovementComponent::DetectWall(struct FHitResult& OutHit, FVector CharacterLocation)
+{
+#if ENABLE_DRAW_DEBUG
+	UDebugSubsystem* DebugSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UDebugSubsystem>();
+	bool IsDebugEnabled = DebugSubsystem->IsCategoryEnabled(DebugCategoryWallrun);
+#else
+	bool IsDebugEnabled = false;
+#endif
+
+	FCollisionQueryParams QuerryParams;
+	QuerryParams.bTraceComplex = true;
+	QuerryParams.AddIgnoredActor(GetOwner());
+	UCapsuleComponent* CharacterCapsule = GetBaseCharacterOwner()->GetCapsuleComponent();
+	FVector LeftCheckStart = CharacterCapsule->GetComponentLocation();
+	FVector LeftCheckEnd = CharacterCapsule->GetComponentLocation() - CharacterCapsule->GetRightVector() * WallrunTraceLenght;
+	bool bIsHitedLeft = XYZTraceUtils::LineTraceSingleByChannel(GetWorld(), OutHit, LeftCheckStart, LeftCheckEnd, ECC_WallRunnable, QuerryParams, FCollisionResponseParams::DefaultResponseParam, IsDebugEnabled, 10);
+	if (OutHit.bBlockingHit)
+	{
+		return bIsHitedLeft;
+	}
+	FVector RightCheckStart = LeftCheckStart;
+	FVector RightCheckEnd = CharacterCapsule->GetComponentLocation() + CharacterCapsule->GetRightVector() * WallrunTraceLenght;
+	bool bIsHitedRight = XYZTraceUtils::LineTraceSingleByChannel(GetWorld(), OutHit, RightCheckStart, RightCheckEnd, ECC_WallRunnable, QuerryParams, FCollisionResponseParams::DefaultResponseParam, IsDebugEnabled, 10);
+	return bIsHitedRight;
+}
+
+EWallrunSide UXYZBaseMovementComponent::GetCurrentWallrunSide() const
+{
+	return CurrentWallrunSide;
+}
+
+void UXYZBaseMovementComponent::JumpOffWall()
+{
+	StopWallrun();
+	FVector MovingDirection;
+	FVector JumpOffVelocity;
+	if (CurrentWallrunSide == EWallrunSide::Left)
+	{
+		MovingDirection = GetOwner()->GetActorRightVector() + Velocity.GetSafeNormal();
+	}
+	else if (CurrentWallrunSide == EWallrunSide::Right)
+	{
+		MovingDirection = -GetOwner()->GetActorRightVector() + Velocity.GetSafeNormal();
+	}
+	JumpOffVelocity = MovingDirection * JumpOffWallHorizontalVelocity;
+	ForceTargetRotation = MovingDirection.ToOrientationRotator();
+	bForceRotation = true;
+	JumpOffVelocity += GetOwner()->GetActorUpVector() * JumpOffWallVerticalVelocity;
+	Launch(JumpOffVelocity);
+}
+
+void UXYZBaseMovementComponent::StartWallrun(class UCapsuleComponent* CharacterCapsule, const struct FHitResult& Hit)
+{
+	GetWorld()->GetTimerManager().SetTimer(WallrunTimer, this, &UXYZBaseMovementComponent::StopWallrun, WallrunTime, false);
+	FVector CharacterStartLocation = Hit.ImpactPoint + Hit.ImpactNormal.GetSafeNormal() * CharacterCapsule->GetScaledCapsuleRadius();
+	CharacterStartLocation.Z = CharacterCapsule->GetComponentLocation().Z;
+	GetOwner()->SetActorLocation(CharacterStartLocation);
+
+	FRotator CharacterRotation = GetWallrunCharacterMovingDirection(Hit).ToOrientationRotator();
+	GetOwner()->SetActorRotation(CharacterRotation);
+	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Wallrun);
+}
+
+void UXYZBaseMovementComponent::StopWallrun()
+{
+	PreviousWallrunSide = CurrentWallrunSide;
+	SetMovementMode(MOVE_Falling);
+}
+
+FVector UXYZBaseMovementComponent::GetWallrunCharacterMovingDirection(const struct FHitResult& Hit) const
+{
+	return CurrentWallrunSide == EWallrunSide::Left ? FVector::CrossProduct(Hit.ImpactNormal, FVector::UpVector) : FVector::CrossProduct(FVector::UpVector, Hit.ImpactNormal);
+}
 
 float UXYZBaseMovementComponent::GetMaxSpeed() const 
 {
@@ -33,6 +171,10 @@ float UXYZBaseMovementComponent::GetMaxSpeed() const
 	else if (IsZiplining() && CurrentZipline->GetZiplineMovementType() == EZiplineMovementType::Climb)
 	{
 		Result = ZiplineClimbMaxSpeed;
+	}
+	else if (IsWallrunning())
+	{
+		Result = WallrunSpeed;
 	}
 	return Result;
 }
@@ -386,6 +528,11 @@ void UXYZBaseMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	}
 }
 
+bool UXYZBaseMovementComponent::IsWallrunning() const
+{
+	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Wallrun;;
+}
+
 void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
@@ -407,6 +554,11 @@ void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Zipline)
 	{
 		CurrentZipline = nullptr;
+	}
+
+	if(MovementMode == MOVE_Walking && PreviousMovementMode == MOVE_Falling)
+	{
+		PreviousWallrunSide = EWallrunSide::None;
 	}
 
 	if (MovementMode == MOVE_Custom)
@@ -451,6 +603,11 @@ void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 		{
 			PhysZiplineSlide(deltaTime, Iterations);
 		}
+		break;
+	}
+	case (uint8)ECustomMovementMode::CMOVE_Wallrun:
+	{
+		PhysWallrun(deltaTime, Iterations);
 		break;
 	}
 	default:
@@ -546,6 +703,31 @@ void UXYZBaseMovementComponent::PhysMoveAlongZipline(float deltaTime, int32 Iter
 	if (Hit.bBlockingHit)
 	{
 		DetachFromZipline();
+	}
+}
+
+void UXYZBaseMovementComponent::PhysWallrun(float deltaTime, int32 Iterations)
+{
+	FHitResult WallHit;
+	if (!DetectWall(WallHit, GetOwner()->GetActorLocation()))
+	{
+		StopWallrun();
+		return;
+	}
+
+	FVector MovingDirection = GetWallrunCharacterMovingDirection(WallHit);
+
+	FRotator CharacterRotation = UKismetMathLibrary::RInterpTo(GetOwner()->GetActorRotation(), MovingDirection.ToOrientationRotator(), deltaTime, WallrunRotationInterpSpeed);
+	GetOwner()->SetActorRotation(CharacterRotation);
+
+	Velocity = MovingDirection * WallrunSpeed;
+	FVector Delta = deltaTime * Velocity;
+	SlideAlongSurface(Delta, 1, WallHit.ImpactNormal, WallHit, true);
+
+	if (WallHit.bBlockingHit)
+	{
+		StopWallrun();
+		return;
 	}
 }
 

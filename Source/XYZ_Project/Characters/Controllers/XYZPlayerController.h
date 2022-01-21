@@ -44,5 +44,8 @@ private:
 	void InteractWithZipline();
 	void ZiplineClimbForward(float Value);
 	void ZiplineTurnAround();
+
+	void Wallrun();
+
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };

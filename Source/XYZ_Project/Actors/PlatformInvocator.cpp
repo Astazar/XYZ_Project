@@ -17,7 +17,6 @@ void APlatformInvocator::Invoke()
 	{
 		OnInvocatorActivated.Broadcast();
 	}
-	else GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Blue,TEXT("Noone is bound"));
 }
 
 

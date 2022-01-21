@@ -9,6 +9,10 @@
 #include "XYZ_Project/Components/LedgeDetectorComponent.h"
 #include "XYZ_Project/Actors/Interactive/Environment/Ladder.h"
 #include "XYZ_Project/Actors/Interactive/Environment/Zipline.h"
+#include <DrawDebugHelpers.h>
+#include "XYZ_Project/XYZ_ProjectTypes.h"
+#include <Kismet/GameplayStatics.h>
+#include "XYZ_Project/Subsystems/DebugSubsystem.h"
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -80,7 +84,11 @@ void AXYZBaseCharacter::OnJumped_Implementation()
 
 bool AXYZBaseCharacter::CanJumpInternal_Implementation() const
 {
-	return (bIsCrouched || Super::CanJumpInternal_Implementation()) && (XYZBaseCharacterMovementComponent->IsEnoughSpaceToUncrouch()) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsMantling();
+	return (bIsCrouched || Super::CanJumpInternal_Implementation()) && 
+	       (XYZBaseCharacterMovementComponent->IsEnoughSpaceToUncrouch()) && 
+		   !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && 
+		   !XYZBaseCharacterMovementComponent->IsMantling() && 
+		   !XYZBaseCharacterMovementComponent->IsWallrunning();
 }
 
 void AXYZBaseCharacter::StartSprint()
@@ -128,7 +136,6 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 
 	TryChangeSprintState(DeltaSeconds);
 	UpdateIKOffsets(DeltaSeconds);
-	GEngine->AddOnScreenDebugMessage(-1, 0 , FColor::Orange,FString::Printf(TEXT("Stamina: %f"),CurrentStamina));
 }
 
 
@@ -151,6 +158,18 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 
 	FLedgeDescription LedgeDescription;
 	bool IsDetected = LedgeDetectorComponent->DetectLedge(LedgeDescription);
+
+#if ENABLE_DRAW_DEBUG
+	UDebugSubsystem* DebugSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UDebugSubsystem>();
+	bool IsDebugEnabled = DebugSubsystem->IsCategoryEnabled(DebugCategoryLedgeDetection);
+#else
+	bool IsDebugEnabled = false;
+#endif
+	if (IsDebugEnabled)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
+	}
+
 	if (IsDetected)
 	{
 		FMantlingMovementParameters MantlingParameters;
@@ -162,7 +181,11 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 		MantlingParameters.InitialGeometryLocation = LedgeDescription.InitialGeometryLocation;
 
 		float MantlingHeight = ((MantlingParameters.TargetLocation - DefaultCapsuleHalfHeight * FVector::UpVector) - (MantlingParameters.InitialLocation - DefaultCapsuleHalfHeight * FVector::UpVector)).Z;
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));
+		if (IsDebugEnabled)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));
+		}
+
 
 		const FMantlingSettings* MantlingSettings = GetMantlingSettings(MantlingHeight);
 		if (MantlingSettings == nullptr)
@@ -184,12 +207,14 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		AnimInstance->Montage_Play(MantlingSettings->MantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingParameters.StartTime);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
 }
 
 bool AXYZBaseCharacter::CanMantle() const
 {
-	return !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsOnLadder();
+	return !XYZBaseCharacterMovementComponent->IsMantling() && 
+	       !XYZBaseCharacterMovementComponent->IsCrawling() && 
+		   !XYZBaseCharacterMovementComponent->IsOnLadder() && 
+		   !XYZBaseCharacterMovementComponent->IsWallrunning();
 }
 
 void AXYZBaseCharacter::InteractWithZipline()
@@ -235,6 +260,28 @@ const class AZipline* AXYZBaseCharacter::GetAvailableZipline() const
 		}
 	}
 	return Result;
+}
+
+void AXYZBaseCharacter::Wallrun()
+{
+	if (!CanWallrun())
+	{
+		return; 
+	}
+	if (XYZBaseCharacterMovementComponent->IsWallrunning())
+	{
+		XYZBaseCharacterMovementComponent->JumpOffWall();
+		return;
+	}
+	XYZBaseCharacterMovementComponent->Wallrun();
+
+}
+
+bool AXYZBaseCharacter::CanWallrun()
+{
+	return !XYZBaseCharacterMovementComponent->IsMantling() && 
+		    XYZBaseCharacterMovementComponent->MovementMode != MOVE_Walking && 
+		    XYZBaseCharacterMovementComponent->MovementMode != MOVE_Swimming;
 }
 
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
@@ -318,7 +365,14 @@ void AXYZBaseCharacter::OnSprintEnd_Implementation()
 
 bool AXYZBaseCharacter::CanSprint()
 {
-	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && !XYZBaseCharacterMovementComponent->IsCrawling() && !XYZBaseCharacterMovementComponent->IsZiplining() && !XYZBaseCharacterMovementComponent->IsMantling() && !XYZBaseCharacterMovementComponent->IsOnLadder() && (XYZBaseCharacterMovementComponent->MovementMode != MOVE_Falling); 
+	return (XYZBaseCharacterMovementComponent->Velocity != FVector::ZeroVector) && 
+		   !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && 
+		   !XYZBaseCharacterMovementComponent->IsCrawling() && 
+		   !XYZBaseCharacterMovementComponent->IsZiplining() && 
+		   !XYZBaseCharacterMovementComponent->IsMantling() && 
+		   !XYZBaseCharacterMovementComponent->IsOnLadder() && 
+		   (XYZBaseCharacterMovementComponent->MovementMode != MOVE_Falling) &&
+		   !XYZBaseCharacterMovementComponent->IsWallrunning(); 
 }
 
 void AXYZBaseCharacter::UpdateIKOffsets(float DeltaSeconds)
@@ -369,15 +423,8 @@ float AXYZBaseCharacter::CalculateIKPelvisOffset()
 {
 	float OffsetTernary;
 	OffsetTernary = IKRightFootOffset > IKLeftFootOffset ? -IKRightFootOffset : -IKLeftFootOffset;
-
-	#if UE_BUILD_DEBUG
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Orange, FString::Printf(TEXT("Right Offset: %f \t Left Offset: %f"), IKRightFootOffset, IKLeftFootOffset));
 	float OffsetAbs;
 	OffsetAbs = -FMath::Abs(IKRightFootOffset - IKLeftFootOffset);
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Purple, FString::Printf(TEXT("OffsetAbs: %f"), OffsetAbs));
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Purple, FString::Printf(TEXT("OffsetTernary: %f"), OffsetTernary));
-	#endif
-
 	return OffsetTernary;
 }
 

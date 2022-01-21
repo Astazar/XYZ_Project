@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "XYZ_Project/Components/LedgeDetectorComponent.h"
-#include <../Plugins/Runtime/Database/SQLiteCore/Source/SQLiteCore/Private/sqlite/sqlite3.h>
+#include "XYZ_Project/XYZ_ProjectTypes.h"
 #include "XYZBaseMovementComponent.generated.h"
 
 struct FMantlingMovementParameters
@@ -34,6 +34,7 @@ enum class ECustomMovementMode : uint8
 	CMOVE_Mantling UMETA(DisplayName = "Mantling"),
 	CMOVE_Ladder UMETA(DisplayName = "Ladder"),
 	CMOVE_Zipline UMETA(DisplayName = "Zipline"),
+	CMOVE_Wallrun UMETA(DisplayName = "Wallrun"),
 	CMOVE_Max UMETA(Hidden)
 };
 
@@ -62,6 +63,19 @@ class XYZ_PROJECT_API UXYZBaseMovementComponent : public UCharacterMovementCompo
 	GENERATED_BODY()
 
 public:
+
+	virtual void Wallrun();
+	/** 
+	* Detecting a hit with wall.
+	* Return true if hit was detected.
+	*/
+	virtual bool DetectWall(struct FHitResult& OutHit, FVector CharacterLocation);
+	EWallrunSide GetCurrentWallrunSide() const;
+	virtual void JumpOffWall();
+	virtual void StartWallrun(class UCapsuleComponent* CharacterCapsule, const struct FHitResult& Hit);
+	virtual void StopWallrun();
+	FVector GetWallrunCharacterMovingDirection(const struct FHitResult& Hit) const;
+
 	bool IsSprinting() { return bIsSprinting; }
 	bool IsCrawling() { return bIsCrawling; }
 
@@ -96,7 +110,6 @@ public:
 	virtual void Crawl();
 	virtual void Uncrawl();
 	virtual bool CanCrawlInCurrentState();
-
 	virtual bool IsEnoughSpaceToUncrouch();
 	virtual bool IsEnoughSpaceToUncrawl();
 
@@ -112,6 +125,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Crawl", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float CrawlingHalfHeight = 34.0f;
 
+	bool IsWallrunning() const;
+
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
@@ -120,6 +135,12 @@ protected:
 	void PhysMantling(float deltaTime, int32 Iterations);
 
 	void PhysLadder(float deltaTime, int32 Iterations);
+
+	void PhysZiplineClimb(float deltaTime, int32 Iterations);
+	void PhysZiplineSlide(float deltaTime, int32 Iterations);
+	void PhysMoveAlongZipline(float deltaTime, int32 Iterations);
+
+	void PhysWallrun(float deltaTime, int32 Iterations);
 
 	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float SwimmingCapsuleRadius = 60.0f;
@@ -155,6 +176,26 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Crawl", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float CrawlSpeed = 100.0f;
 
+	//Defines from what distance wallrun will be detected
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float WallrunTraceLenght = 60.0f;
+	//Defines the minimum angle at which the character must stand to start wallrun
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f, ClampMax = 180.0f, UIMax = 180.0f))
+	float WallrunMinAngleDeg = 45.0f;
+	//Defines the maximum angle at which the character must stand to start wallrun
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f, ClampMax = 180.0f, UIMax = 180.0f))
+	float WallrunMaxAngleDeg = 135.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float WallrunSpeed = 400.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float WallrunTime = 10.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float JumpOffWallVerticalVelocity = 100.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float JumpOffWallHorizontalVelocity = 600.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float WallrunRotationInterpSpeed = 20.0f;
+
 	class AXYZBaseCharacter* GetBaseCharacterOwner() const;
 
 private:
@@ -171,7 +212,8 @@ private:
 
 	FRotator ForceTargetRotation = FRotator::ZeroRotator;
 	bool bForceRotation = false;
-	void PhysZiplineClimb(float deltaTime, int32 Iterations);
-	void PhysZiplineSlide(float deltaTime, int32 Iterations);
-	void PhysMoveAlongZipline(float deltaTime, int32 Iterations);
+
+	FTimerHandle WallrunTimer;
+	EWallrunSide CurrentWallrunSide = EWallrunSide::None;
+	EWallrunSide PreviousWallrunSide = EWallrunSide::None;
 };

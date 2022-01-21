@@ -74,6 +74,7 @@ public:
 
 	virtual void StartSprint();
 	virtual void StopSprint();
+	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentStamina() const { return CurrentStamina; };
 	virtual void UpdateStamina(float DeltaSeconds);
 
@@ -104,6 +105,9 @@ public:
 	virtual void ZiplineClimbForward(float Value);
 	virtual void ZiplineTurnAround();
 	const class AZipline* GetAvailableZipline() const;
+
+	virtual void Wallrun();
+	virtual bool CanWallrun();
 
 protected:
 	virtual void BeginPlay() override;

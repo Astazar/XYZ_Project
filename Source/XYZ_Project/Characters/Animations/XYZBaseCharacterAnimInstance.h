@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "XYZ_Project/XYZ_ProjectTypes.h"
 #include "XYZBaseCharacterAnimInstance.generated.h"
+
 
 /**
  * 
@@ -37,6 +39,8 @@ protected:
 	bool bIsOnLadder = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsZiplining = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsWallrunning = false;
 
 
 
@@ -53,6 +57,9 @@ protected:
 	FVector LeftFootEffectorLocation = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "Character | IK Settings")
 	FVector PelvisOffsetLocation = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	EWallrunSide CurrentWallrunSide = EWallrunSide::None;
 
 private:
 	TWeakObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;

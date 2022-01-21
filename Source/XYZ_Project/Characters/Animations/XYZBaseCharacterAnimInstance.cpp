@@ -6,6 +6,7 @@
 #include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
 
 
+
 void UXYZBaseCharacterAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
@@ -32,6 +33,13 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsMantling = CharacterMovement->IsMantling();
 	bIsOnLadder = CharacterMovement->IsOnLadder();
 	bIsZiplining = CharacterMovement->IsZiplining();
+	bIsWallrunning = CharacterMovement->IsWallrunning();
+	if (bIsWallrunning)
+	{
+		CurrentWallrunSide = CharacterMovement->GetCurrentWallrunSide();
+	}
+	
+
 
 	if(bIsOnLadder)
 	{ 

@@ -26,6 +26,7 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ZiplineTurnAround", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ZiplineTurnAround);
 	InputComponent->BindAction("InteractWithLadder", EInputEvent::IE_Pressed, this, &AXYZPlayerController::InteractWithLadder);
 	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Mantle);
+	InputComponent->BindAction("Wallrun", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Wallrun);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ChangeCrouchState);
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AXYZPlayerController::StartSprint);
@@ -174,5 +175,13 @@ void AXYZPlayerController::ZiplineTurnAround()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->ZiplineTurnAround();
+	}
+}
+
+void AXYZPlayerController::Wallrun()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Wallrun();
 	}
 }
