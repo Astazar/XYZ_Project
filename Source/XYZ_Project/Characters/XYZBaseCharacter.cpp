@@ -23,6 +23,9 @@ AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer
 	IKTraceDistance = (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + UnderFeetTraceLenght)/IKScale;
 	
 	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
+
+	GetMesh()->CastShadow = true;
+	GetMesh()->bCastDynamicShadow = true;
 }
 
 bool AXYZBaseCharacter::CanCrouch() const
@@ -186,7 +189,12 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 	FLedgeDescription LedgeDescription;
 	bool IsDetected = LedgeDetectorComponent->DetectLedge(LedgeDescription);
     
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
+	bool IsDebugEnabled = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryLedgeDetection);
+	if(IsDebugEnabled)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));	
+	}
+	
 
 	if (IsDetected)
 	{
@@ -199,8 +207,12 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 		MantlingParameters.InitialGeometryLocation = LedgeDescription.InitialGeometryLocation;
 
 		float MantlingHeight = ((MantlingParameters.TargetLocation - DefaultCapsuleHalfHeight * FVector::UpVector) - (MantlingParameters.InitialLocation - DefaultCapsuleHalfHeight * FVector::UpVector)).Z;
-
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));
+		
+		if(IsDebugEnabled)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));	
+		}
+		
 
 
 		const FMantlingSettings* MantlingSettings = GetMantlingSettings(MantlingHeight);
