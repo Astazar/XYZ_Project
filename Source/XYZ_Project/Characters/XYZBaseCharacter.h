@@ -63,9 +63,12 @@ public:
 	virtual void Turn(float Value) {};
 	virtual void LookUp(float Value) {};
 
+	virtual bool CanCrouch() const override;
+
 	virtual void ChangeCrouchState();
 	virtual void ChangeCrawlState();
 
+	virtual bool CanCrawl() const;
 	virtual void Crawl();
 	virtual void Uncrawl();
 
@@ -78,6 +81,9 @@ public:
 	virtual float GetCurrentStamina() const { return CurrentStamina; };
 	virtual void UpdateStamina(float DeltaSeconds);
 
+	virtual bool CanSlide();
+	virtual	void Slide();
+	
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void SwimForward(float Value) {};
@@ -87,7 +93,8 @@ public:
 	virtual void Mantle(bool bForce = false);
 	virtual bool CanMantle() const;
 
-	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const { return XYZBaseCharacterMovementComponent; }
+	UFUNCTION(BlueprintCallable)
+	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const;
 
 	float GetIKRightFootOffset() const { return IKRightFootOffset; }
 	float GetIKLeftFootOffset() const { return IKLeftFootOffset; }

@@ -32,6 +32,7 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AXYZPlayerController::StartSprint);
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AXYZPlayerController::StopSprint);
 	InputComponent->BindAction("Crawl", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ChangeCrawlState);
+	InputComponent->BindAction("Slide", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Slide);
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -87,6 +88,14 @@ void AXYZPlayerController::ChangeCrawlState()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->ChangeCrawlState();
+	}
+}
+
+void AXYZPlayerController::Slide()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Slide();
 	}
 }
 

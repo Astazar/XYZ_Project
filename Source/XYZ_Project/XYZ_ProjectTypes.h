@@ -9,6 +9,7 @@ const FName CollisionProfilePawnInteractionVolume = FName("PawnInteractionVolume
 
 const FName DebugCategoryLedgeDetection = FName("LedgeDetection");
 const FName DebugCategoryWallrun = FName("Wallrun");
+const FName DebugCategorySlide= FName("Slide");
 
 UENUM(BlueprintType)
 enum class EWallrunSide : uint8
@@ -17,3 +18,4 @@ enum class EWallrunSide : uint8
 	Left UMETA(DisplayName = "Left"),
 	Right UMETA(DisplayName = "Right")
 };
+

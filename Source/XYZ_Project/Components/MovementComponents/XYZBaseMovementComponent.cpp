@@ -149,6 +149,33 @@ FVector UXYZBaseMovementComponent::GetWallrunCharacterMovingDirection(const stru
 	return CurrentWallrunSide == EWallrunSide::Left ? FVector::CrossProduct(Hit.ImpactNormal, FVector::UpVector) : FVector::CrossProduct(FVector::UpVector, Hit.ImpactNormal);
 }
 
+void UXYZBaseMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	if (ShouldSkipUpdate(DeltaTime))
+	{
+		return;
+	}
+
+	FVector PendingInput = GetPendingInputVector().GetClampedToMaxSize(1.0f);
+	FVector CharacterSpacePendingInput = UKismetMathLibrary::InverseTransformDirection(GetOwner()->GetTransform(), PendingInput);
+
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (bIsSliding)
+	{
+		if (!CanSlideInCurrentState())
+		{
+			StopSlide();
+		}
+		FRotator SlidingMovingRotator = SlidingMovingDirection.Rotation();
+		SlidingMovingRotator.Yaw += SlideStrafeAngleValue * CharacterSpacePendingInput.Y * DeltaTime;
+		SlidingMovingDirection = SlidingMovingRotator.Vector();
+		Velocity = SlidingMovingDirection * GetMaxSpeed();
+		GetOwner()->SetActorRotation(Velocity.ToOrientationRotator());
+		UpdateComponentVelocity();
+	}
+}
+
 float UXYZBaseMovementComponent::GetMaxSpeed() const 
 {
 	float Result = Super::GetMaxSpeed();
@@ -176,6 +203,14 @@ float UXYZBaseMovementComponent::GetMaxSpeed() const
 	{
 		Result = WallrunSpeed;
 	}
+	else if (IsSliding())
+	{
+		Result = SlideSpeed;
+		if (bShouldResetSlideVelocity)
+		{
+			Result = MaxWalkSpeed;
+		}
+	}
 	return Result;
 }
 
@@ -191,7 +226,94 @@ void UXYZBaseMovementComponent::StopSprint()
 	bForceMaxAccel = 0;
 }
 
+bool UXYZBaseMovementComponent::CanSlideInCurrentState()
+{
+	return IsMovingOnGround();
+}
 
+void UXYZBaseMovementComponent::Slide()
+{
+	StartSlide();
+}
+
+void UXYZBaseMovementComponent::StartSlide()
+{
+	if (!HasValidData())
+	{
+		return;
+	}
+
+	bIsSliding = true;
+	SlidingMovingDirection = GetOwner()->GetActorForwardVector();
+
+	const float ComponentScale = CharacterOwner->GetCapsuleComponent()->GetShapeScale();
+	const float OldScaledHalfHeight = CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	const float OldScaledRadius = CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const float ScaledHalfHeight = SlideCapsuleHalfHeight*ComponentScale;
+	const float ScaledRadius = SlideCapsuleRadius*ComponentScale;
+	CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(ScaledRadius, ScaledHalfHeight);
+
+	float HalfHeightAdjust = (OldScaledHalfHeight - ScaledHalfHeight);
+	float RadiusAdjust = (OldScaledRadius - ScaledRadius);
+
+	FVector CapsuleLocation = CharacterOwner->GetCapsuleComponent()->GetRelativeLocation();
+	FVector SlideCapsuleLocation = FVector(CapsuleLocation.X, CapsuleLocation.Y, CapsuleLocation.Z - HalfHeightAdjust);
+	CharacterOwner->GetCapsuleComponent()->SetRelativeLocation(SlideCapsuleLocation);
+
+	APlayerCharacter* CachedCharacter = StaticCast<APlayerCharacter*>(GetOwner());
+	CachedCharacter->OnStartSlide(HalfHeightAdjust);
+}
+
+void UXYZBaseMovementComponent::StopSlide()
+{
+	if (!HasValidData())
+	{
+		return;
+	}
+	if (!bIsSliding)
+	{
+		return;
+	}
+
+	bIsSliding = false;
+	bShouldResetSlideVelocity = false;
+
+	const APlayerCharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<APlayerCharacter>();
+	const float ComponentScale = CharacterOwner->GetCapsuleComponent()->GetShapeScale();
+	const float ScaledHalfHeight = CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	const float HalfHeightAdjust = DefaultCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - ScaledHalfHeight;
+
+	FVector CharacterLocation = UpdatedComponent->GetComponentLocation();
+	CharacterLocation.Z += HalfHeightAdjust;
+	CharacterOwner->GetCapsuleComponent()->SetRelativeLocation(CharacterLocation);
+	CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), true);
+
+	APlayerCharacter* CachedCharacter = StaticCast<APlayerCharacter*>(GetOwner());
+	CachedCharacter->OnEndSlide(HalfHeightAdjust);
+
+	bool IsDebugEnabled = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategorySlide);
+	if (!IsEnoughSpaceToStandUp(IsDebugEnabled))
+	{
+		PreviousMovementState = EMovementState::Crawling;
+		if (!IsEnoughSpaceToCrouch(IsDebugEnabled))
+		{
+			GetBaseCharacterOwner()->Crawl();
+			return;
+		}
+		GetBaseCharacterOwner()->Crouch();
+		return;
+	}
+}
+
+bool UXYZBaseMovementComponent::IsSliding() const
+{
+	return bIsSliding;
+}
+
+UAnimMontage* UXYZBaseMovementComponent::GetSlideAnimMontage() const
+{
+	return SlideAnimMontage;
+}
 
 void UXYZBaseMovementComponent::StartMantle(const FMantlingMovementParameters& MantlingParameters)
 {
@@ -505,6 +627,43 @@ bool UXYZBaseMovementComponent::IsEnoughSpaceToUncrawl()
 	return IsEnoughSpace;
 }
 
+bool UXYZBaseMovementComponent::IsEnoughSpaceToStandUp(bool bIsDebugEnabled /*= false*/)
+{
+	ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
+	const UCapsuleComponent* DefaultCapsule = DefaultCharacter->GetCapsuleComponent();
+	const UCapsuleComponent* CurrentCapsule = CharacterOwner->GetCapsuleComponent();
+	const float DefaultCapsuleRadius = DefaultCapsule->GetScaledCapsuleRadius();
+	const float DefaultCapsuleHalfHeight = DefaultCapsule->GetScaledCapsuleHalfHeight();
+
+	const float HalfHeightAdjust = DefaultCapsule->GetScaledCapsuleHalfHeight() - CurrentCapsule->GetScaledCapsuleHalfHeight();
+	const FVector OverlapCapsuleLocation = CurrentCapsule->GetComponentLocation() + HalfHeightAdjust * FVector::UpVector;
+
+	FCollisionQueryParams CapsuleParams("StandUpOverlapTest", false, CharacterOwner);
+	FCollisionResponseParams ResponseParam;
+	InitCollisionParams(CapsuleParams, ResponseParam);
+	
+	bool IsEnoughSpace = !(XYZTraceUtils::OverlapCapsuleBlockingByChannel(GetWorld(), OverlapCapsuleLocation, DefaultCapsuleRadius, DefaultCapsuleHalfHeight, FQuat::Identity, ECC_Visibility, CapsuleParams, ResponseParam, bIsDebugEnabled, 10));
+	return IsEnoughSpace;
+}
+
+bool UXYZBaseMovementComponent::IsEnoughSpaceToCrouch(bool bIsDebugEnabled /*= false*/)
+{
+	ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
+	const float CrouchedCapsuleRadius = DefaultCharacter->GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const float CurrentCapsuleHalfHeight = CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+
+	const FVector CharacterLocation = UpdatedComponent->GetComponentLocation();
+	const float HalfHeightAdjust = CrouchedHalfHeight - CurrentCapsuleHalfHeight;
+	const FVector OverlapCapsuleLocation = FVector(CharacterLocation.X, CharacterLocation.Y, CharacterLocation.Z + HalfHeightAdjust);
+	
+	FCollisionQueryParams CapsuleParams("CrouchOverlapTest", false, CharacterOwner);
+	FCollisionResponseParams ResponseParam;
+	InitCollisionParams(CapsuleParams, ResponseParam);
+
+	bool IsEnoughSpace = !(XYZTraceUtils::OverlapCapsuleBlockingByChannel(GetWorld(), OverlapCapsuleLocation, CrouchedCapsuleRadius, CrouchedHalfHeight, FQuat::Identity, ECC_Visibility, CapsuleParams, ResponseParam, bIsDebugEnabled, 10, FColor::Red));
+	return IsEnoughSpace;
+}
+
 void UXYZBaseMovementComponent::SetIsOutOfStamina(bool bIsOutOfStamina_In)
 {
 	bIsOutOfStamina = bIsOutOfStamina_In;
@@ -521,7 +680,9 @@ void UXYZBaseMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 	{
 		Uncrawl();
 	}
+
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
+
 	if (bWantsToCrawl && CanCrawlInCurrentState() && !IsCrawling())
 	{
 		Crawl();

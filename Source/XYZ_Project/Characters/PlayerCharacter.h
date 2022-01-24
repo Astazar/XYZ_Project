@@ -35,6 +35,9 @@ public:
 	virtual void OnStartCrawl(float HalfHeightAdjust, float ScaledHalfHeightAdjust);
 	virtual void OnEndCrawl(float HalfHeightAdjust, float ScaledHalfHeightAdjust);
 
+	virtual void OnStartSlide(float HalfHeightAdjust);
+	virtual void OnEndSlide(float HalfHeightAdjust);
+
 	//The value by which to move the mesh so that the collision matches the mesh.
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Character | Movement | Crawl")
 	float ToHeadOffset = 50.0f;

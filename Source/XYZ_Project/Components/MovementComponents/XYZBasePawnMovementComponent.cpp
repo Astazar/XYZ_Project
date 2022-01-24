@@ -6,14 +6,18 @@
 
 void UXYZBasePawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	
+
 	if (ShouldSkipUpdate(DeltaTime))
 	{
 		return;
 	}
 
+	FVector PendingInput = GetPendingInputVector().GetClampedToMaxSize(1.0f);
+
 	Super::TickComponent(DeltaTime,TickType,ThisTickFunction);
 
-	FVector PendingInput = GetPendingInputVector().GetClampedToMaxSize(1.0f);
+	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Blue, FString::Printf(TEXT("Input: %s"), *PendingInput.ToString()));
 	Velocity = PendingInput * MaxSpeed;
 	ConsumeInputVector();
 

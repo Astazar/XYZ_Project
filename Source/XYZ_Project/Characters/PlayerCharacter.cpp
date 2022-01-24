@@ -38,7 +38,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 
 void APlayerCharacter::MoveForward(float Value)
 {
-	if ((XYZBaseCharacterMovementComponent->IsMovingOnGround() || XYZBaseCharacterMovementComponent->IsFalling()) && !FMath::IsNearlyZero(Value, 1e-6f))
+	if ((XYZBaseCharacterMovementComponent->IsMovingOnGround() || XYZBaseCharacterMovementComponent->IsFalling()) && !FMath::IsNearlyZero(Value, 1e-6f) && !XYZBaseCharacterMovementComponent->IsSliding())
 	{
 		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		FVector ForwardVector = YawRotator.RotateVector(FVector::ForwardVector);
@@ -147,6 +147,36 @@ void APlayerCharacter::OnEndCrawl(float HalfHeightAdjust, float ScaledHalfHeight
 		MeshRelativeLocation.X = DefaultCharMesh->GetRelativeLocation().X;
 		BaseTranslationOffset.Z = MeshRelativeLocation.Z;
 		BaseTranslationOffset.X = MeshRelativeLocation.X;
+	}
+
+	SpringArmComponent->TargetOffset -= FVector(0.0f, 0.0f, HalfHeightAdjust);
+}
+
+void APlayerCharacter::OnStartSlide(float HalfHeightAdjust)
+{
+	USkeletalMeshComponent* PlayerMesh = GetMesh();
+	if (PlayerMesh)
+	{
+		FVector MeshRelativeLocation = PlayerMesh->GetRelativeLocation();
+		MeshRelativeLocation.Z = PlayerMesh->GetRelativeLocation().Z + HalfHeightAdjust;
+		BaseTranslationOffset.Z = MeshRelativeLocation.Z;
+		PlayerMesh->SetRelativeLocation(MeshRelativeLocation);
+	}
+
+	SpringArmComponent->TargetOffset += FVector(0.0f, 0.0f, HalfHeightAdjust);
+}
+
+void APlayerCharacter::OnEndSlide(float HalfHeightAdjust)
+{
+	const APlayerCharacter* DefaultChar = GetDefault<APlayerCharacter>(GetClass());
+	USkeletalMeshComponent* DefaultCharMesh = DefaultChar->GetMesh();
+	USkeletalMeshComponent* PlayerMesh = GetMesh();
+	if (PlayerMesh && DefaultCharMesh)
+	{
+		FVector MeshRelativeLocation = PlayerMesh->GetRelativeLocation();
+		MeshRelativeLocation.Z = DefaultCharMesh->GetRelativeLocation().Z;
+		BaseTranslationOffset.Z = MeshRelativeLocation.Z;
+		PlayerMesh->SetRelativeLocation(MeshRelativeLocation);
 	}
 
 	SpringArmComponent->TargetOffset -= FVector(0.0f, 0.0f, HalfHeightAdjust);

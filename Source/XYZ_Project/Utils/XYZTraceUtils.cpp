@@ -98,3 +98,17 @@ bool XYZTraceUtils::LineTraceSingleByChannel(const UWorld* World, struct FHitRes
 
 
 
+bool XYZTraceUtils::OverlapCapsuleBlockingByChannel(const UWorld* World, const FVector& Pos, const float CapsuleRadius, const float CapsuleHalfHeight, const FQuat& Rot, ECollisionChannel TraceChannel, const FCollisionQueryParams& Params /*= FCollisionQueryParams::DefaultQueryParam*/, const FCollisionResponseParams& ResponseParam /*= FCollisionResponseParams::DefaultResponseParam*/, bool bDrawDebug /*= false*/, float DrawTime /*= -1.0f*/, FColor HitColor /*= FColor::Red*/)
+{
+	bool bResult = false;
+	FCollisionShape CollisionShape = FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight);
+	bResult = World->OverlapBlockingTestByChannel(Pos, Rot, TraceChannel, CollisionShape, Params, ResponseParam);
+#if ENABLE_DRAW_DEBUG
+	if (bDrawDebug && bResult)
+	{
+		DrawDebugCapsule(World, Pos, CapsuleHalfHeight, CapsuleRadius, Rot, HitColor, false, DrawTime);
+	}
+#endif
+	return bResult;
+}
+

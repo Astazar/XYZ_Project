@@ -76,7 +76,11 @@ public:
 	virtual void StopWallrun();
 	FVector GetWallrunCharacterMovingDirection(const struct FHitResult& Hit) const;
 
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	UFUNCTION(BlueprintCallable)
 	bool IsSprinting() { return bIsSprinting; }
+	UFUNCTION(BlueprintCallable)
 	bool IsCrawling() { return bIsCrawling; }
 
 	virtual float GetMaxSpeed() const override;
@@ -84,14 +88,25 @@ public:
 	void StartSprint();
 	void StopSprint();
 
+	bool CanSlideInCurrentState();
+	void Slide();
+	void StartSlide();
+	void StopSlide();
+	UFUNCTION(BlueprintCallable)
+	bool IsSliding() const;
+	UAnimMontage* GetSlideAnimMontage() const;
+	bool bShouldResetSlideVelocity = false;
+
 	void StartMantle(const FMantlingMovementParameters& MantlingParameters);
 	void EndMantle();
+	UFUNCTION(BlueprintCallable)
 	bool IsMantling() const;
 
 	void AttachToLadder(const class ALadder* Ladder);
 
 	float GetActorToCurrentLadderProjection(const FVector& Location) const;
 	void DetachFromLadder(EDetachFromLadderMethod DetachFromLadderMethod = EDetachFromLadderMethod::Fall);
+	UFUNCTION(BlueprintCallable)
 	bool IsOnLadder() const;
 	const class ALadder* GetCurrentLadder() const;
 	float GetLadderSpeedRatio() const;
@@ -99,6 +114,7 @@ public:
 	float GetActorToCurrentZiplineProjection(const FVector& Location);
 	void AttachToZipline(const class AZipline* Zipline);
 	void DetachFromZipline();
+	UFUNCTION(BlueprintCallable)
 	bool IsZiplining() const;
 	FVector CalcZiplineMovingDirection(const class AZipline* Zipline);
 	void ZiplineClimbForward(float Value);
@@ -112,6 +128,8 @@ public:
 	virtual bool CanCrawlInCurrentState();
 	virtual bool IsEnoughSpaceToUncrouch();
 	virtual bool IsEnoughSpaceToUncrawl();
+	virtual bool IsEnoughSpaceToStandUp(bool bIsDebugEnabled = false);
+	virtual bool IsEnoughSpaceToCrouch(bool bIsDebugEnabled = false);
 
 	bool GetIsOutOfStamina() const { return bIsOutOfStamina; }
 	void SetIsOutOfStamina(bool bIsOutOfStamina_In);
@@ -196,12 +214,26 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float WallrunRotationInterpSpeed = 20.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Slide", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float SlideCapsuleHalfHeight = 55.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Slide", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float SlideCapsuleRadius = 55.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Slide", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float SlideSpeed = 600.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Slide", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float SlideStrafeAngleValue = 30.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Slide")
+	UAnimMontage* SlideAnimMontage;
+
 	class AXYZBaseCharacter* GetBaseCharacterOwner() const;
 
 private:
 	bool bIsSprinting = false;
 	bool bIsOutOfStamina = false;
 	bool bIsCrawling = false;
+	bool bIsSliding = false;
+
+	FVector SlidingMovingDirection = FVector::ZeroVector;
 
 	FMantlingMovementParameters CurrentMantlingParameters;
 	FTimerHandle MantlingTimer;

@@ -29,6 +29,8 @@ private:
 	void ChangeCrouchState();
 	void ChangeCrawlState();
 
+	void Slide();
+
 	void StartSprint();
 	void StopSprint();
 

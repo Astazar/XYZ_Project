@@ -25,6 +25,11 @@ AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer
 	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
 }
 
+bool AXYZBaseCharacter::CanCrouch() const
+{
+	return Super::CanCrouch() && !XYZBaseCharacterMovementComponent->IsSliding();
+}
+
 void AXYZBaseCharacter::ChangeCrouchState()
 {
 	if (!XYZBaseCharacterMovementComponent->IsCrouching() && !XYZBaseCharacterMovementComponent->IsCrawling())
@@ -64,6 +69,11 @@ void AXYZBaseCharacter::ChangeCrawlState()
 
 }
 
+bool AXYZBaseCharacter::CanCrawl() const
+{
+	return !XYZBaseCharacterMovementComponent->IsSliding();
+}
+
 void AXYZBaseCharacter::Crawl()
 {
 	XYZBaseCharacterMovementComponent->bWantsToCrawl=true;
@@ -88,7 +98,8 @@ bool AXYZBaseCharacter::CanJumpInternal_Implementation() const
 	       (XYZBaseCharacterMovementComponent->IsEnoughSpaceToUncrouch()) && 
 		   !XYZBaseCharacterMovementComponent->GetIsOutOfStamina() && 
 		   !XYZBaseCharacterMovementComponent->IsMantling() && 
-		   !XYZBaseCharacterMovementComponent->IsWallrunning();
+		   !XYZBaseCharacterMovementComponent->IsWallrunning() &&
+		   !XYZBaseCharacterMovementComponent->IsSliding();
 }
 
 void AXYZBaseCharacter::StartSprint()
@@ -128,6 +139,22 @@ void AXYZBaseCharacter::UpdateStamina(float DeltaSeconds)
 	}
 }
 
+bool AXYZBaseCharacter::CanSlide()
+{
+	return XYZBaseCharacterMovementComponent->IsSprinting() && !XYZBaseCharacterMovementComponent->IsSliding();
+}
+
+void AXYZBaseCharacter::Slide()
+{
+	if (!CanSlide())
+	{
+		return;
+	}
+	XYZBaseCharacterMovementComponent->Slide();
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	PlayAnimMontage(XYZBaseCharacterMovementComponent->GetSlideAnimMontage());
+}
+
 void AXYZBaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -158,17 +185,8 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 
 	FLedgeDescription LedgeDescription;
 	bool IsDetected = LedgeDetectorComponent->DetectLedge(LedgeDescription);
-
-#if ENABLE_DRAW_DEBUG
-	UDebugSubsystem* DebugSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UDebugSubsystem>();
-	bool IsDebugEnabled = DebugSubsystem->IsCategoryEnabled(DebugCategoryLedgeDetection);
-#else
-	bool IsDebugEnabled = false;
-#endif
-	if (IsDebugEnabled)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
-	}
+    
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));
 
 	if (IsDetected)
 	{
@@ -181,10 +199,8 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 		MantlingParameters.InitialGeometryLocation = LedgeDescription.InitialGeometryLocation;
 
 		float MantlingHeight = ((MantlingParameters.TargetLocation - DefaultCapsuleHalfHeight * FVector::UpVector) - (MantlingParameters.InitialLocation - DefaultCapsuleHalfHeight * FVector::UpVector)).Z;
-		if (IsDebugEnabled)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));
-		}
+
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));
 
 
 		const FMantlingSettings* MantlingSettings = GetMantlingSettings(MantlingHeight);
@@ -215,6 +231,13 @@ bool AXYZBaseCharacter::CanMantle() const
 	       !XYZBaseCharacterMovementComponent->IsCrawling() && 
 		   !XYZBaseCharacterMovementComponent->IsOnLadder() && 
 		   !XYZBaseCharacterMovementComponent->IsWallrunning();
+		   !XYZBaseCharacterMovementComponent->IsOnLadder() &&
+		   !XYZBaseCharacterMovementComponent->IsSliding();
+}
+
+UXYZBaseMovementComponent* AXYZBaseCharacter::GetCharacterMovementComponent() const
+{
+	return XYZBaseCharacterMovementComponent;
 }
 
 void AXYZBaseCharacter::InteractWithZipline()
@@ -296,7 +319,8 @@ void AXYZBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* Interactiv
 
 bool AXYZBaseCharacter::CanInteractWithLadder()
 {
-	return !XYZBaseCharacterMovementComponent->IsSprinting();
+	return !XYZBaseCharacterMovementComponent->IsSprinting() &&
+		   !XYZBaseCharacterMovementComponent->IsSliding();
 }
 
 void AXYZBaseCharacter::ClimbLadderUp(float Value)
@@ -423,8 +447,10 @@ float AXYZBaseCharacter::CalculateIKPelvisOffset()
 {
 	float OffsetTernary;
 	OffsetTernary = IKRightFootOffset > IKLeftFootOffset ? -IKRightFootOffset : -IKLeftFootOffset;
+
 	float OffsetAbs;
 	OffsetAbs = -FMath::Abs(IKRightFootOffset - IKLeftFootOffset);
+
 	return OffsetTernary;
 }
 

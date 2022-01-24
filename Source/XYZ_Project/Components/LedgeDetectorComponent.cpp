@@ -34,12 +34,7 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	QuerryParams.bTraceComplex = true;
 	QuerryParams.AddIgnoredActor(GetOwner());
 
-#if ENABLE_DRAW_DEBUG
-	UDebugSubsystem* DebugSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UDebugSubsystem>();
-	bool IsDebugEnabled = DebugSubsystem->IsCategoryEnabled(DebugCategoryLedgeDetection);
-#else
-	bool IsDebugEnabled = false;
-#endif
+	bool IsDebugEnabled = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryLedgeDetection);
 	float DrawTime = 5.0f;
 	float BottomZOffset = 2.0f;
 	FVector CharacterBottom = CachedCharacterOwner->GetActorLocation() - (CapsuleComponent->GetScaledCapsuleHalfHeight() -BottomZOffset) * FVector::UpVector;
