@@ -74,7 +74,7 @@ void AXYZBaseCharacter::ChangeCrawlState()
 
 bool AXYZBaseCharacter::CanCrawl() const
 {
-	return !XYZBaseCharacterMovementComponent->IsSliding();
+	return XYZBaseCharacterMovementComponent->CanEverCrawl() && !XYZBaseCharacterMovementComponent->IsSliding();
 }
 
 void AXYZBaseCharacter::Crawl()

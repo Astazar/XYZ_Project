@@ -151,6 +151,13 @@ FVector UXYZBaseMovementComponent::GetWallrunCharacterMovingDirection(const stru
 
 void UXYZBaseMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+
+
+	
+	//FName NavAgentPropsName = FNavAgentProperties::StaticStruct()->GetFName();
+
+
+
 	if (ShouldSkipUpdate(DeltaTime))
 	{
 		return;
@@ -534,6 +541,11 @@ void UXYZBaseMovementComponent::PhysicsRotation(float DeltaTime)
 	Super::PhysicsRotation(DeltaTime);
 }
 
+bool UXYZBaseMovementComponent::CanEverCrawl()
+{
+	return bCanEverCrawl; 
+}
+
 void UXYZBaseMovementComponent::Crawl()
 {
 	if (!HasValidData())
@@ -590,7 +602,7 @@ void UXYZBaseMovementComponent::Uncrawl()
 
 bool UXYZBaseMovementComponent::CanCrawlInCurrentState()
 {
-	return IsMovingOnGround() && UpdatedComponent && !UpdatedComponent->IsSimulatingPhysics();
+	return CanEverCrawl() && IsMovingOnGround() && UpdatedComponent && !UpdatedComponent->IsSimulatingPhysics();
 }
 
 bool UXYZBaseMovementComponent::IsEnoughSpaceToUncrouch()

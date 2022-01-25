@@ -8,6 +8,7 @@
 #include "XYZ_Project/XYZ_ProjectTypes.h"
 #include "XYZBaseMovementComponent.generated.h"
 
+
 struct FMantlingMovementParameters
 {
 	FVector InitialLocation = FVector::ZeroVector;
@@ -122,7 +123,7 @@ public:
 
 	virtual void PhysicsRotation(float DeltaTime) override;
 
-
+	bool CanEverCrawl();
 	virtual void Crawl();
 	virtual void Uncrawl();
 	virtual bool CanCrawlInCurrentState();
@@ -191,8 +192,12 @@ protected:
 	float SprintSpeed = 1200.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float OutOfStaminaSpeed = 300.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: Crawl", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float CrawlSpeed = 100.0f;
+	/** If true, this Pawn is capable of crawling. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = NavMovement, meta = (DisplayName = "Can Crawl"))
+	bool bCanEverCrawl = false;
 
 	//Defines from what distance wallrun will be detected
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character movement: Wallrun", meta = (ClampMin = 0.0f, UIMin = 0.0f))
