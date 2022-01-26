@@ -8,6 +8,7 @@
 #include <GameFramework/SpringArmComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
 #include "XYZ_Project/XYZ_ProjectTypes.h"
+#include "Controllers/XYZPlayerController.h"
 
 
 
@@ -36,6 +37,25 @@ AFPPlayerCharacter::AFPPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	bUseControllerRotationYaw = true;
 }
 
+void AFPPlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	XYZPlayerController = Cast<AXYZPlayerController>(NewController);
+}
+
+void AFPPlayerCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (IsFPMontagePlaying() && XYZPlayerController.IsValid())
+	{
+		FRotator TargetControlRotation = XYZPlayerController->GetControlRotation();
+		TargetControlRotation.Pitch = 0.0f;
+		float BlendSpeed = 30.0f;
+		TargetControlRotation = FMath::RInterpTo(XYZPlayerController->GetControlRotation(), TargetControlRotation, DeltaSeconds, BlendSpeed);
+		XYZPlayerController->SetControlRotation(TargetControlRotation);
+	}
+}
+
 void AFPPlayerCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
 	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
@@ -52,4 +72,49 @@ void AFPPlayerCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHei
 	FVector FirstPersonMeshRelativeLocation = FirstPersonMeshComponent->GetRelativeLocation();
 	FirstPersonMeshRelativeLocation.Z = DefaultCharacter->FirstPersonMeshComponent->GetRelativeLocation().Z;
 	FirstPersonMeshComponent->SetRelativeLocation(FirstPersonMeshRelativeLocation);
+}
+
+void AFPPlayerCharacter::OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime)
+{
+	Super::OnMantle(MantlingSettings, MantlingAnimationStartTime);
+	UAnimInstance* FPAnimInstance = FirstPersonMeshComponent->GetAnimInstance();
+	if (IsValid(FPAnimInstance) && MantlingSettings->FPMantlingMontage)
+	{
+		if (XYZPlayerController.IsValid())
+		{
+			XYZPlayerController->SetIgnoreLookInput(true);
+			XYZPlayerController->SetIgnoreMoveInput(true);
+		}
+		float MontageDuration = FPAnimInstance->Montage_Play(MantlingSettings->FPMantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingAnimationStartTime);
+		GetWorld()->GetTimerManager().SetTimer(FPMontageTimer, this, &AFPPlayerCharacter::OnFPMontageTimerElapsed, MontageDuration, false);
+	}
+}
+
+FRotator AFPPlayerCharacter::GetViewRotation() const 
+{
+	FRotator Result = Super::GetViewRotation();
+
+	if (IsFPMontagePlaying())
+	{
+		FRotator SocketRotation = FirstPersonMeshComponent->GetSocketRotation(SocketFPCamera);
+		Result.Pitch += SocketRotation.Pitch;
+		Result.Yaw = SocketRotation.Yaw;
+		Result.Roll = SocketRotation.Roll;
+	}
+	return Result;
+}
+
+bool AFPPlayerCharacter::IsFPMontagePlaying() const
+{
+	UAnimInstance* FPAnimInstance = FirstPersonMeshComponent->GetAnimInstance();
+	return IsValid(FPAnimInstance) && FPAnimInstance->IsAnyMontagePlaying();
+}
+
+void AFPPlayerCharacter::OnFPMontageTimerElapsed()
+{
+	if (XYZPlayerController.IsValid())
+	{
+		XYZPlayerController->SetIgnoreLookInput(false);
+		XYZPlayerController->SetIgnoreMoveInput(false);
+	}
 }

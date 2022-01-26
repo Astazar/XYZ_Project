@@ -20,6 +20,9 @@ struct FMantlingSettings
 	class UAnimMontage* MantlingMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UAnimMontage* FPMantlingMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class UCurveVector* MantlingCurve;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
@@ -90,7 +93,8 @@ public:
 	virtual void SwimRight(float Value) {};
 	virtual void SwimUp(float Value) {};
 
-	virtual void Mantle(bool bForce = false);
+	virtual void OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime);
+	void Mantle(bool bForce = false);
 	virtual bool CanMantle() const;
 
 	UFUNCTION(BlueprintCallable)

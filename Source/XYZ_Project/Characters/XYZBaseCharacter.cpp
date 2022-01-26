@@ -212,8 +212,6 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("MantlingHeight:%f"), MantlingHeight));	
 		}
-		
-
 
 		const FMantlingSettings* MantlingSettings = GetMantlingSettings(MantlingHeight);
 		if (MantlingSettings == nullptr)
@@ -234,8 +232,16 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		AnimInstance->Montage_Play(MantlingSettings->MantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingParameters.StartTime);
+		OnMantle(MantlingSettings, MantlingParameters.StartTime);
 	}
 }
+
+
+void AXYZBaseCharacter::OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime)
+{
+
+}
+
 
 bool AXYZBaseCharacter::CanMantle() const
 {
