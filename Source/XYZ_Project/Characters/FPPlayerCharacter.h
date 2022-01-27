@@ -17,6 +17,8 @@ class XYZ_PROJECT_API AFPPlayerCharacter : public APlayerCharacter
 public:
 	AFPPlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
+
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void Tick(float DeltaSeconds) override;
@@ -24,17 +26,28 @@ public:
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual	void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
-	virtual void OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime) override;
 	virtual FRotator GetViewRotation() const override;
 
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | First person")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* FirstPersonMeshComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | First person")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class UCameraComponent* FirstPersonCameraComponent;
 	
+	virtual void OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Ladder", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax  = 89.0f))
+	float LadderCameraMinPitch = -60.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Ladder", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
+	float LadderCameraMaxPitch = 80.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Ladder", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
+	float LadderCameraMinYaw = -45.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Ladder", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
+	float LadderCameraMaxYaw = 45.0f;
+
+
 private:
 	FTimerHandle FPMontageTimer;
 	void OnFPMontageTimerElapsed();

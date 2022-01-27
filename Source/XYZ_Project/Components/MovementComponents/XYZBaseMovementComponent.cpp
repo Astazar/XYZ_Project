@@ -340,7 +340,7 @@ bool UXYZBaseMovementComponent::IsMantling() const
 
 void UXYZBaseMovementComponent::AttachToLadder(const class ALadder* Ladder)
 {
-	CurrentLadder = Ladder;
+ 	CurrentLadder = Ladder;
 	FRotator TargetOrientationRotation = CurrentLadder->GetActorForwardVector().ToOrientationRotator();
 	TargetOrientationRotation.Yaw += 180.0f;
 

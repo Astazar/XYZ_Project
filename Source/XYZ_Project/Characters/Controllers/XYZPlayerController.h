@@ -17,6 +17,9 @@ class XYZ_PROJECT_API AXYZPlayerController : public APlayerController
 public:
 	virtual void SetPawn(APawn* InPawn) override;
 	
+	bool GetIgnoreCameraPitch() const { return bIgnoreCameraPitch; }
+	void SetIgnoreCameraPitch(bool bIgnoreCameraPitch_In) { bIgnoreCameraPitch = bIgnoreCameraPitch_In; }
+
 protected:
 	virtual void SetupInputComponent() override;
 
@@ -50,4 +53,7 @@ private:
 	void Wallrun();
 
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
+
+private:
+	bool bIgnoreCameraPitch = false;
 };

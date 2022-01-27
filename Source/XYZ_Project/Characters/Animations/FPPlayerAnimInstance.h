@@ -25,4 +25,7 @@ protected:
 	float PlayerCameraPitchAngle = 0.0f;
 
 	TWeakObjectPtr<class AFPPlayerCharacter> CachedFPCharacterOwner;
+
+private:
+ float CalculateCameraPitchAngle() const;
 };

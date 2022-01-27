@@ -6,9 +6,9 @@
 #include <Components/SkeletalMeshComponent.h>
 #include <Components/CapsuleComponent.h>
 #include <GameFramework/SpringArmComponent.h>
-#include <GameFramework/CharacterMovementComponent.h>
 #include "XYZ_Project/XYZ_ProjectTypes.h"
 #include "Controllers/XYZPlayerController.h"
+#include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
 
 
 
@@ -35,6 +35,40 @@ AFPPlayerCharacter::AFPPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	bUseControllerRotationYaw = true;
+}
+
+void AFPPlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode /*= 0*/)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+	if (GetCharacterMovementComponent()->IsOnLadder())
+	{
+		if (XYZPlayerController.IsValid())
+		{
+			XYZPlayerController->SetIgnoreCameraPitch(true);
+			bUseControllerRotationYaw = false;
+			//float CharacterYaw = XYZPlayerController->GetControlRotation().Yaw;
+			float CharacterYaw = GetActorRotation().Yaw;
+			APlayerCameraManager* CameraManager = XYZPlayerController->PlayerCameraManager;
+			CameraManager->ViewPitchMin = LadderCameraMinPitch;
+			CameraManager->ViewPitchMax = LadderCameraMaxPitch;
+			CameraManager->ViewYawMin = LadderCameraMinYaw + CharacterYaw;
+			CameraManager->ViewYawMax = LadderCameraMaxYaw + CharacterYaw;
+		}
+	}
+	else if (PrevMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Ladder)
+	{
+		if (XYZPlayerController.IsValid())
+		{
+			XYZPlayerController->SetIgnoreCameraPitch(false);
+			bUseControllerRotationYaw = true;
+			APlayerCameraManager* CameraManager = XYZPlayerController->PlayerCameraManager;
+			APlayerCameraManager* DefaultCameraManager = CameraManager->GetClass()->GetDefaultObject<APlayerCameraManager>();
+			CameraManager->ViewPitchMin = DefaultCameraManager->ViewPitchMin;
+			CameraManager->ViewPitchMax = DefaultCameraManager->ViewPitchMax;
+			CameraManager->ViewYawMin = DefaultCameraManager->ViewYawMin;
+			CameraManager->ViewYawMax = DefaultCameraManager->ViewYawMax;
+		}
+	}
 }
 
 void AFPPlayerCharacter::PossessedBy(AController* NewController)
