@@ -41,10 +41,12 @@ protected:
 	bool bIsZiplining = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsWallrunning = false;
-
-
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsStrafing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation", meta = (UIMin = -180, UIMax = 180))
+	float Direction = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation", meta = (UIMin = 0, UIMax = 500))
 	float Speed = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	float Stamina = 0.0f;

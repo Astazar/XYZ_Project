@@ -38,13 +38,13 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		CurrentWallrunSide = CharacterMovement->GetCurrentWallrunSide();
 	}
-	
-
-
 	if(bIsOnLadder)
 	{ 
 		LadderSpeedRatio = CharacterMovement->GetLadderSpeedRatio();
 	}
+
+	bIsStrafing = !CharacterMovement->bOrientRotationToMovement;
+	Direction = CalculateDirection(CharacterMovement->Velocity, CachedBaseCharacter->GetActorRotation());
 
 	RightFootEffectorLocation = FVector(CachedBaseCharacter->GetIKRightFootOffset() + CachedBaseCharacter->GetIKPelvisOffset(), 0.0f, 0.0f);
 	LeftFootEffectorLocation = FVector(-(CachedBaseCharacter->GetIKLeftFootOffset() + CachedBaseCharacter->GetIKPelvisOffset()), 0.0f, 0.0f);
