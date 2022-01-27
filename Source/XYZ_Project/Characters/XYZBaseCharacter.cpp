@@ -13,6 +13,7 @@
 #include "XYZ_Project/XYZ_ProjectTypes.h"
 #include <Kismet/GameplayStatics.h>
 #include "XYZ_Project/Subsystems/DebugSubsystem.h"
+#include "XYZ_Project/Components/CharacterComponents/CharacterAttributesComponent.h"
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -21,11 +22,10 @@ AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer
 	XYZBaseCharacterMovementComponent = StaticCast<UXYZBaseMovementComponent*>(GetCharacterMovement());
 	IKScale = GetActorScale().Z;
 	IKTraceDistance = (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + UnderFeetTraceLenght)/IKScale;
-	
 	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
-
 	GetMesh()->CastShadow = true;
 	GetMesh()->bCastDynamicShadow = true;
+	CharacterAttributesComponent = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("CharacterAttributes"));
 }
 
 bool AXYZBaseCharacter::CanCrouch() const
@@ -325,6 +325,7 @@ bool AXYZBaseCharacter::CanWallrun()
 		    XYZBaseCharacterMovementComponent->MovementMode != MOVE_Swimming;
 }
 
+
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
 	AvailableInteractiveActors.AddUnique(InteractiveActor);
@@ -393,6 +394,7 @@ void AXYZBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentStamina=MaxStamina;
+	CharacterAttributesComponent->OnDeathEvent.AddUObject(this, &AXYZBaseCharacter::OnDeath);
 }
 
 void AXYZBaseCharacter::OnSprintStart_Implementation()
@@ -415,6 +417,25 @@ bool AXYZBaseCharacter::CanSprint()
 		   !XYZBaseCharacterMovementComponent->IsOnLadder() && 
 		   (XYZBaseCharacterMovementComponent->MovementMode != MOVE_Falling) &&
 		   !XYZBaseCharacterMovementComponent->IsWallrunning(); 
+}
+
+void AXYZBaseCharacter::OnDeath()
+{
+	GetCharacterMovement()->DisableMovement();
+	if (IsValid(OnDeathAnimMontage))
+	{
+		PlayAnimMontage(OnDeathAnimMontage);
+	}
+	else
+	{
+		EnableRagdoll();
+	}
+}
+
+void AXYZBaseCharacter::EnableRagdoll()
+{
+	GetMesh()->SetCollisionProfileName(CollisionProfileRagdoll);
+	GetMesh()->SetSimulatePhysics(true);
 }
 
 void AXYZBaseCharacter::UpdateIKOffsets(float DeltaSeconds)

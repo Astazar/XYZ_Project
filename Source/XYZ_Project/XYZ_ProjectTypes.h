@@ -8,10 +8,12 @@ const FName SocketFPCamera = FName("CameraSocket");
 
 const FName CollisionProfilePawn = FName("Pawn");
 const FName CollisionProfilePawnInteractionVolume = FName("PawnInteractionVolume");
+const FName CollisionProfileRagdoll = FName("Ragdoll");
 
 const FName DebugCategoryLedgeDetection = FName("LedgeDetection");
 const FName DebugCategoryWallrun = FName("Wallrun");
 const FName DebugCategorySlide= FName("Slide");
+const FName DebugCategoryCharacterAttributes = FName("CharacterAttributes");
 
 UENUM(BlueprintType)
 enum class EWallrunSide : uint8

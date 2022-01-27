@@ -61,6 +61,8 @@ class XYZ_PROJECT_API AXYZBaseCharacter : public ACharacter
 public:
 	AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
+	virtual void BeginPlay() override;
+
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
 	virtual void Turn(float Value) {};
@@ -121,8 +123,6 @@ public:
 	virtual bool CanWallrun();
 
 protected:
-	virtual void BeginPlay() override;
-
 	UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
 	void OnSprintStart();
 	virtual void OnSprintStart_Implementation();
@@ -157,7 +157,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
 	TArray<FMantlingSettings> MantlingSettingsCollection;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
+	class UCharacterAttributesComponent* CharacterAttributesComponent;
+
+	virtual void OnDeath();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Animations")
+	class UAnimMontage* OnDeathAnimMontage;
+
 private:
+	void EnableRagdoll();
+
 	void UpdateIKOffsets(float DeltaSeconds);
 	void TryChangeSprintState(float DeltaSeconds);
 	bool bIsSprintRequested = false;
