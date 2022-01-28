@@ -102,6 +102,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const;
 
+	UFUNCTION(BlueprintCallable)
+	class UCharacterAttributesComponent* GetCharacterAttributesComponent() const { return CharacterAttributesComponent; }
+
 	float GetIKRightFootOffset() const { return IKRightFootOffset; }
 	float GetIKLeftFootOffset() const { return IKLeftFootOffset; }
 	float GetIKPelvisOffset() const { return IKPelvisOffset; }
@@ -122,6 +125,10 @@ public:
 	virtual void Wallrun();
 	virtual bool CanWallrun();
 
+	virtual void Falling() override;
+	virtual void Landed(const FHitResult& Hit) override;
+	virtual void NotifyJumpApex() override;
+
 protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
 	void OnSprintStart();
@@ -139,6 +146,7 @@ protected:
 	float StaminaRestoreVelocity = 200.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	float SprintStaminaConsumptionVelocity = 200.0f;
+
 
 	UXYZBaseMovementComponent* XYZBaseCharacterMovementComponent;
 
@@ -165,7 +173,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Animations")
 	class UAnimMontage* OnDeathAnimMontage;
 
+	//Damage depending from fall height (in meters)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes")
+	class UCurveFloat* FallDamageCurve;
+
 private:
+	FVector CurrentFallApex;
+
 	void EnableRagdoll();
 
 	void UpdateIKOffsets(float DeltaSeconds);

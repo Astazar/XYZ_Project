@@ -142,6 +142,7 @@ void AXYZBaseCharacter::UpdateStamina(float DeltaSeconds)
 	}
 }
 
+
 bool AXYZBaseCharacter::CanSlide()
 {
 	return XYZBaseCharacterMovementComponent->IsSprinting() && !XYZBaseCharacterMovementComponent->IsSliding();
@@ -161,9 +162,7 @@ void AXYZBaseCharacter::Slide()
 void AXYZBaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
 	UpdateStamina(DeltaSeconds);
-
 	TryChangeSprintState(DeltaSeconds);
 	UpdateIKOffsets(DeltaSeconds);
 }
@@ -326,6 +325,28 @@ bool AXYZBaseCharacter::CanWallrun()
 }
 
 
+void AXYZBaseCharacter::Falling()
+{
+	GetCharacterMovement()->bNotifyApex = true;
+}
+
+void AXYZBaseCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	float FallHeight = (CurrentFallApex - GetActorLocation()).Z * 0.01;
+	if (IsValid(FallDamageCurve))
+	{
+		float DamageAmount = FallDamageCurve->GetFloatValue(FallHeight);
+		TakeDamage(DamageAmount, FDamageEvent(), GetController(), Hit.Actor.Get());
+	}
+}
+
+void AXYZBaseCharacter::NotifyJumpApex()
+{
+	Super::NotifyJumpApex();
+	CurrentFallApex = GetActorLocation();
+}
+
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
 	AvailableInteractiveActors.AddUnique(InteractiveActor);
@@ -393,7 +414,7 @@ const class ALadder* AXYZBaseCharacter::GetAvailableLadder() const
 void AXYZBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentStamina=MaxStamina;
+	CurrentStamina = MaxStamina;
 	CharacterAttributesComponent->OnDeathEvent.AddUObject(this, &AXYZBaseCharacter::OnDeath);
 }
 
