@@ -120,28 +120,6 @@ void AXYZBaseCharacter::StopSprint()
 	bIsSprintRequested = false;
 }
 
-void AXYZBaseCharacter::UpdateStamina(float DeltaSeconds)
-{
-	if (!XYZBaseCharacterMovementComponent->IsSprinting())
-	{
-		CurrentStamina += StaminaRestoreVelocity * DeltaSeconds;
-		CurrentStamina = FMath::Clamp(CurrentStamina, 0.0f, MaxStamina);
-		if (CurrentStamina == MaxStamina)
-		{
-			XYZBaseCharacterMovementComponent->SetIsOutOfStamina(false);
-		}
-	}
-	if (XYZBaseCharacterMovementComponent->IsSprinting())
-	{
-		CurrentStamina -= SprintStaminaConsumptionVelocity * DeltaSeconds;
-		CurrentStamina = FMath::Clamp(CurrentStamina, 0.0f, MaxStamina);
-		if (CurrentStamina == 0.0f)
-		{
-			XYZBaseCharacterMovementComponent->SetIsOutOfStamina(true);
-		}
-	}
-}
-
 
 bool AXYZBaseCharacter::CanSlide()
 {
@@ -162,7 +140,6 @@ void AXYZBaseCharacter::Slide()
 void AXYZBaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	UpdateStamina(DeltaSeconds);
 	TryChangeSprintState(DeltaSeconds);
 	UpdateIKOffsets(DeltaSeconds);
 }
@@ -414,8 +391,8 @@ const class ALadder* AXYZBaseCharacter::GetAvailableLadder() const
 void AXYZBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentStamina = MaxStamina;
 	CharacterAttributesComponent->OnDeathEvent.AddUObject(this, &AXYZBaseCharacter::OnDeath);
+	CharacterAttributesComponent->OutOfStaminaEvent.AddUObject(XYZBaseCharacterMovementComponent, &UXYZBaseMovementComponent::SetIsOutOfStamina);
 }
 
 void AXYZBaseCharacter::OnSprintStart_Implementation()

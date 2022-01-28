@@ -4,6 +4,7 @@
 #include "XYZBaseCharacterAnimInstance.h"
 #include "XYZ_Project/Characters/XYZBaseCharacter.h"
 #include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
+#include "XYZ_Project/Components/CharacterComponents/CharacterAttributesComponent.h"
 
 
 
@@ -23,7 +24,7 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 	UXYZBaseMovementComponent* CharacterMovement = CachedBaseCharacter->GetCharacterMovementComponent();
 	Speed = CharacterMovement->Velocity.Size();
-	Stamina = CachedBaseCharacter->GetCurrentStamina();
+	Stamina = CachedBaseCharacter->GetCharacterAttributesComponent()->GetCurrentStamina();
 	bIsOutOfStamina = CharacterMovement->GetIsOutOfStamina();
 	bIsFalling = CharacterMovement->IsFalling();
 	bIsCrouching = CharacterMovement->IsCrouching();

@@ -82,9 +82,6 @@ public:
 
 	virtual void StartSprint();
 	virtual void StopSprint();
-	UFUNCTION(BlueprintCallable)
-	virtual float GetCurrentStamina() const { return CurrentStamina; };
-	virtual void UpdateStamina(float DeltaSeconds);
 
 	virtual bool CanSlide();
 	virtual	void Slide();
@@ -140,14 +137,6 @@ protected:
 
 	virtual bool CanSprint();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
-	float MaxStamina = 1000.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
-	float StaminaRestoreVelocity = 200.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
-	float SprintStaminaConsumptionVelocity = 200.0f;
-
-
 	UXYZBaseMovementComponent* XYZBaseCharacterMovementComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | IK settings")
@@ -185,8 +174,6 @@ private:
 	void UpdateIKOffsets(float DeltaSeconds);
 	void TryChangeSprintState(float DeltaSeconds);
 	bool bIsSprintRequested = false;
-
-	float CurrentStamina = 0.0f;
 
 	float GetIKOffsetForASocket(const FName& SocketName);
 	float CalculateIKPelvisOffset();

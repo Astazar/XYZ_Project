@@ -5,6 +5,7 @@
 #include "CharacterAttributesComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnDeathEventSignature);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOutOfStaminaEventSignature, bool);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class XYZ_PROJECT_API UCharacterAttributesComponent : public UActorComponent
@@ -15,22 +16,37 @@ public:
 	UCharacterAttributesComponent();
 
 	FOnDeathEventSignature OnDeathEvent;
+	FOutOfStaminaEventSignature OutOfStaminaEvent;
 
-	bool IsAlive() { return Health > 0.0f; }
+	bool IsAlive() { return CurrentHealth > 0.0f; }
 
+	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health", meta = (UIMin = 0.0f))
-	float MaxHealth = 100.0f;
+	virtual void UpdateStamina(float DeltaSeconds);
+
+	UFUNCTION(BlueprintCallable)
+	virtual float GetCurrentHealth() const { return CurrentHealth; };
+	UFUNCTION(BlueprintCallable)
+	virtual float GetCurrentStamina() const { return CurrentStamina; };
 
 protected:
-	virtual void BeginPlay() override;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stamina", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxStamina = 1000.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stamina", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float StaminaRestoreVelocity = 200.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stamina", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float SprintStaminaConsumptionVelocity = 200.0f;
 
 private:
-	float Health = 0.0f;
+	float CurrentHealth = 0.0f;
+	float CurrentStamina = 0.0f;
 
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT		
-	void DebugDrawAttribute();
+	void DebugDrawAttributes();
 #endif
 
 	UFUNCTION()

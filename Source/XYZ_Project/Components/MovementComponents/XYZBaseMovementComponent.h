@@ -64,7 +64,6 @@ class XYZ_PROJECT_API UXYZBaseMovementComponent : public UCharacterMovementCompo
 	GENERATED_BODY()
 
 public:
-
 	virtual void Wallrun();
 	/** 
 	* Detecting a hit with wall.
