@@ -33,6 +33,7 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AXYZPlayerController::StopSprint);
 	InputComponent->BindAction("Crawl", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ChangeCrawlState);
 	InputComponent->BindAction("Slide", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Slide);
+	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Fire);
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -192,5 +193,13 @@ void AXYZPlayerController::Wallrun()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->Wallrun();
+	}
+}
+
+void AXYZPlayerController::Fire()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Fire();
 	}
 }

@@ -14,18 +14,22 @@
 #include <Kismet/GameplayStatics.h>
 #include "XYZ_Project/Subsystems/DebugSubsystem.h"
 #include "XYZ_Project/Components/CharacterComponents/CharacterAttributesComponent.h"
+#include "Components/CharacterComponents/CharacterEquipmentComponent.h"
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
 	:Super(ObjectInitializer.SetDefaultSubobjectClass<UXYZBaseMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	XYZBaseCharacterMovementComponent = StaticCast<UXYZBaseMovementComponent*>(GetCharacterMovement());
+	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
+	CharacterAttributesComponent = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("CharacterAttributes"));
+	CharacterEquipmentComponent = CreateDefaultSubobject<UCharacterEquipmentComponent>(TEXT("EquipmentComponent"));
+
 	IKScale = GetActorScale().Z;
 	IKTraceDistance = (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + UnderFeetTraceLenght)/IKScale;
-	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
+
 	GetMesh()->CastShadow = true;
 	GetMesh()->bCastDynamicShadow = true;
-	CharacterAttributesComponent = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("CharacterAttributes"));
 }
 
 bool AXYZBaseCharacter::CanCrouch() const
@@ -324,6 +328,11 @@ void AXYZBaseCharacter::NotifyJumpApex()
 	CurrentFallApex = GetActorLocation();
 }
 
+const UCharacterEquipmentComponent* AXYZBaseCharacter::GetCharacterEquipmentComponent() const
+{
+	return CharacterEquipmentComponent;
+}
+
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
 	AvailableInteractiveActors.AddUnique(InteractiveActor);
@@ -393,6 +402,11 @@ void AXYZBaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	CharacterAttributesComponent->OnDeathEvent.AddUObject(this, &AXYZBaseCharacter::OnDeath);
 	CharacterAttributesComponent->OutOfStaminaEvent.AddUObject(XYZBaseCharacterMovementComponent, &UXYZBaseMovementComponent::SetIsOutOfStamina);
+}
+
+void AXYZBaseCharacter::Fire()
+{
+	CharacterEquipmentComponent->Fire();
 }
 
 void AXYZBaseCharacter::OnSprintStart_Implementation()

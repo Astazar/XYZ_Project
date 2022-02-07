@@ -51,6 +51,7 @@ struct FMantlingSettings
 
 class UXYZBaseMovementComponent;
 class AInteractiveActor;
+class UCharacterEquipmentComponent;
 typedef TArray<AInteractiveActor*, TInlineAllocator<10>> TInteractiveActorsArray; 
 
 UCLASS(Abstract, NotBlueprintable)
@@ -62,6 +63,8 @@ public:
 	AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void BeginPlay() override;
+
+	void Fire();
 
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
@@ -126,7 +129,21 @@ public:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void NotifyJumpApex() override;
 
+	const UCharacterEquipmentComponent* GetCharacterEquipmentComponent() const;
+
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
+	UXYZBaseMovementComponent* XYZBaseCharacterMovementComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
+	class ULedgeDetectorComponent* LedgeDetectorComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
+	class UCharacterAttributesComponent* CharacterAttributesComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
+	class UCharacterEquipmentComponent* CharacterEquipmentComponent;
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
 	void OnSprintStart();
 	virtual void OnSprintStart_Implementation();
@@ -137,8 +154,6 @@ protected:
 
 	virtual bool CanSprint();
 
-	UXYZBaseMovementComponent* XYZBaseCharacterMovementComponent;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | IK settings")
 	FName RightFootSocketName;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | IK settings")
@@ -148,14 +163,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character | IK settings")
 	float UnderFeetTraceLenght = 50.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
-	class ULedgeDetectorComponent* LedgeDetectorComponent;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
 	TArray<FMantlingSettings> MantlingSettingsCollection;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
-	class UCharacterAttributesComponent* CharacterAttributesComponent;
 
 	virtual void OnDeath();
 

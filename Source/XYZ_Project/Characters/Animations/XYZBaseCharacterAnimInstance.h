@@ -63,6 +63,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	EWallrunSide CurrentWallrunSide = EWallrunSide::None;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	EEquipableItemType CurrentEquippedItemType = EEquipableItemType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	FRotator AimRotation = FRotator::ZeroRotator;
+
 private:
 	TWeakObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };

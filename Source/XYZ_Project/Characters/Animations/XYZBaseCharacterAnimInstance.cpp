@@ -2,9 +2,11 @@
 
 
 #include "XYZBaseCharacterAnimInstance.h"
-#include "XYZ_Project/Characters/XYZBaseCharacter.h"
-#include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
-#include "XYZ_Project/Components/CharacterComponents/CharacterAttributesComponent.h"
+#include "Characters/XYZBaseCharacter.h"
+#include "Components/CharacterComponents/CharacterAttributesComponent.h"
+#include "Components/CharacterComponents/CharacterEquipmentComponent.h"
+#include "Components/MovementComponents/XYZBaseMovementComponent.h"
+
 
 
 
@@ -50,4 +52,9 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	RightFootEffectorLocation = FVector(CachedBaseCharacter->GetIKRightFootOffset() + CachedBaseCharacter->GetIKPelvisOffset(), 0.0f, 0.0f);
 	LeftFootEffectorLocation = FVector(-(CachedBaseCharacter->GetIKLeftFootOffset() + CachedBaseCharacter->GetIKPelvisOffset()), 0.0f, 0.0f);
 	PelvisOffsetLocation = FVector(0.0f, 0.0f, CachedBaseCharacter->GetIKPelvisOffset());
+
+	AimRotation = CachedBaseCharacter->GetBaseAimRotation();
+
+	const UCharacterEquipmentComponent* CharacterEquipment = CachedBaseCharacter->GetCharacterEquipmentComponent();
+	CurrentEquippedItemType = CharacterEquipment->GetCurrentEquippedItemType();
 }
