@@ -22,6 +22,10 @@ void ARangeWeaponItem::Fire()
 	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::Fire() can work only with AXYZBaseCharacter"));
 	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
 	APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
+	
+	CharacterOwner->PlayAnimMontage(CharacterFireMontage);
+	PlayAnimMontage(WeaponFireMontage);
+
 	if (!IsValid(Controller))
 	{
 		return;
@@ -32,4 +36,10 @@ void ARangeWeaponItem::Fire()
 	Controller->GetPlayerViewPoint(PlayerViewPoint, PlayerViewRotation);
 	FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
 	WeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, Controller);
+}
+
+float ARangeWeaponItem::PlayAnimMontage(UAnimMontage* AnimMontage)
+{
+	UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+	return WeaponAnimInstance->Montage_Play(AnimMontage);
 }
