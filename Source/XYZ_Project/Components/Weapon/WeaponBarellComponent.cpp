@@ -4,6 +4,8 @@
 #include <DrawDebugHelpers.h>
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include <Kismet/GameplayStatics.h>
+#include <Components/DecalComponent.h>
 
 
 void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, AController* Controller)
@@ -32,6 +34,13 @@ void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, ACon
 				AppliedDamage = DamageAmount * FallOffDamageDiagram->GetFloatValue(CurrentShotRange);
 			}
 			HitActor->TakeDamage(AppliedDamage, FDamageEvent(), Controller, GetOwner());
+
+			UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DefaultDecalInfo.DecalMaterial, DefaultDecalInfo.DecalSize, ShotEnd, ShotEnd.ToOrientationRotator());
+			if (IsValid(DecalComponent))
+			{
+				DecalComponent->SetFadeScreenSize(0.0001f);
+				DecalComponent->SetFadeOut(DefaultDecalInfo.DecalLifeTime, DefaultDecalInfo.DecalFadeOutTime);
+			}
 		}
 	}
 
