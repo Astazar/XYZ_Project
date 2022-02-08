@@ -25,7 +25,13 @@ void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, ACon
 		AActor* HitActor = ShotResult.GetActor();
 		if (IsValid(HitActor))
 		{
-			HitActor->TakeDamage(DamageAmount, FDamageEvent(), Controller, GetOwner());
+			float AppliedDamage = DamageAmount;
+			if (IsValid(FallOffDamageDiagram))
+			{
+				float CurrentShotRange = (ShotEnd - ShotStart).Size();
+				AppliedDamage = DamageAmount * FallOffDamageDiagram->GetFloatValue(CurrentShotRange);
+			}
+			HitActor->TakeDamage(AppliedDamage, FDamageEvent(), Controller, GetOwner());
 		}
 	}
 
