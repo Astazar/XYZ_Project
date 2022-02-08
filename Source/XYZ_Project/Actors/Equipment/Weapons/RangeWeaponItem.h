@@ -47,12 +47,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters", meta = (UIMin = 1.0f, ClampMin = 1.0f))
 	float RateOfFire = 600.0f;
 
+	//Bullet spread half angle in degrees
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters", meta = (UIMin = 0.0f, ClampMin = 0.0f, UIMax = 5.0f, ClampMax = 5.0f))
+	float SpreadAngle = 1.0f;
+
 private:
 	void MakeShot();
 
 	float GetShotTimerInterval();
 
 	float PlayAnimMontage(UAnimMontage* AnimMontage);
+
+	FVector GetBulletSpreadOffset(float Angle, FRotator ShotRotation);
 
 	FTimerHandle ShotTimer;
 };
