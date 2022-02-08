@@ -33,7 +33,8 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AXYZPlayerController::StopSprint);
 	InputComponent->BindAction("Crawl", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ChangeCrawlState);
 	InputComponent->BindAction("Slide", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Slide);
-	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Fire);
+	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AXYZPlayerController::StartFire);
+	InputComponent->BindAction("Fire", EInputEvent::IE_Released, this, &AXYZPlayerController::StopFire);
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -196,10 +197,18 @@ void AXYZPlayerController::Wallrun()
 	}
 }
 
-void AXYZPlayerController::Fire()
+void AXYZPlayerController::StartFire()
 {
 	if (CachedBaseCharacter.IsValid())
 	{
-		CachedBaseCharacter->Fire();
+		CachedBaseCharacter->StartFire();
+	}
+}
+
+void AXYZPlayerController::StopFire()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->StopFire();
 	}
 }

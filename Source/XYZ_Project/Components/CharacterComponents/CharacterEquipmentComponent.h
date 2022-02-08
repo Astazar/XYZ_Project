@@ -20,7 +20,7 @@ public:
 
 	EEquipableItemType GetCurrentEquippedItemType() const;
 
-	void Fire();
+	ARangeWeaponItem* GetCurrentRangeWeapon() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")

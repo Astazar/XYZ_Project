@@ -52,7 +52,8 @@ private:
 
 	void Wallrun();
 
-	void Fire();
+	void StartFire();
+	void StopFire();
 
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 

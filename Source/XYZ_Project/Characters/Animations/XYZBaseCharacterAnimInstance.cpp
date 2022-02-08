@@ -6,6 +6,7 @@
 #include "Components/CharacterComponents/CharacterAttributesComponent.h"
 #include "Components/CharacterComponents/CharacterEquipmentComponent.h"
 #include "Components/MovementComponents/XYZBaseMovementComponent.h"
+#include <Actors/Equipment/Weapons/RangeWeaponItem.h>
 
 
 
@@ -57,4 +58,10 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	const UCharacterEquipmentComponent* CharacterEquipment = CachedBaseCharacter->GetCharacterEquipmentComponent();
 	CurrentEquippedItemType = CharacterEquipment->GetCurrentEquippedItemType();
+
+	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipment->GetCurrentRangeWeapon();
+	if (IsValid(CurrentRangeWeapon))
+	{
+		ForeGripSocketTransform = CurrentRangeWeapon->GetForeGripTransform();
+	}
 }

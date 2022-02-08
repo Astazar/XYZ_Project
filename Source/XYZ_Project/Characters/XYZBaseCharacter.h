@@ -64,7 +64,8 @@ public:
 
 	virtual void BeginPlay() override;
 
-	void Fire();
+	void StartFire();
+	void StopFire();
 
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};

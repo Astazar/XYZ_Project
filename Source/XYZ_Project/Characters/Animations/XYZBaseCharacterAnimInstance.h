@@ -69,6 +69,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	FRotator AimRotation = FRotator::ZeroRotator;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation | Weapon")
+	FTransform ForeGripSocketTransform;
+
 private:
 	TWeakObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };

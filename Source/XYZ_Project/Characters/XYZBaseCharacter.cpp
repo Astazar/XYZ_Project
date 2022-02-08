@@ -15,6 +15,7 @@
 #include "XYZ_Project/Subsystems/DebugSubsystem.h"
 #include "XYZ_Project/Components/CharacterComponents/CharacterAttributesComponent.h"
 #include "Components/CharacterComponents/CharacterEquipmentComponent.h"
+#include <Actors/Equipment/Weapons/RangeWeaponItem.h>
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -404,9 +405,22 @@ void AXYZBaseCharacter::BeginPlay()
 	CharacterAttributesComponent->OutOfStaminaEvent.AddUObject(XYZBaseCharacterMovementComponent, &UXYZBaseMovementComponent::SetIsOutOfStamina);
 }
 
-void AXYZBaseCharacter::Fire()
+void AXYZBaseCharacter::StartFire()
 {
-	CharacterEquipmentComponent->Fire();
+	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	if (IsValid(CurrentRangeWeapon))
+	{
+		CurrentRangeWeapon->StartFire();
+	}
+}
+
+void AXYZBaseCharacter::StopFire()
+{
+	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	if (IsValid(CurrentRangeWeapon))
+	{
+		CurrentRangeWeapon->StopFire();
+	}
 }
 
 void AXYZBaseCharacter::OnSprintStart_Implementation()
