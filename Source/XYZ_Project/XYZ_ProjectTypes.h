@@ -5,6 +5,8 @@
 #define ECC_WallRunnable ECC_GameTraceChannel3
 #define ECC_Bullet ECC_GameTraceChannel4
 
+const FName FXParamTraceEnd = FName("TraceEnd");
+
 const FName SocketFPCamera = FName("CameraSocket");
 const FName SocketCharacterWeapon = FName("CharacterWeaponSocket");
 const FName SocketWeaponMuzzle = FName("MuzzleSocket");
