@@ -218,6 +218,10 @@ float UXYZBaseMovementComponent::GetMaxSpeed() const
 			Result = MaxWalkSpeed;
 		}
 	}
+	else if (GetBaseCharacterOwner()->IsAiming())
+	{
+		Result = GetBaseCharacterOwner()->GetAimingMovementSpeed();
+	}
 	return Result;
 }
 

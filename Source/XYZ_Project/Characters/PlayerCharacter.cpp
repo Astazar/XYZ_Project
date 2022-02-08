@@ -8,6 +8,8 @@
 #include <Kismet/KismetMathLibrary.h>
 #include <Components/CapsuleComponent.h>
 #include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
+#include <Actors/Equipment/Weapons/RangeWeaponItem.h>
+#include <Components/CharacterComponents/CharacterEquipmentComponent.h>
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	:Super(ObjectInitializer)
@@ -216,5 +218,35 @@ void APlayerCharacter::UpdateCameraSprintTimeline(const float Alpha)
 	SpringArmComponent->TargetArmLength = UKismetMathLibrary::Lerp(DefaultSpringArmLeght, SprintSpringArmLenght, Alpha);
 }
 
+void APlayerCharacter::OnStartAimingInternal()
+{
+	Super::OnStartAimingInternal();
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (!IsValid(PlayerController))
+	{
+		return;
+	}
 
+	APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+	if (IsValid(CameraManager))
+	{
+		CameraManager->SetFOV(CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimFOV());
+	}
+}
+
+void APlayerCharacter::OnStopAimingInternal()
+{
+	Super::OnStopAimingInternal();
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (!IsValid(PlayerController))
+	{
+		return;
+	}
+
+	APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+	if (IsValid(CameraManager))
+	{
+		CameraManager->UnlockFOV();
+	}
+}
 

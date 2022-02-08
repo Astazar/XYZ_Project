@@ -67,6 +67,15 @@ public:
 	void StartFire();
 	void StopFire();
 
+	void StartAiming();
+	void StopAiming();
+	bool IsAiming() const;
+	float GetAimingMovementSpeed() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Character")
+	void OnStartAiming();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Character")
+	void OnStopAiming();
+
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
 	virtual void Turn(float Value) {};
@@ -176,6 +185,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes")
 	class UCurveFloat* FallDamageCurve;
 
+	virtual void OnStartAimingInternal();
+	virtual void OnStopAimingInternal();
+
 private:
 	FVector CurrentFallApex;
 
@@ -184,6 +196,9 @@ private:
 	void UpdateIKOffsets(float DeltaSeconds);
 	void TryChangeSprintState(float DeltaSeconds);
 	bool bIsSprintRequested = false;
+
+	bool bIsAiming = false;
+	float CurrentAimingMovementSpeed = 0.0f;
 
 	float GetIKOffsetForASocket(const FName& SocketName);
 	float CalculateIKPelvisOffset();

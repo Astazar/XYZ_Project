@@ -48,6 +48,9 @@ protected:
 	virtual void OnSprintEnd_Implementation() override;
 	virtual void UpdateCameraSprintTimeline(const float Alpha);
 
+	virtual void OnStartAimingInternal() override;
+	virtual void OnStopAimingInternal() override;
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Character | Camera")
 	class UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Camera")

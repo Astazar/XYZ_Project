@@ -38,6 +38,7 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsOnLadder = CharacterMovement->IsOnLadder();
 	bIsZiplining = CharacterMovement->IsZiplining();
 	bIsWallrunning = CharacterMovement->IsWallrunning();
+	bIsAiming = CachedBaseCharacter->IsAiming();
 	if (bIsWallrunning)
 	{
 		CurrentWallrunSide = CharacterMovement->GetCurrentWallrunSide();

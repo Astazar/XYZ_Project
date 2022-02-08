@@ -423,6 +423,58 @@ void AXYZBaseCharacter::StopFire()
 	}
 }
 
+void AXYZBaseCharacter::StartAiming()
+{
+	ARangeWeaponItem* CurrentRangeWeapon = GetCharacterEquipmentComponent()->GetCurrentRangeWeapon();
+	if (!IsValid(CurrentRangeWeapon))
+	{
+		return;
+	}
+
+	bIsAiming = true;
+	CurrentAimingMovementSpeed = CurrentRangeWeapon->GetAimMovementMaxSpeed();
+	CurrentRangeWeapon->StartAim();
+	OnStartAiming();
+}
+
+void AXYZBaseCharacter::StopAiming()
+{
+	if (!bIsAiming)
+	{
+		return;
+	}
+
+	ARangeWeaponItem* CurrentRangeWeapon = GetCharacterEquipmentComponent()->GetCurrentRangeWeapon();
+	if (IsValid(CurrentRangeWeapon))
+	{
+		CurrentRangeWeapon->StopAim();
+	}
+
+	bIsAiming = false;
+	CurrentAimingMovementSpeed = 0.0f;
+	OnStopAiming();
+}
+
+bool AXYZBaseCharacter::IsAiming() const
+{
+	return bIsAiming;
+}
+
+float AXYZBaseCharacter::GetAimingMovementSpeed() const
+{
+	return CurrentAimingMovementSpeed;
+}
+
+void AXYZBaseCharacter::OnStartAiming_Implementation()
+{
+	OnStartAimingInternal();
+}
+
+void AXYZBaseCharacter::OnStopAiming_Implementation()
+{
+	OnStopAimingInternal();
+}
+
 void AXYZBaseCharacter::OnSprintStart_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("AXYZBaseCharacter::OnSprintStart_Implementation"));
@@ -456,6 +508,14 @@ void AXYZBaseCharacter::OnDeath()
 	{
 		EnableRagdoll();
 	}
+}
+
+void AXYZBaseCharacter::OnStartAimingInternal()
+{
+}
+
+void AXYZBaseCharacter::OnStopAimingInternal()
+{
 }
 
 void AXYZBaseCharacter::EnableRagdoll()

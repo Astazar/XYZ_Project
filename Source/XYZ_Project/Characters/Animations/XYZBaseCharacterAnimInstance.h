@@ -43,6 +43,8 @@ protected:
 	bool bIsWallrunning = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	bool bIsStrafing = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	bool bIsAiming = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation", meta = (UIMin = -180, UIMax = 180))
 	float Direction = 0.0f;
