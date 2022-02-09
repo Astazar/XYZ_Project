@@ -61,13 +61,14 @@ void APlayerCharacter::MoveRight(float Value)
 
 void APlayerCharacter::Turn(float Value)
 {
-	AddControllerYawInput(Value);
+	AddControllerYawInput(Value * GetAimTurnModifier() * BaseTurnRate * GetWorld()->GetDeltaSeconds() * CustomTimeDilation);
 }
 
 void APlayerCharacter::LookUp(float Value)
 {
-	AddControllerPitchInput(Value);
+	AddControllerPitchInput(Value * GetAimLookUpModifier() * BaseLookUpRate * GetWorld()->GetDeltaSeconds() * CustomTimeDilation);
 }
+
 
 void APlayerCharacter::Jump()
 {
@@ -188,6 +189,16 @@ void APlayerCharacter::OnEndSlide(float HalfHeightAdjust)
 float APlayerCharacter::GetDefaultFOV() const
 {
 	return GetController<APlayerController>()->PlayerCameraManager->DefaultFOV;
+}
+
+float APlayerCharacter::GetAimLookUpModifier() const
+{
+	return IsAiming() ? CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimLookUpModifier() : 1.0f;
+}
+
+float APlayerCharacter::GetAimTurnModifier() const
+{
+	return IsAiming() ? CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimTurnModifier() : 1.0f;
 }
 
 void APlayerCharacter::BeginPlay()

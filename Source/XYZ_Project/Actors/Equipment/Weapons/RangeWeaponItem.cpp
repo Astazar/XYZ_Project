@@ -52,6 +52,16 @@ float ARangeWeaponItem::GetAimMovementMaxSpeed() const
 	return AimMovementMaxSpeed;
 }
 
+float ARangeWeaponItem::GetAimTurnModifier() const
+{
+	return AimTurnModifier;
+}
+
+float ARangeWeaponItem::GetAimLookUpModifier() const
+{
+	return AimLookUpModifier;
+}
+
 FTransform ARangeWeaponItem::GetForeGripTransform() const
 {
 	return WeaponMesh->GetSocketTransform(SocketWeaponForeGrip);

@@ -39,6 +39,8 @@ public:
 	virtual void OnEndSlide(float HalfHeightAdjust);
 
 	float GetDefaultFOV() const;
+	float GetAimLookUpModifier() const;
+	float GetAimTurnModifier() const;
 
 	//The value by which to move the mesh so that the collision matches the mesh.
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Character | Movement | Crawl")
@@ -59,6 +61,12 @@ protected:
 	class UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Camera")
 	class USpringArmComponent* SpringArmComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
+	float BaseTurnRate = 45.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
+	float BaseLookUpRate = 45.0f;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	UCurveFloat* CameraSprintTimelineCurve;
