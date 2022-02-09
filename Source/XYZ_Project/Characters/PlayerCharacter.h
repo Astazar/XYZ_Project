@@ -38,6 +38,8 @@ public:
 	virtual void OnStartSlide(float HalfHeightAdjust);
 	virtual void OnEndSlide(float HalfHeightAdjust);
 
+	float GetDefaultFOV() const;
+
 	//The value by which to move the mesh so that the collision matches the mesh.
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Character | Movement | Crawl")
 	float ToHeadOffset = 50.0f;
@@ -50,19 +52,26 @@ protected:
 
 	virtual void OnStartAimingInternal() override;
 	virtual void OnStopAimingInternal() override;
+	virtual void UpdateCameraAimingTimeline(const float Alpha);
+	void UpdateFOV(float NewFOV);
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Character | Camera")
 	class UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Camera")
 	class USpringArmComponent* SpringArmComponent;
 
-	FTimeline CameraSprintTimeline;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	UCurveFloat* CameraSprintTimelineCurve;
 
+	FTimeline CameraSprintTimeline;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement | Sprint")
 	float SprintSpringArmLenght = 400.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character")
+	UCurveFloat* CameraAimingTimelineCurve;
+
+	FTimeline CameraAimingTimeline;
 
 private:
 	float DefaultSpringArmLeght = 0.0f;
