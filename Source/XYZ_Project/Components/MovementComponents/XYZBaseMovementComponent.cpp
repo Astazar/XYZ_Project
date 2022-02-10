@@ -15,6 +15,7 @@
 #include "XYZ_Project/Subsystems/DebugSubsystem.h"
 #include <Kismet/GameplayStatics.h>
 #include <Kismet/KismetMathLibrary.h>
+#include "GameFramework/PhysicsVolume.h"
 
 
 void UXYZBaseMovementComponent::Wallrun()
@@ -151,13 +152,6 @@ FVector UXYZBaseMovementComponent::GetWallrunCharacterMovingDirection(const stru
 
 void UXYZBaseMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-
-
-	
-	//FName NavAgentPropsName = FNavAgentProperties::StaticStruct()->GetFName();
-
-
-
 	if (ShouldSkipUpdate(DeltaTime))
 	{
 		return;
@@ -189,6 +183,10 @@ float UXYZBaseMovementComponent::GetMaxSpeed() const
 	if (bIsSprinting)
 	{
 		Result = SprintSpeed;
+		if (IsSwimming())
+		{
+			Result = SprintSwimSpeed;
+		}
 	}
 	else if (bIsCrawling)
 	{
@@ -495,54 +493,135 @@ void UXYZBaseMovementComponent::ZiplineTurnAround()
 
 void UXYZBaseMovementComponent::PhysicsRotation(float DeltaTime)
 {	
+	if (IsOnLadder() && !bForceRotation)
+	{
+		return;
+	}
+
 	if (bForceRotation)
 	{
-		FRotator CurrentRotation = UpdatedComponent->GetComponentRotation(); // Normalized
-		CurrentRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): CurrentRotation"));
-
-		FRotator DeltaRot = GetDeltaRotation(DeltaTime);
-		DeltaRot.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): GetDeltaRotation"));
-		
-		// Accumulate a desired new rotation.
-		const float AngleTolerance = 1e-3f;
-
-		if (!CurrentRotation.Equals(ForceTargetRotation, AngleTolerance))
-		{
-			FRotator DesiredRotation = ForceTargetRotation;
-			// PITCH
-			if (!FMath::IsNearlyEqual(CurrentRotation.Pitch, DesiredRotation.Pitch, AngleTolerance))
-			{
-				DesiredRotation.Pitch = FMath::FixedTurn(CurrentRotation.Pitch, DesiredRotation.Pitch, DeltaRot.Pitch);
-			}
-
-			// YAW
-			if (!FMath::IsNearlyEqual(CurrentRotation.Yaw, DesiredRotation.Yaw, AngleTolerance))
-			{
-				DesiredRotation.Yaw = FMath::FixedTurn(CurrentRotation.Yaw, DesiredRotation.Yaw, DeltaRot.Yaw);
-			}
-
-			// ROLL
-			if (!FMath::IsNearlyEqual(CurrentRotation.Roll, DesiredRotation.Roll, AngleTolerance))
-			{
-				DesiredRotation.Roll = FMath::FixedTurn(CurrentRotation.Roll, DesiredRotation.Roll, DeltaRot.Roll);
-			}
-
-			// Set the new rotation.
-			DesiredRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): DesiredRotation"));
-			MoveUpdatedComponent(FVector::ZeroVector, DesiredRotation, /*bSweep*/ false);
-		}
-		else
-		{
-			ForceTargetRotation = FRotator::ZeroRotator;
-			bForceRotation = false;
-		}
-		return;
+		ForcePhysicsRotation(DeltaTime);
 	}
-	if (IsOnLadder())
+	else if (IsSwimming())
+	{
+		SwimPhysicsRotation(DeltaTime);
+	}
+	else
+	{
+		Super::PhysicsRotation(DeltaTime);
+	}
+}
+
+void UXYZBaseMovementComponent::ForcePhysicsRotation(float DeltaTime)
+{
+	FRotator CurrentRotation = UpdatedComponent->GetComponentRotation(); // Normalized
+	CurrentRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): CurrentRotation"));
+
+	FRotator DeltaRot = GetDeltaRotation(DeltaTime);
+	DeltaRot.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): GetDeltaRotation"));
+
+	FRotator DesiredRotation = ForceTargetRotation;
+	// Accumulate a desired new rotation.
+	const float AngleTolerance = 1e-3f;
+
+	if (!CurrentRotation.Equals(DesiredRotation, AngleTolerance))
+	{
+		// PITCH
+		if (!FMath::IsNearlyEqual(CurrentRotation.Pitch, DesiredRotation.Pitch, AngleTolerance) && (CurrentSwimState != ESwimState::OnWaterSurface))
+		{
+			DesiredRotation.Pitch = FMath::FixedTurn(CurrentRotation.Pitch, DesiredRotation.Pitch, DeltaRot.Pitch);
+		}
+
+		// YAW
+		if (!FMath::IsNearlyEqual(CurrentRotation.Yaw, DesiredRotation.Yaw, AngleTolerance))
+		{
+			DesiredRotation.Yaw = FMath::FixedTurn(CurrentRotation.Yaw, DesiredRotation.Yaw, DeltaRot.Yaw);
+		}
+
+		// ROLL
+		if (!FMath::IsNearlyEqual(CurrentRotation.Roll, DesiredRotation.Roll, AngleTolerance) && !IsSwimming())
+		{
+			DesiredRotation.Roll = FMath::FixedTurn(CurrentRotation.Roll, DesiredRotation.Roll, DeltaRot.Roll);
+		}
+		// Set the new rotation.
+		DesiredRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): DesiredRotation"));
+		MoveUpdatedComponent(FVector::ZeroVector, DesiredRotation, /*bSweep*/ false);
+	}
+	else if (bForceRotation)
+	{
+		ForceTargetRotation = FRotator::ZeroRotator;
+		bForceRotation = false;
+	}
+}
+
+void UXYZBaseMovementComponent::SwimPhysicsRotation(float DeltaTime)
+{
+	if (!(bOrientRotationToMovement || bUseControllerDesiredRotation))
 	{
 		return;
 	}
-	Super::PhysicsRotation(DeltaTime);
+
+	if (!HasValidData() || (!CharacterOwner->Controller && !bRunPhysicsWithNoController))
+	{
+		return;
+	}
+
+	FRotator CurrentRotation = UpdatedComponent->GetComponentRotation(); // Normalized
+	CurrentRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): CurrentRotation"));
+
+	FRotator DeltaRot = GetDeltaRotation(DeltaTime);
+	DeltaRot.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): GetDeltaRotation"));
+	FRotator DesiredRotation = CurrentRotation;
+	if (bOrientRotationToMovement)
+	{
+		DesiredRotation = ComputeOrientToMovementRotation(CurrentRotation, DeltaTime, DeltaRot);
+	}
+	else if (CharacterOwner->Controller && bUseControllerDesiredRotation)
+	{
+		DesiredRotation = CharacterOwner->Controller->GetDesiredRotation();
+	}
+
+	if (FMath::IsNearlyZero(Acceleration.X) && FMath::IsNearlyZero(Acceleration.Y) && Acceleration.Z != 0)
+	{
+		DesiredRotation.Yaw = CurrentRotation.Yaw;
+		DesiredRotation.Pitch = FMath::Clamp(DesiredRotation.Pitch, -89.0f, 89.0f);
+	}
+
+	if (ShouldRemainVertical() || (CurrentSwimState == ESwimState::OnWaterSurface))
+	{
+		DesiredRotation.Pitch = 0.f;
+		DesiredRotation.Yaw = FRotator::NormalizeAxis(DesiredRotation.Yaw);
+		DesiredRotation.Roll = 0.f;
+	}
+	else
+	{
+		DesiredRotation.Normalize();
+	}
+
+	float RotationInterpSpeed = 5.f;
+	DesiredRotation = FMath::RInterpTo(CurrentRotation, DesiredRotation, DeltaTime, RotationInterpSpeed);
+
+	// Accumulate a desired new rotation.
+	const float AngleTolerance = 1e-3f;
+
+	if (!CurrentRotation.Equals(DesiredRotation, AngleTolerance))
+	{
+		// PITCH
+		if (!FMath::IsNearlyEqual(CurrentRotation.Pitch, DesiredRotation.Pitch, AngleTolerance) && (CurrentSwimState != ESwimState::OnWaterSurface))
+		{
+			DesiredRotation.Pitch = FMath::FixedTurn(CurrentRotation.Pitch, DesiredRotation.Pitch, DeltaRot.Pitch);
+		}
+
+		// YAW
+		if (!FMath::IsNearlyEqual(CurrentRotation.Yaw, DesiredRotation.Yaw, AngleTolerance))
+		{
+			DesiredRotation.Yaw = FMath::FixedTurn(CurrentRotation.Yaw, DesiredRotation.Yaw, DeltaRot.Yaw);
+		}
+
+		// Set the new rotation.
+		DesiredRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): DesiredRotation"));
+		MoveUpdatedComponent(FVector::ZeroVector, DesiredRotation, /*bSweep*/ false);
+	}
 }
 
 bool UXYZBaseMovementComponent::CanEverCrawl()
@@ -707,12 +786,18 @@ void UXYZBaseMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSe
 
 bool UXYZBaseMovementComponent::IsWallrunning() const
 {
-	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Wallrun;;
+	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Wallrun;
+}
+
+void UXYZBaseMovementComponent::SwimDive()
+{
+	bIsDiving = true;
+	CurrentSwimState = ESwimState::UnderWater;
 }
 
 void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
-	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
+   	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 	if (MovementMode == MOVE_Swimming)
 	{
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(SwimmingCapsuleRadius,SwimmingCapsuleHalfHeight);
@@ -753,7 +838,102 @@ void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMove
 			break;
 		}
 	}
+
+	if (MovementMode == MOVE_Swimming)
+	{
+		CurrentSwimState = FMath::Abs(Velocity.Z) > MaxSwimmingOnSurfaceVelocityZ ? ESwimState::UnderWater : ESwimState::OnWaterSurface;
+	}
+
+	if (PreviousMovementMode == MOVE_Swimming)
+	{
+		CurrentSwimState = ESwimState::None;
+	}
 }
+
+void UXYZBaseMovementComponent::PhysSwimming(float deltaTime, int32 Iterations)
+{
+	const float Friction = GetPhysicsVolume()->FluidFriction;
+	CalcVelocity(deltaTime, Friction, true, GetMaxBrakingDeceleration());
+
+	APhysicsVolume* WaterVolume = GetPhysicsVolume();
+	float WaterLineLocationZ = WaterVolume->GetActorLocation().Z + WaterVolume->GetBounds().BoxExtent.Z * WaterVolume->GetActorScale3D().Z;
+	float CharacterLocationZ = UpdatedComponent->GetComponentLocation().Z;
+	
+	//Diving
+	if (bIsDiving)
+	{
+		Velocity = Velocity.GetSafeNormal() + (-FVector::UpVector) * DiveUnderWaterSpeed;
+		FVector Delta = Velocity * deltaTime;
+		FHitResult Hit;
+		SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, Hit);
+		if (CharacterLocationZ < WaterLineLocationZ - WaterLineOffset)
+		{
+			bIsDiving = false;
+		}
+		return;
+	}
+
+	//Surfacing
+	bool bShouldSurfaced = false;
+	if (CurrentSwimState == ESwimState::UnderWater && !bIsDiving)
+	{
+		if (CharacterLocationZ > WaterLineLocationZ - WaterLineOffset && CharacterLocationZ < WaterLineLocationZ)
+		{
+			bShouldSurfaced = true;
+			Velocity +=  FVector::UpVector;
+			CalcVelocity(deltaTime, Friction, true, GetMaxBrakingDeceleration());
+			FVector Delta = Velocity * deltaTime;
+ 			FHitResult Hit;
+			if (CharacterLocationZ + Delta.Z >= WaterLineLocationZ)
+			{
+				Delta.Z = WaterLineLocationZ - CharacterLocationZ;
+				SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, Hit);
+				float InterpSpeed = 3.0f;
+				Velocity.Z = FMath::FInterpTo(Velocity.Z, 0, deltaTime, InterpSpeed);
+				CurrentSwimState = ESwimState::OnWaterSurface;
+				return;
+			}
+			SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, Hit);
+			if (Hit.bBlockingHit)
+			{
+				SlideAlongSurface(Delta, (1.f - Hit.Time), Hit.Normal, Hit, true);
+			}
+			return;
+		}
+	}
+
+	//Updating swim state
+	if (!bIsDiving && !bShouldSurfaced)
+	{
+		CurrentSwimState = CharacterLocationZ < WaterLineLocationZ - WaterLineOffset ? ESwimState::UnderWater : ESwimState::OnWaterSurface;
+	}
+		
+	if (CurrentSwimState == ESwimState::OnWaterSurface)
+	{
+		PhysSwimmingOnWaterSurface(deltaTime, Iterations);
+	}
+	else if (CurrentSwimState == ESwimState::UnderWater)
+	{
+		Super::PhysSwimming(deltaTime, Iterations);
+	}
+}
+
+void UXYZBaseMovementComponent::PhysSwimmingOnWaterSurface(float deltaTime, int32 Iterations)
+{
+ 	FVector DirectionVector = UKismetMathLibrary::MakeRotFromZY(FVector::UpVector, UpdatedComponent->GetRightVector()).Vector().GetSafeNormal();
+	const float Friction = GetPhysicsVolume()->FluidFriction;
+	CalcVelocity(deltaTime, Friction, true, GetMaxBrakingDeceleration());
+	Velocity = DirectionVector * Velocity.Size();
+	FVector Delta = Velocity * deltaTime;
+	FHitResult Hit;
+	SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, Hit);
+	if (Hit.bBlockingHit)
+	{
+		SlideAlongSurface(Delta, (1.f - Hit.Time), Hit.Normal, Hit, true);
+	}
+}
+
+
 
 void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 {
@@ -847,6 +1027,7 @@ AXYZBaseCharacter* UXYZBaseMovementComponent::GetBaseCharacterOwner() const
 {
 	return StaticCast<AXYZBaseCharacter*>(GetOwner());
 }
+
 
 void UXYZBaseMovementComponent::PhysZiplineClimb(float deltaTime, int32 Iterations)
 {

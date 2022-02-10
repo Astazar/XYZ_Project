@@ -8,6 +8,8 @@
 #include <DrawDebugHelpers.h>
 #include <Components/CapsuleComponent.h>
 #include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
+#include <GameFramework/Pawn.h>
+#include <TimerManager.h>
 
 UCharacterAttributesComponent::UCharacterAttributesComponent()
 {
@@ -22,6 +24,7 @@ void UCharacterAttributesComponent::BeginPlay()
 	CachedBaseCharacter = StaticCast<AXYZBaseCharacter*>(GetOwner());
 	CurrentHealth = MaxHealth;
 	CurrentStamina = MaxStamina;
+	CurrentOxygen = MaxOxygen;
 	CachedBaseCharacter->OnTakeAnyDamage.AddDynamic(this, &UCharacterAttributesComponent::OnTakeAnyDamage);
 }
 
@@ -29,6 +32,7 @@ void UCharacterAttributesComponent::TickComponent(float DeltaTime, ELevelTick Ti
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	UpdateStamina(DeltaTime);
+	UpdateOxygenValue(DeltaTime);
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 	DebugDrawAttributes();
 #endif
@@ -66,6 +70,19 @@ void UCharacterAttributesComponent::UpdateStamina(float DeltaSeconds)
 
 
 
+void UCharacterAttributesComponent::UpdateOxygenValue(float DeltaTime)
+{
+	ESwimState CurrentSwimState = CachedBaseCharacter->GetCharacterMovementComponent()->GetCurrentSwimState();
+	if (CurrentSwimState == ESwimState::None)
+	{
+		return;
+	}
+
+	float OxygenDelta = CurrentSwimState == ESwimState::OnWaterSurface ? OxygenRestoreVelocity : -OxygenConsumptionVelocity;
+	CurrentOxygen = FMath::Clamp(CurrentOxygen + OxygenDelta * DeltaTime, 0.0f, MaxOxygen);
+}
+
+
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 void UCharacterAttributesComponent::DebugDrawAttributes()
 {
@@ -75,6 +92,11 @@ void UCharacterAttributesComponent::DebugDrawAttributes()
 		DrawDebugString(GetWorld(), HealthTextLocation, FString::Printf(TEXT("Health: %.2f"), CurrentHealth), nullptr, FColor::Green, 0.0f, true);
 		FVector StaminaTextLocation = HealthTextLocation - 10.0f * FVector::UpVector;
 		DrawDebugString(GetWorld(), StaminaTextLocation, FString::Printf(TEXT("Stamina: %.2f"), CurrentStamina), nullptr, FColor::Blue, 0.0f, true);
+		if (CachedBaseCharacter->GetCharacterMovementComponent()->IsSwimming())
+		{
+			FVector OxygenTextLocation = StaminaTextLocation - 10.0f * FVector::UpVector;
+			DrawDebugString(GetWorld(), OxygenTextLocation, FString::Printf(TEXT("Oxygen: %.2f"), CurrentOxygen), nullptr, FColor::Blue, 0.0f, true);
+		}
 	}
 }
 #endif
@@ -87,11 +109,11 @@ void UCharacterAttributesComponent::OnTakeAnyDamage(AActor* DamagedActor, float 
 	}
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
-	UE_LOG(LogDamage, Warning, TEXT("UCharacterAttributesComponent::OnTakeAnyDamage %s received %.2f, amount of damage from %s"), *CachedBaseCharacter->GetName(), Damage, *DamageCauser->GetName());
+	UE_LOG(LogDamage, Warning, TEXT("UCharacterAttributesComponent::OnTakeAnyDamage %s received %.2f, amount of damage from %s"), *CachedBaseCharacter->GetName(), Damage, DamageCauser!=nullptr ? *DamageCauser->GetName() : TEXT("nullptr."));
 
 	if (CurrentHealth <= 0.0f)
 	{	
-		UE_LOG(LogDamage, Warning, TEXT("UCharacterAttributesComponent::OnTakeAnyDamage character %s is killed by %s"), *CachedBaseCharacter->GetName(), *DamageCauser->GetName());
+		UE_LOG(LogDamage, Warning, TEXT("UCharacterAttributesComponent::OnTakeAnyDamage character %s is killed by %s"), *CachedBaseCharacter->GetName(), DamageCauser != nullptr ? *DamageCauser->GetName() : TEXT("nullptr."));
 		if (OnDeathEvent.IsBound())
 		{
 			OnDeathEvent.Broadcast();

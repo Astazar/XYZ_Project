@@ -54,6 +54,8 @@ protected:
 	float Stamina = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
 	float LadderSpeedRatio = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+	float LastInputSize = 0.0f;
 
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadOnly, Category = "Character | IK Settings")
 	FVector RightFootEffectorLocation = FVector::ZeroVector;

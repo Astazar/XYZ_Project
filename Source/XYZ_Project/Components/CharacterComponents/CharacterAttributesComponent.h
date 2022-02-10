@@ -24,11 +24,14 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void UpdateStamina(float DeltaSeconds);
+	virtual void UpdateOxygenValue(float DeltaTime);
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentHealth() const { return CurrentHealth; };
 	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentStamina() const { return CurrentStamina; };
+	UFUNCTION(BlueprintCallable)
+	virtual float GetCurrentOxygen() const { return CurrentOxygen; };
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health", meta = (ClampMin = 0.0f, UIMin = 0.0f))
@@ -41,9 +44,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stamina", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float SprintStaminaConsumptionVelocity = 200.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Oxygen", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxOxygen = 100.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Oxygen", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float OxygenRestoreVelocity = 15.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Oxygen", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float OxygenConsumptionVelocity = 10.0f;
+
 private:
 	float CurrentHealth = 0.0f;
 	float CurrentStamina = 0.0f;
+	float CurrentOxygen = 0.0f;
 
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT		
 	void DebugDrawAttributes();

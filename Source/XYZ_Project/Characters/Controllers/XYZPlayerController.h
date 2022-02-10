@@ -40,6 +40,7 @@ private:
 	void SwimForward(float Value);
 	void SwimRight(float Value);
 	void SwimUp(float Value);
+	void SwimDive();
 
 	void Mantle();
 

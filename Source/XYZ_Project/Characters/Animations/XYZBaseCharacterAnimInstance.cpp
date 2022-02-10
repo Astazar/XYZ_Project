@@ -39,6 +39,7 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsZiplining = CharacterMovement->IsZiplining();
 	bIsWallrunning = CharacterMovement->IsWallrunning();
 	bIsAiming = CachedBaseCharacter->IsAiming();
+	LastInputSize = CharacterMovement->GetLastInputVector().Size();
 	if (bIsWallrunning)
 	{
 		CurrentWallrunSide = CharacterMovement->GetCurrentWallrunSide();

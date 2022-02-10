@@ -104,6 +104,7 @@ public:
 	virtual void SwimForward(float Value) {};
 	virtual void SwimRight(float Value) {};
 	virtual void SwimUp(float Value) {};
+	virtual void SwimDive() {};
 
 	virtual void OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime);
 	void Mantle(bool bForce = false);
@@ -182,11 +183,18 @@ protected:
 	class UAnimMontage* OnDeathAnimMontage;
 
 	//Damage depending from fall height (in meters)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes | Damage")
 	class UCurveFloat* FallDamageCurve;
 
 	virtual void OnStartAimingInternal();
 	virtual void OnStopAimingInternal();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes | Damage", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float OutOfOxygenDamageInterval = 2.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes | Damage", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float OutOfOxygenDamage = 20.0f;
+
+	void OutOfOxygenTakeDamage();
 
 private:
 	FVector CurrentFallApex;
@@ -195,6 +203,9 @@ private:
 
 	void UpdateIKOffsets(float DeltaSeconds);
 	void TryChangeSprintState(float DeltaSeconds);
+
+	virtual void UpdateOutOfOxygenDamage(float DeltaSeconds);
+
 	bool bIsSprintRequested = false;
 
 	bool bIsAiming = false;
@@ -212,4 +223,6 @@ private:
 	float IKPelvisOffset = 0.0f;
 	float IKTraceDistance = 0.0f;
 	float IKScale = 0.0f;
+
+	FTimerHandle OutOfOxygenDamageTimer;
 };

@@ -106,9 +106,17 @@ void APlayerCharacter::SwimRight(float Value)
 
 void APlayerCharacter::SwimUp(float Value)
 {
-	if (XYZBaseCharacterMovementComponent->IsSwimming() && !FMath::IsNearlyZero(Value, 1e-6f))
+	if (XYZBaseCharacterMovementComponent->IsSwimming() && !FMath::IsNearlyZero(Value, 1e-6f) && XYZBaseCharacterMovementComponent->GetCurrentSwimState() == ESwimState::UnderWater)
 	{
 		AddMovementInput(FVector::UpVector, Value);
+	}
+}
+
+void APlayerCharacter::SwimDive()
+{
+	if (XYZBaseCharacterMovementComponent->IsSwimming() && XYZBaseCharacterMovementComponent->GetCurrentSwimState() == ESwimState::OnWaterSurface)
+	{
+		XYZBaseCharacterMovementComponent->SwimDive();
 	}
 }
 

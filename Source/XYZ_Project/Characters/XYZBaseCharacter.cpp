@@ -147,6 +147,7 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	TryChangeSprintState(DeltaSeconds);
 	UpdateIKOffsets(DeltaSeconds);
+	UpdateOutOfOxygenDamage(DeltaSeconds);
 }
 
 
@@ -475,6 +476,12 @@ void AXYZBaseCharacter::OnStopAiming_Implementation()
 	OnStopAimingInternal();
 }
 
+
+void AXYZBaseCharacter::OutOfOxygenTakeDamage()
+{
+	TakeDamage(OutOfOxygenDamage, FDamageEvent(), GetController(), nullptr);
+}
+
 void AXYZBaseCharacter::OnSprintStart_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("AXYZBaseCharacter::OnSprintStart_Implementation"));
@@ -500,7 +507,7 @@ bool AXYZBaseCharacter::CanSprint()
 void AXYZBaseCharacter::OnDeath()
 {
 	GetCharacterMovement()->DisableMovement();
-	if (IsValid(OnDeathAnimMontage))
+	if (IsValid(OnDeathAnimMontage) && GetCharacterMovementComponent()->MovementMode == MOVE_Walking)
 	{
 		PlayAnimMontage(OnDeathAnimMontage);
 	}
@@ -547,6 +554,28 @@ void AXYZBaseCharacter::TryChangeSprintState(float DeltaSeconds)
 	{
 		XYZBaseCharacterMovementComponent->StopSprint();
 		OnSprintEnd();
+	}
+}
+
+void AXYZBaseCharacter::UpdateOutOfOxygenDamage(float DeltaSeconds)
+{
+	float CurrentOxygen = CharacterAttributesComponent->GetCurrentOxygen();
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	if (CurrentOxygen <= 0.0f)
+	{
+		if (CurrentOxygen <= 0 && !TimerManager.IsTimerActive(OutOfOxygenDamageTimer))
+		{
+			TimerManager.SetTimer(OutOfOxygenDamageTimer, this, &AXYZBaseCharacter::OutOfOxygenTakeDamage, OutOfOxygenDamageInterval, true);
+		}
+
+		if (TimerManager.IsTimerActive(OutOfOxygenDamageTimer) && (CharacterAttributesComponent->GetCurrentHealth() <= 0.0f || CurrentOxygen > 0.0f))
+		{
+			TimerManager.ClearTimer(OutOfOxygenDamageTimer);
+		}
+	}
+	if (CurrentOxygen > 0.0f && TimerManager.IsTimerActive(OutOfOxygenDamageTimer))
+	{
+		TimerManager.ClearTimer(OutOfOxygenDamageTimer);
 	}
 }
 

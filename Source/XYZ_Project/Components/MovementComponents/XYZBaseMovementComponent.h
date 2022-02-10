@@ -8,6 +8,14 @@
 #include "XYZ_Project/XYZ_ProjectTypes.h"
 #include "XYZBaseMovementComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class ESwimState : uint8 
+{
+	None = 0,
+	OnWaterSurface,
+	UnderWater
+};
+
 
 struct FMantlingMovementParameters
 {
@@ -79,9 +87,9 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	UFUNCTION(BlueprintCallable)
-	bool IsSprinting() { return bIsSprinting; }
+	bool IsSprinting() const { return bIsSprinting; }
 	UFUNCTION(BlueprintCallable)
-	bool IsCrawling() { return bIsCrawling; }
+	bool IsCrawling() const { return bIsCrawling; }
 
 	virtual float GetMaxSpeed() const override;
 
@@ -121,6 +129,8 @@ public:
 	void ZiplineTurnAround();
 
 	virtual void PhysicsRotation(float DeltaTime) override;
+	virtual void ForcePhysicsRotation(float DeltaTime); 
+	virtual void SwimPhysicsRotation(float DeltaTime);
 
 	bool CanEverCrawl();
 	virtual void Crawl();
@@ -145,8 +155,15 @@ public:
 
 	bool IsWallrunning() const;
 
+	void SwimDive();
+	ESwimState GetCurrentSwimState() const { return CurrentSwimState; }
+	void SetCurrentSwimState(ESwimState NewSwimState) { CurrentSwimState = NewSwimState; }
+
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+
+	virtual void PhysSwimming(float deltaTime, int32 Iterations) override;
+	virtual void PhysSwimmingOnWaterSurface(float deltaTime, int32 Iterations);
 
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 
@@ -164,6 +181,16 @@ protected:
 	float SwimmingCapsuleRadius = 60.0f;
 	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float SwimmingCapsuleHalfHeight = 60.0f;
+	/** Defines the maximum value of velocity Z at which the character will remain on the surface when jumping into the water.  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Swimming", meta = (ClampMin = "0", UIMin = "0"))
+	float MaxSwimmingOnSurfaceVelocityZ = 500.0f;
+	/** Defines at what speed character will dive under water*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Swimming", meta = (ClampMin = "0", UIMin = "0"))
+	float DiveUnderWaterSpeed = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Swimming", meta = (ClampMin = "0", UIMin = "0"))
+	float WaterLineOffset = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Swimming", meta = (ClampMin = "0", UIMin = "0"))
+	float SprintSwimSpeed = 600.0f;
 
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float ClimbingOnLadderMaxSpeed = 200.0f;
@@ -236,6 +263,7 @@ private:
 	bool bIsOutOfStamina = false;
 	bool bIsCrawling = false;
 	bool bIsSliding = false;
+	bool bIsDiving = false;
 
 	FVector SlidingMovingDirection = FVector::ZeroVector;
 
@@ -252,4 +280,6 @@ private:
 	FTimerHandle WallrunTimer;
 	EWallrunSide CurrentWallrunSide = EWallrunSide::None;
 	EWallrunSide PreviousWallrunSide = EWallrunSide::None;
+
+	ESwimState CurrentSwimState = ESwimState::None;
 };
