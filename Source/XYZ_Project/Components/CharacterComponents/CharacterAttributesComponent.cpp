@@ -21,6 +21,7 @@ void UCharacterAttributesComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("UCharacterAttributesComponent::BeginPlay UCharacterAttributesComponent can be used only with AXYZBaseCharacter"));
+	checkf(MaxHealth > 0.0f,TEXT("UCharacterAttributesComponent::BeginPlay Max health can not be equal to zero"));
 	CachedBaseCharacter = StaticCast<AXYZBaseCharacter*>(GetOwner());
 	CurrentHealth = MaxHealth;
 	CurrentStamina = MaxStamina;
@@ -82,6 +83,11 @@ void UCharacterAttributesComponent::UpdateOxygenValue(float DeltaTime)
 	CurrentOxygen = FMath::Clamp(CurrentOxygen + OxygenDelta * DeltaTime, 0.0f, MaxOxygen);
 }
 
+
+float UCharacterAttributesComponent::GetCurrentHealthPercent() const
+{
+	return CurrentHealth/MaxHealth;
+}
 
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 void UCharacterAttributesComponent::DebugDrawAttributes()

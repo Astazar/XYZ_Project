@@ -33,6 +33,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentOxygen() const { return CurrentOxygen; };
 
+	float GetCurrentHealthPercent() const;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float MaxHealth = 100.0f;
