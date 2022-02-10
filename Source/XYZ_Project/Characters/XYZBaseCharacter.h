@@ -47,7 +47,7 @@ struct FMantlingSettings
 	float MinHeightStartTime = 0.5f;
 };
 
-
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmimingStateChanged, bool);
 
 class UXYZBaseMovementComponent;
 class AInteractiveActor;
@@ -67,6 +67,7 @@ public:
 	void StartFire();
 	void StopFire();
 
+	FOnAmimingStateChanged OnAmimingStateChanged;
 	void StartAiming();
 	void StopAiming();
 	bool IsAiming() const;
@@ -75,6 +76,9 @@ public:
 	void OnStartAiming();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Character")
 	void OnStopAiming();
+	virtual void OnStartAimingInternal();
+	virtual void OnStopAimingInternal();
+
 
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
@@ -185,9 +189,6 @@ protected:
 	//Damage depending from fall height (in meters)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes | Damage")
 	class UCurveFloat* FallDamageCurve;
-
-	virtual void OnStartAimingInternal();
-	virtual void OnStopAimingInternal();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes | Damage", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float OutOfOxygenDamageInterval = 2.0f;

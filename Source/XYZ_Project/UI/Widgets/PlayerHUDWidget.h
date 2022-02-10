@@ -14,7 +14,13 @@ class XYZ_PROJECT_API UPlayerHUDWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	class UReticleWidget* GetReticleWidget();
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	float GetHealthPercent() const;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget names")
+	FName ReticleWidgetName;
 };

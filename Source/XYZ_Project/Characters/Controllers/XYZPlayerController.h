@@ -23,6 +23,9 @@ public:
 protected:
 	virtual void SetupInputComponent() override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widgets")
+	TSubclassOf<class UPlayerHUDWidget> PlayerHUDWidgetClass;
+
 private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -59,8 +62,11 @@ private:
 	void StartAiming();
 	void StopAiming();
 
+	void CreateAndInitializeWidgets();
+
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 
-private:
+	UPlayerHUDWidget* PlayerHUDWidget = nullptr;
+
 	bool bIgnoreCameraPitch = false;
 };

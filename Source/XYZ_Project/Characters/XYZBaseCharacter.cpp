@@ -519,10 +519,18 @@ void AXYZBaseCharacter::OnDeath()
 
 void AXYZBaseCharacter::OnStartAimingInternal()
 {
+	if (OnAmimingStateChanged.IsBound())
+	{
+		OnAmimingStateChanged.Broadcast(true);
+	}
 }
 
 void AXYZBaseCharacter::OnStopAimingInternal()
 {
+	if (OnAmimingStateChanged.IsBound())
+	{
+		OnAmimingStateChanged.Broadcast(false);
+	}
 }
 
 void AXYZBaseCharacter::EnableRagdoll()

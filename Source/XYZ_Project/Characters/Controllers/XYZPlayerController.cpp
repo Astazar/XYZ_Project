@@ -3,11 +3,14 @@
 
 #include "XYZPlayerController.h"
 #include "XYZ_Project/Characters/XYZBaseCharacter.h"
+#include "UI/Widgets/PlayerHUDWidget.h"
+#include "UI/Widgets/ReticleWidget.h"
 
 void AXYZPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	CachedBaseCharacter = Cast<AXYZBaseCharacter>(InPawn);
+	CreateAndInitializeWidgets();
 }
 
 void AXYZPlayerController::SetupInputComponent()
@@ -237,5 +240,26 @@ void AXYZPlayerController::StopAiming()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->StopAiming();
+	}
+}
+
+void AXYZPlayerController::CreateAndInitializeWidgets()
+{
+	if (!IsValid(PlayerHUDWidget))
+	{
+		PlayerHUDWidget = CreateWidget<UPlayerHUDWidget>(GetWorld(), PlayerHUDWidgetClass);
+		if (IsValid(PlayerHUDWidget))
+		{
+			PlayerHUDWidget->AddToViewport();
+		}
+	}
+	
+	if (IsValid(PlayerHUDWidget) && CachedBaseCharacter.IsValid())
+	{
+		UReticleWidget* ReticleWidget = PlayerHUDWidget->GetReticleWidget();
+		if (IsValid(ReticleWidget))
+		{
+			CachedBaseCharacter->OnAmimingStateChanged.AddUFunction(ReticleWidget, FName("OnAimingStateChanged"));
+		}
 	}
 }
