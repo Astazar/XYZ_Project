@@ -25,6 +25,7 @@ ARangeWeaponItem::ARangeWeaponItem()
 
 void ARangeWeaponItem::StartFire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ARangeWeaponItem::StartFire()"));
 	MakeShot();
 	if (WeaponFireMode == EWeaponFireMode::FullAuto)
 	{
@@ -46,6 +47,39 @@ void ARangeWeaponItem::StartAim()
 void ARangeWeaponItem::StopAim()
 {
 	bIsAiming = false;
+}
+
+void ARangeWeaponItem::StartReload()
+{
+	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::StartReload() can work only with AXYZBaseCharacter"));
+	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
+
+	bIsReloading = true;
+	if (IsValid(CharacterReloadMontage))
+	{
+		float MontageDuration = CharacterOwner->PlayAnimMontage(CharacterReloadMontage);
+		PlayAnimMontage(WeaponReloadMontage);
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimer, [this]() { EndReload(true); }, MontageDuration, false);
+	}
+	else
+	{
+		EndReload(true);
+	}
+}
+
+void ARangeWeaponItem::EndReload(bool bIsSuccess)
+{
+	if (!bIsReloading)
+	{
+		return;
+	}
+	GetWorld()->GetTimerManager().ClearTimer(ReloadTimer);
+
+	bIsReloading = false;
+	if (OnReloadComplete.IsBound() && bIsSuccess)
+	{
+		OnReloadComplete.Broadcast();
+	}
 }
 
 float ARangeWeaponItem::GetAimFOV() const
@@ -87,9 +121,19 @@ bool ARangeWeaponItem::CanShoot()
 	return Ammo > 0;
 }
 
+int32 ARangeWeaponItem::GetMaxAmmo() const
+{
+	return MaxAmmo;
+}
+
 FTransform ARangeWeaponItem::GetForeGripTransform() const
 {
 	return WeaponMesh->GetSocketTransform(SocketWeaponForeGrip);
+}
+
+EAmunitionType ARangeWeaponItem::GetAmmoType() const
+{
+	return AmmoType;
 }
 
 void ARangeWeaponItem::MakeShot()
@@ -101,8 +145,14 @@ void ARangeWeaponItem::MakeShot()
 	if (!CanShoot())
 	{
 		StopFire();
+		if (Ammo == 0 && bAutoReload)
+		{
+			CharacterOwner->Reload();
+		}
 		return;
 	}
+
+	EndReload(false);
 
 	CharacterOwner->PlayAnimMontage(CharacterFireMontage);
 	PlayAnimMontage(WeaponFireMontage);

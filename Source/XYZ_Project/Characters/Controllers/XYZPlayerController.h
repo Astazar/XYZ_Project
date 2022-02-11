@@ -62,6 +62,8 @@ private:
 	void StartAiming();
 	void StopAiming();
 
+	void Reload();
+
 	void CreateAndInitializeWidgets();
 
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;

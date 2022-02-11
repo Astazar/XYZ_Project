@@ -67,6 +67,8 @@ public:
 	void StartFire();
 	void StopFire();
 
+	void Reload();
+
 	FOnAmimingStateChanged OnAmimingStateChanged;
 	void StartAiming();
 	void StopAiming();

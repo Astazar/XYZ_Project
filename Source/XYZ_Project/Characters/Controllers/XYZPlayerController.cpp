@@ -43,6 +43,7 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Aim", EInputEvent::IE_Pressed, this, &AXYZPlayerController::StartAiming);
 	InputComponent->BindAction("Aim", EInputEvent::IE_Released, this, &AXYZPlayerController::StopAiming);
 	InputComponent->BindAction("SwimDive", EInputEvent::IE_Pressed, this, &AXYZPlayerController::SwimDive);
+	InputComponent->BindAction("Reload", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Reload);
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -242,6 +243,14 @@ void AXYZPlayerController::StopAiming()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->StopAiming();
+	}
+}
+
+void AXYZPlayerController::Reload()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Reload();
 	}
 }
 

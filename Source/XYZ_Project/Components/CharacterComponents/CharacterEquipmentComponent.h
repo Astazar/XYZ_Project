@@ -6,7 +6,9 @@
 #include "CharacterEquipmentComponent.generated.h"
 
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnCurrentWeaponAmmoChanged, int32);
+typedef TArray<int32, TInlineAllocator<(uint32)EAmunitionType::MAX>> TAmunitionArray;
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCurrentWeaponAmmoChanged, int32, int32);
 
 class ARangeWeaponItem;
 
@@ -18,6 +20,8 @@ class XYZ_PROJECT_API UCharacterEquipmentComponent : public UActorComponent
 public:
 	virtual void BeginPlay() override;
 
+	void ReloadCurrentWeapon();
+
 	EEquipableItemType GetCurrentEquippedItemType() const;
 
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
@@ -28,12 +32,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
 	TSubclassOf<ARangeWeaponItem> SideArmClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
+	TMap<EAmunitionType, int32> MaxAmunitionAmount;
+
 private:
 	void CreateLoadout();
+
+	int32 GetAvailableAmunitionForCurrentWeapon();
+
+	UFUNCTION()
+	void OnWeaponReloadComplete();
 
 	UFUNCTION()
 	void OnCurrentWeaponAmmoChanged(int32 Ammo);
 
+	TAmunitionArray AmunitionArray;
 	ARangeWeaponItem* CurrentEquippedWeapon;
 	TWeakObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };

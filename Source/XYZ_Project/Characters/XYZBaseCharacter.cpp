@@ -429,6 +429,14 @@ void AXYZBaseCharacter::StopFire()
 	}
 }
 
+void AXYZBaseCharacter::Reload()
+{
+	if (IsValid(CharacterEquipmentComponent->GetCurrentRangeWeapon()))
+	{
+		CharacterEquipmentComponent->ReloadCurrentWeapon();
+	}
+}
+
 void AXYZBaseCharacter::StartAiming()
 {
 	ARangeWeaponItem* CurrentRangeWeapon = GetCharacterEquipmentComponent()->GetCurrentRangeWeapon();

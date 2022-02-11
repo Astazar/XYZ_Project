@@ -17,8 +17,10 @@ class XYZ_PROJECT_API UAmmoWidget : public UUserWidget
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ammo")
 	int32 Ammo;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ammo")
+	int32 TotalAmmo;
 
 private:
 	UFUNCTION()
-	void UpdateAmmoCount(int32 NewAmmo);
+	void UpdateAmmoCount(int32 NewAmmo, int32 NewTotalAmmo);
 };
