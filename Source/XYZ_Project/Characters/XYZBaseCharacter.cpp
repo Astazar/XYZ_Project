@@ -335,6 +335,11 @@ const UCharacterEquipmentComponent* AXYZBaseCharacter::GetCharacterEquipmentComp
 	return CharacterEquipmentComponent;
 }
 
+UCharacterEquipmentComponent* AXYZBaseCharacter::GetCharacterEquipmentComponent_Mutable() const
+{
+	return CharacterEquipmentComponent;
+}
+
 void AXYZBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
 	AvailableInteractiveActors.AddUnique(InteractiveActor);

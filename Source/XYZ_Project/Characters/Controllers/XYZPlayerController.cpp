@@ -5,6 +5,8 @@
 #include "XYZ_Project/Characters/XYZBaseCharacter.h"
 #include "UI/Widgets/PlayerHUDWidget.h"
 #include "UI/Widgets/ReticleWidget.h"
+#include "UI/Widgets/AmmoWidget.h"
+#include "Components/CharacterComponents/CharacterEquipmentComponent.h"
 
 void AXYZPlayerController::SetPawn(APawn* InPawn)
 {
@@ -260,6 +262,12 @@ void AXYZPlayerController::CreateAndInitializeWidgets()
 		if (IsValid(ReticleWidget))
 		{
 			CachedBaseCharacter->OnAmimingStateChanged.AddUFunction(ReticleWidget, FName("OnAimingStateChanged"));
+		}
+
+		UAmmoWidget* AmmoWidget = PlayerHUDWidget->GetAmmoWidget();
+		if (IsValid(AmmoWidget))
+		{
+			CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable()->OnCurrentWeaponAmmoChangedEvent.AddUFunction(AmmoWidget, FName("UpdateAmmoCount"));
 		}
 	}
 }

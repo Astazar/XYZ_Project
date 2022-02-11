@@ -6,6 +6,12 @@
 #include "XYZ_ProjectTypes.h"
 #include <Characters/XYZBaseCharacter.h>
 
+void ARangeWeaponItem::BeginPlay()
+{
+	Super::BeginPlay();
+	SetAmmo(MaxAmmo);
+}
+
 ARangeWeaponItem::ARangeWeaponItem()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
@@ -62,6 +68,25 @@ float ARangeWeaponItem::GetAimLookUpModifier() const
 	return AimLookUpModifier;
 }
 
+int32 ARangeWeaponItem::GetAmmo() const
+{
+	return Ammo;
+}
+
+void ARangeWeaponItem::SetAmmo(int32 NewAmmo)
+{
+	Ammo = NewAmmo;
+	if (OnAmmoChanged.IsBound())
+	{
+		OnAmmoChanged.Broadcast(Ammo);
+	}
+}
+
+bool ARangeWeaponItem::CanShoot()
+{
+	return Ammo > 0;
+}
+
 FTransform ARangeWeaponItem::GetForeGripTransform() const
 {
 	return WeaponMesh->GetSocketTransform(SocketWeaponForeGrip);
@@ -72,6 +97,12 @@ void ARangeWeaponItem::MakeShot()
 	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::Fire() can work only with AXYZBaseCharacter"));
 	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
 	APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
+
+	if (!CanShoot())
+	{
+		StopFire();
+		return;
+	}
 
 	CharacterOwner->PlayAnimMontage(CharacterFireMontage);
 	PlayAnimMontage(WeaponFireMontage);
@@ -87,6 +118,7 @@ void ARangeWeaponItem::MakeShot()
 	FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
 	PlayerViewDirection += GetBulletSpreadOffset(FMath::RandRange(0.0f, GetCurrentBulletSpreadAngle()), PlayerViewRotation);
 	WeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, Controller);
+	SetAmmo(--Ammo);
 }
 
 float ARangeWeaponItem::GetCurrentBulletSpreadAngle() const

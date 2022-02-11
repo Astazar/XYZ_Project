@@ -12,6 +12,8 @@ enum class EWeaponFireMode : uint8
 	FullAuto
 };
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmmoChanged, int32);
+
 class UAnimMontage;
 
 UCLASS(Blueprintable)
@@ -20,6 +22,8 @@ class XYZ_PROJECT_API ARangeWeaponItem : public AEquipableItem
 	GENERATED_BODY()
 	
 public:
+	virtual void BeginPlay() override;
+
 	ARangeWeaponItem();
 
 	void StartFire();
@@ -33,7 +37,13 @@ public:
 	float GetAimTurnModifier() const;
 	float GetAimLookUpModifier() const;
 
+	int32 GetAmmo() const;
+	void SetAmmo(int32 NewAmmo);
+	bool CanShoot();
+
 	FTransform GetForeGripTransform() const;
+
+	FOnAmmoChanged OnAmmoChanged;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -69,7 +79,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Aiming", meta = (UIMin = 0.0f, ClampMin = 0.0f))
 	float AimLookUpModifier = 0.5f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Aiming", meta = (UIMin = 1, ClampMin = 1))
+	int32 MaxAmmo = 30;
+
 private:
+	int32 Ammo = 0;
+
 	void MakeShot();
 	// Returns bullet spread angle (in radians) depending on whether we aim or not 
 	float GetCurrentBulletSpreadAngle() const;

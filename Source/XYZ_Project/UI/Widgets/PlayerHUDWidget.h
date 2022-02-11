@@ -17,10 +17,15 @@ class XYZ_PROJECT_API UPlayerHUDWidget : public UUserWidget
 public:
 	class UReticleWidget* GetReticleWidget();
 
+	class UAmmoWidget* GetAmmoWidget();
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	float GetHealthPercent() const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget names")
 	FName ReticleWidgetName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget names")
+	FName AmmoWidgetName;
 };

@@ -145,7 +145,7 @@ public:
 	virtual void NotifyJumpApex() override;
 
 	const UCharacterEquipmentComponent* GetCharacterEquipmentComponent() const;
-
+	UCharacterEquipmentComponent* GetCharacterEquipmentComponent_Mutable() const;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
 	UXYZBaseMovementComponent* XYZBaseCharacterMovementComponent;

@@ -6,7 +6,7 @@
 #include "CharacterEquipmentComponent.generated.h"
 
 
-
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCurrentWeaponAmmoChanged, int32);
 
 class ARangeWeaponItem;
 
@@ -22,12 +22,17 @@ public:
 
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
 
+	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
 	TSubclassOf<ARangeWeaponItem> SideArmClass;
 
 private:
 	void CreateLoadout();
+
+	UFUNCTION()
+	void OnCurrentWeaponAmmoChanged(int32 Ammo);
 
 	ARangeWeaponItem* CurrentEquippedWeapon;
 	TWeakObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
