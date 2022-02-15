@@ -44,6 +44,8 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Aim", EInputEvent::IE_Released, this, &AXYZPlayerController::StopAiming);
 	InputComponent->BindAction("SwimDive", EInputEvent::IE_Pressed, this, &AXYZPlayerController::SwimDive);
 	InputComponent->BindAction("Reload", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Reload);
+	InputComponent->BindAction("NextItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::NextItem);
+	InputComponent->BindAction("PreviousItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::PreviousItem);
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -216,8 +218,10 @@ void AXYZPlayerController::Wallrun()
 
 void AXYZPlayerController::PlayerStartFire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("AXYZPlayerController::PlayerStartFire"));
 	if (CachedBaseCharacter.IsValid())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("AXYZPlayerController::PlayerStartFire is valid"));
 		CachedBaseCharacter->StartFire();
 	}
 }
@@ -251,6 +255,22 @@ void AXYZPlayerController::Reload()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->Reload();
+	}
+}
+
+void AXYZPlayerController::NextItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->NextItem();
+	}
+}
+
+void AXYZPlayerController::PreviousItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->PreviousItem();
 	}
 }
 

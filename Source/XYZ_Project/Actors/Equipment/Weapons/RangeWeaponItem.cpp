@@ -21,6 +21,8 @@ ARangeWeaponItem::ARangeWeaponItem()
 
 	WeaponBarell = CreateDefaultSubobject<UWeaponBarellComponent>(TEXT("WeaponBarell"));
 	WeaponBarell->SetupAttachment(WeaponMesh, SocketWeaponMuzzle);
+
+	EquippedSocketName = SocketCharacterWeapon;
 }
 
 void ARangeWeaponItem::StartFire()
@@ -73,6 +75,15 @@ void ARangeWeaponItem::EndReload(bool bIsSuccess)
 	{
 		return;
 	}
+
+	if (!bIsSuccess)
+	{
+		checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::StartReload() can work only with AXYZBaseCharacter"));
+		AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
+		CharacterOwner->StopAnimMontage(CharacterReloadMontage);
+		StopAnimMontage(WeaponReloadMontage);
+	}
+
 	GetWorld()->GetTimerManager().ClearTimer(ReloadTimer);
 
 	bIsReloading = false;
@@ -191,6 +202,15 @@ float ARangeWeaponItem::PlayAnimMontage(UAnimMontage* AnimMontage)
 		Result = WeaponAnimInstance->Montage_Play(AnimMontage);
 	}
 	return Result;
+}
+
+void ARangeWeaponItem::StopAnimMontage(UAnimMontage* AnimMontage, float BlendOutTime /*= 0.0f*/)
+{
+	UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+	if (IsValid(WeaponAnimInstance))
+	{
+		WeaponAnimInstance->Montage_Stop(BlendOutTime, AnimMontage);
+	}
 }
 
 FVector ARangeWeaponItem::GetBulletSpreadOffset(float Angle, FRotator ShotRotation) const

@@ -64,6 +64,9 @@ private:
 
 	void Reload();
 
+	void NextItem();
+	void PreviousItem();
+
 	void CreateAndInitializeWidgets();
 
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;

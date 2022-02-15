@@ -413,6 +413,11 @@ void AXYZBaseCharacter::BeginPlay()
 
 void AXYZBaseCharacter::StartFire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("AXYZBaseCharacter::StartFire()"));
+	if (CharacterEquipmentComponent->IsEquipping())
+	{
+		return;
+	}
 	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
 	if (IsValid(CurrentRangeWeapon))
 	{
@@ -544,6 +549,16 @@ void AXYZBaseCharacter::OnStopAimingInternal()
 	{
 		OnAmimingStateChanged.Broadcast(false);
 	}
+}
+
+void AXYZBaseCharacter::NextItem()
+{
+	CharacterEquipmentComponent->EquipNextItem();
+}
+
+void AXYZBaseCharacter::PreviousItem()
+{
+	CharacterEquipmentComponent->EquipPreviousItem();
 }
 
 void AXYZBaseCharacter::EnableRagdoll()

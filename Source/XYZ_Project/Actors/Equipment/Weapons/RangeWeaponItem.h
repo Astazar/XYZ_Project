@@ -111,6 +111,7 @@ private:
 	float GetShotTimerInterval() const;
 
 	float PlayAnimMontage(UAnimMontage* AnimMontage);
+	void StopAnimMontage(UAnimMontage* AnimMontage, float BlendOutTime = 0.0f);
 
 	FVector GetBulletSpreadOffset(float Angle, FRotator ShotRotation) const;
 

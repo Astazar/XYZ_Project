@@ -81,6 +81,8 @@ public:
 	virtual void OnStartAimingInternal();
 	virtual void OnStopAimingInternal();
 
+	void NextItem();
+	void PreviousItem();
 
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
