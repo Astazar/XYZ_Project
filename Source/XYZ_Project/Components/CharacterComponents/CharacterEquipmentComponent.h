@@ -21,6 +21,7 @@ public:
 	virtual void BeginPlay() override;
 
 	void ReloadCurrentWeapon();
+	void ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo = 0, bool bCheckIsFull = false);
 
 	bool IsEquipping() const;
 

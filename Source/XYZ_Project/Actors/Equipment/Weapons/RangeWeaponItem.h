@@ -33,7 +33,7 @@ public:
 	void StopAim();
 
 	void StartReload();
-	void EndReload(bool bIsSuccess);
+	void EndReload(bool bIsSuccess, bool bJumpToEnd = false);
 
 	float GetAimFOV() const;
 	float GetAimMovementMaxSpeed() const;

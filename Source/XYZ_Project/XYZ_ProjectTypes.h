@@ -12,6 +12,8 @@ const FName SocketCharacterWeapon = FName("CharacterWeaponSocket");
 const FName SocketWeaponMuzzle = FName("MuzzleSocket");
 const FName SocketWeaponForeGrip = FName("ForeGripSocket");
 
+const FName SectionMontageReloadEnd = FName("ReloadEnd");
+
 const FName CollisionProfilePawn = FName("Pawn");
 const FName CollisionProfilePawnInteractionVolume = FName("PawnInteractionVolume");
 const FName CollisionProfileRagdoll = FName("Ragdoll");

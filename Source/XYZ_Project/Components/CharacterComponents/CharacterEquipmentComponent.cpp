@@ -25,6 +25,32 @@ void UCharacterEquipmentComponent::ReloadCurrentWeapon()
 	CurrentEquippedWeapon->StartReload();
 }
 
+void UCharacterEquipmentComponent::ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo /*= 0*/, bool bCheckIsFull /*= false*/)
+{
+	int32 AvailableAmunition = GetAvailableAmunitionForCurrentWeapon();
+	int32 CurrentAmmo = CurrentEquippedWeapon->GetAmmo();
+	int32 AmmoToReload = CurrentEquippedWeapon->GetMaxAmmo() - CurrentAmmo;
+
+	int32 ReloadedAmmo = FMath::Min(AvailableAmunition, AmmoToReload);
+	if (ReloadedAmmo > 0)
+	{
+		ReloadedAmmo = FMath::Min(ReloadedAmmo, NumberOfAmmo);
+	}
+
+	AmunitionArray[(uint32)CurrentEquippedWeapon->GetAmmoType()] -= ReloadedAmmo;
+	CurrentEquippedWeapon->SetAmmo(CurrentAmmo + ReloadedAmmo);
+
+	if (bCheckIsFull)
+	{
+		AvailableAmunition = GetAvailableAmunitionForCurrentWeapon();
+		bool bIsFullyReloaded = CurrentEquippedWeapon->GetAmmo() == CurrentEquippedWeapon->GetMaxAmmo();
+		if (AvailableAmunition == 0 || bIsFullyReloaded)
+		{
+			CurrentEquippedWeapon->EndReload(true, true);
+		}
+	}
+}
+
 bool UCharacterEquipmentComponent::IsEquipping() const
 {
 	return bIsEquiping;
@@ -192,13 +218,7 @@ int32 UCharacterEquipmentComponent::GetAvailableAmunitionForCurrentWeapon()
 
 void UCharacterEquipmentComponent::OnWeaponReloadComplete()
 {
-	int32 AvailableAmunition = GetAvailableAmunitionForCurrentWeapon();
-	int32 CurrentAmmo = CurrentEquippedWeapon->GetAmmo();
-	int32 AmmoToReload = CurrentEquippedWeapon->GetMaxAmmo() - CurrentAmmo;
-	int32 ReloadedAmmo = FMath::Min(AvailableAmunition, AmmoToReload);
-
-	AmunitionArray[(uint32)CurrentEquippedWeapon->GetAmmoType()] -= ReloadedAmmo;
-	CurrentEquippedWeapon->SetAmmo(CurrentAmmo + ReloadedAmmo);
+	ReloadAmmoInCurrentWeapon();
 }
 
 void UCharacterEquipmentComponent::OnCurrentWeaponAmmoChanged(int32 Ammo)
