@@ -41,6 +41,8 @@ protected:
 	int32 BulletsPerShot = 1;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
+	TSubclassOf<class UDamageType> DamageTypeClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
 	float DamageAmount = 20.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
 	class UCurveFloat* FallOffDamageDiagram;
