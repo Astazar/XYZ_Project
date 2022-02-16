@@ -14,6 +14,13 @@ enum class EWeaponFireMode : uint8
 	FullAuto
 };
 
+UENUM(BlueprintType)
+enum class EReloadType : uint8
+{
+	FullClip,
+	ByBullet
+};
+
 class UAnimMontage;
 
 UCLASS(Blueprintable)
@@ -33,7 +40,7 @@ public:
 	void StopAim();
 
 	void StartReload();
-	void EndReload(bool bIsSuccess, bool bJumpToEnd = false);
+	void EndReload(bool bIsSuccess);
 
 	float GetAimFOV() const;
 	float GetAimMovementMaxSpeed() const;
@@ -65,6 +72,10 @@ protected:
 	UAnimMontage* WeaponFireMontage;	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animations | Weapon")
 	UAnimMontage* WeaponReloadMontage;
+	//Fullclip reload type adds ammo only when the whole animation is successfuly played
+	//ByBullet reload type requires section "ReloadEnd" in character reload animation
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animations | Weapon")
+	EReloadType ReloadType = EReloadType::FullClip;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animations | Character")
 	UAnimMontage* CharacterFireMontage;
