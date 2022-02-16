@@ -44,6 +44,7 @@ enum class EAmunitionType : uint8
 	None,
 	Pistol,
 	Rifle,
+	ShotgunShells,
 	MAX UMETA(Hidden)
 };
 
@@ -53,5 +54,6 @@ enum class  EEquipmentSlots : uint8
 	None,
 	SideArm, 
 	PrimaryWeapon,
+	SecondaryWeapon,
 	MAX UMETA(Hidden)
 };

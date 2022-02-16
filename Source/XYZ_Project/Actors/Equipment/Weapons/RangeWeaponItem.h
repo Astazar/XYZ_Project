@@ -71,14 +71,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animations | Character")
 	UAnimMontage* CharacterReloadMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Firing")
 	EWeaponFireMode WeaponFireMode = EWeaponFireMode::Single;
 
 	// Rate of fire in rounds per minute
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters", meta = (UIMin = 1.0f, ClampMin = 1.0f))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Firing", meta = (UIMin = 1.0f, ClampMin = 1.0f))
 	float RateOfFire = 600.0f;
 	// Bullet spread half angle in degrees
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters", meta = (UIMin = 0.0f, ClampMin = 0.0f, UIMax = 5.0f, ClampMax = 5.0f))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Firing", meta = (UIMin = 0.0f, ClampMin = 0.0f, UIMax = 5.0f, ClampMax = 5.0f))
 	float SpreadAngle = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Aiming", meta = (UIMin = 0.0f, ClampMin = 0.0f, UIMax = 5.0f, ClampMax = 5.0f))
@@ -112,8 +112,6 @@ private:
 
 	float PlayAnimMontage(UAnimMontage* AnimMontage);
 	void StopAnimMontage(UAnimMontage* AnimMontage, float BlendOutTime = 0.0f);
-
-	FVector GetBulletSpreadOffset(float Angle, FRotator ShotRotation) const;
 
 	FTimerHandle ShotTimer;
 	FTimerHandle ReloadTimer;
