@@ -6,6 +6,9 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnDeathEventSignature);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOutOfStaminaEventSignature, bool);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FCurrentHealthChanged, float, float);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FCurrentStaminaChanged, float, float);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FCurrentOxygenChanged, float, float);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class XYZ_PROJECT_API UCharacterAttributesComponent : public UActorComponent
@@ -18,6 +21,10 @@ public:
 	FOnDeathEventSignature OnDeathEvent;
 	FOutOfStaminaEventSignature OutOfStaminaEvent;
 
+	FCurrentHealthChanged OnCurrentHealthChangedEvent;
+	FCurrentStaminaChanged OnCurrentStaminaChangedEvent;
+	FCurrentOxygenChanged OnCurrentOxygenChangedEvent;
+
 	bool IsAlive() { return CurrentHealth > 0.0f; }
 
 	virtual void BeginPlay() override;
@@ -27,6 +34,13 @@ public:
 	virtual void UpdateOxygenValue(float DeltaTime);
 
 	UFUNCTION(BlueprintCallable)
+	virtual void SetCurrentHealthClamped(float NewHealth);
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCurrentStaminaClamped(float NewStamina);
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCurrentOxygenClamped(float NewOxygen);
+
+	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentHealth() const { return CurrentHealth; };
 	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentStamina() const { return CurrentStamina; };
@@ -34,6 +48,8 @@ public:
 	virtual float GetCurrentOxygen() const { return CurrentOxygen; };
 
 	float GetCurrentHealthPercent() const;
+	float GetCurrentStaminaPercent() const;
+	float GetCurrentOxygenPercent() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health", meta = (ClampMin = 0.0f, UIMin = 0.0f))

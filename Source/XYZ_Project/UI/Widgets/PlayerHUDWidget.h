@@ -19,6 +19,8 @@ public:
 
 	class UAmmoWidget* GetAmmoWidget();
 
+	class UCharacterAttributesWidget* GetCharacterAttributesWidget();
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	float GetHealthPercent() const;
@@ -28,4 +30,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget names")
 	FName AmmoWidgetName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget names")
+	FName CharacterAttributesWidgetName;
 };

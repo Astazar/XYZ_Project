@@ -7,6 +7,7 @@
 #include "ReticleWidget.h"
 #include <Blueprint/WidgetTree.h>
 #include "AmmoWidget.h"
+#include "CharacterAttributesWidget.h"
 
 UReticleWidget* UPlayerHUDWidget::GetReticleWidget()
 {
@@ -16,6 +17,11 @@ UReticleWidget* UPlayerHUDWidget::GetReticleWidget()
 class UAmmoWidget* UPlayerHUDWidget::GetAmmoWidget()
 {
 	return WidgetTree->FindWidget<UAmmoWidget>(AmmoWidgetName);
+}
+
+class UCharacterAttributesWidget* UPlayerHUDWidget::GetCharacterAttributesWidget()
+{
+	return WidgetTree->FindWidget<UCharacterAttributesWidget>(CharacterAttributesWidgetName);
 }
 
 float UPlayerHUDWidget::GetHealthPercent() const

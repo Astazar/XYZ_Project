@@ -7,6 +7,8 @@
 #include "UI/Widgets/ReticleWidget.h"
 #include "UI/Widgets/AmmoWidget.h"
 #include "Components/CharacterComponents/CharacterEquipmentComponent.h"
+#include "Components/CharacterComponents/CharacterAttributesComponent.h"
+#include "UI/Widgets/CharacterAttributesWidget.h"
 
 void AXYZPlayerController::SetPawn(APawn* InPawn)
 {
@@ -297,6 +299,15 @@ void AXYZPlayerController::CreateAndInitializeWidgets()
 		if (IsValid(AmmoWidget))
 		{
 			CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable()->OnCurrentWeaponAmmoChangedEvent.AddUFunction(AmmoWidget, FName("UpdateAmmoCount"));
+		}
+
+		UCharacterAttributesWidget* AttributesWidget = PlayerHUDWidget->GetCharacterAttributesWidget();
+		if (IsValid(AttributesWidget))
+		{
+			UCharacterAttributesComponent* AttributesComponent = CachedBaseCharacter->GetCharacterAttributesComponent();
+			AttributesComponent->OnCurrentHealthChangedEvent.AddUFunction(AttributesWidget, FName("UpdateHealth"));
+			AttributesComponent->OnCurrentStaminaChangedEvent.AddUFunction(AttributesWidget, FName("UpdateStamina"));
+			AttributesComponent->OnCurrentOxygenChangedEvent.AddUFunction(AttributesWidget, FName("UpdateOxygen"));
 		}
 	}
 }
