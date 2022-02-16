@@ -114,6 +114,9 @@ private:
 	int32 Ammo = 0;
 
 	bool bIsReloading = false;
+	bool bIsFiring = false;
+
+	void OnShotTimerElapsed();
 
 	void MakeShot();
 	// Returns bullet spread angle (in radians) depending on whether we aim or not 

@@ -26,19 +26,19 @@ ARangeWeaponItem::ARangeWeaponItem()
 }
 
 void ARangeWeaponItem::StartFire()
-{
-	UE_LOG(LogTemp, Warning, TEXT("ARangeWeaponItem::StartFire()"));
-	MakeShot();
-	if (WeaponFireMode == EWeaponFireMode::FullAuto)
+{	
+	if (GetWorldTimerManager().IsTimerActive(ShotTimer))
 	{
-		GetWorld()->GetTimerManager().ClearTimer(ShotTimer);
-		GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ARangeWeaponItem::MakeShot, GetShotTimerInterval(), true);
+		return;
 	}
+
+	bIsFiring = true;
+	MakeShot();
 }
 
 void ARangeWeaponItem::StopFire()
 {
-	GetWorld()->GetTimerManager().ClearTimer(ShotTimer);
+	bIsFiring = false;
 }
 
 void ARangeWeaponItem::StartAim()
@@ -166,6 +166,28 @@ EAmunitionType ARangeWeaponItem::GetAmmoType() const
 	return AmmoType;
 }
 
+void ARangeWeaponItem::OnShotTimerElapsed()
+{
+	if (!bIsFiring)
+	{
+		return;
+	}
+
+	switch (WeaponFireMode)
+	{
+		case EWeaponFireMode::Single:
+		{
+			StopFire();
+			break;
+		}
+		case EWeaponFireMode::FullAuto:
+		{
+			MakeShot();
+			break;
+		}
+	}
+}
+
 void ARangeWeaponItem::MakeShot()
 {
 	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::Fire() can work only with AXYZBaseCharacter"));
@@ -198,6 +220,8 @@ void ARangeWeaponItem::MakeShot()
 	FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
 	WeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, Controller, GetCurrentBulletSpreadAngle());
 	SetAmmo(--Ammo);
+
+	GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ARangeWeaponItem::OnShotTimerElapsed, GetShotTimerInterval(), false);
 }
 
 float ARangeWeaponItem::GetCurrentBulletSpreadAngle() const
