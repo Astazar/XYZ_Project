@@ -30,9 +30,9 @@ void UCharacterEquipmentComponent::ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo 
 	int32 AvailableAmunition = GetAvailableAmunitionForCurrentWeapon();
 	int32 CurrentAmmo = CurrentEquippedWeapon->GetAmmo();
 	int32 AmmoToReload = CurrentEquippedWeapon->GetMaxAmmo() - CurrentAmmo;
-
 	int32 ReloadedAmmo = FMath::Min(AvailableAmunition, AmmoToReload);
-	if (ReloadedAmmo > 0)
+
+	if (NumberOfAmmo > 0)
 	{
 		ReloadedAmmo = FMath::Min(ReloadedAmmo, NumberOfAmmo);
 	}
