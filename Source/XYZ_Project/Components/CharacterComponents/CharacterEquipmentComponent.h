@@ -11,6 +11,7 @@ typedef TArray<int32, TInlineAllocator<(uint32)EAmunitionType::MAX>> TAmunitionA
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCurrentWeaponAmmoChanged, int32, int32);
 
 class ARangeWeaponItem;
+class AThrowableItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class XYZ_PROJECT_API UCharacterEquipmentComponent : public UActorComponent
@@ -35,6 +36,8 @@ public:
 	void EquipNextItem();
 	void EquipPreviousItem();
 
+	void LaunchCurrentThrowableItem();
+
 	EEquipableItemType GetCurrentEquippedItemType() const;
 
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
@@ -47,6 +50,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
 	TMap<EEquipmentSlots, TSubclassOf<class AEquipableItem>> ItemsLoadout;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
+	TSet<EEquipmentSlots> IgnoreSlotsWhileSwitching;
 
 private:
 	void CreateLoadout();
@@ -72,8 +78,10 @@ private:
 	TAmunitionArray AmunitionArray;
 
 	EEquipmentSlots CurrentEquippedSlot;
+	EEquipmentSlots PreviousEquippedSlot;
 	AEquipableItem* CurrentEquippedItem;
 	ARangeWeaponItem* CurrentEquippedWeapon;
+	AThrowableItem* CurrentThrowableItem;
 
 	TWeakObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };

@@ -84,6 +84,8 @@ public:
 	void NextItem();
 	void PreviousItem();
 
+	void EquipPrimaryItem();
+
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
 	virtual void Turn(float Value) {};

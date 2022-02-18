@@ -561,6 +561,11 @@ void AXYZBaseCharacter::PreviousItem()
 	CharacterEquipmentComponent->EquipPreviousItem();
 }
 
+void AXYZBaseCharacter::EquipPrimaryItem()
+{
+	CharacterEquipmentComponent->EquipItemInSlot(EEquipmentSlots::PrimaryItemSlot);
+}
+
 void AXYZBaseCharacter::EnableRagdoll()
 {
 	GetMesh()->SetCollisionProfileName(CollisionProfileRagdoll);

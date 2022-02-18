@@ -67,6 +67,8 @@ private:
 	void NextItem();
 	void PreviousItem();
 
+	void EquipPrimaryItem();
+
 	void CreateAndInitializeWidgets();
 
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
