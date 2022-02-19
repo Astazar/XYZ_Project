@@ -7,19 +7,19 @@ void UCharacterAttributesWidget::UpdateHealth(float NewHealth, float MaxHealth)
 {
 	Health = bRoundHealthValue ? FMath::RoundToFloat(NewHealth) : NewHealth;
 	HealthPercent = Health / MaxHealth;
-	bIsHealthRestored = Health == MaxHealth ? true : false;
+	bIsHealthRestored = Health == MaxHealth;
 }
 
 void UCharacterAttributesWidget::UpdateStamina(float NewStamina, float MaxStamina)
 {
 	Stamina = bRoundStaminaValue ? FMath::RoundToFloat(NewStamina) : NewStamina;
 	StaminaPercent = Stamina / MaxStamina;
-	bIsStaminaRestored = Stamina == MaxStamina ? true : false;
+	bIsStaminaRestored = Stamina == MaxStamina;
 }
 
 void UCharacterAttributesWidget::UpdateOxygen(float NewOxygen, float MaxOxygen)
 {
 	Oxygen = bRoundOxygenValue ? FMath::RoundToFloat(NewOxygen) : NewOxygen;
 	OxygenPercent = Oxygen / MaxOxygen;
-	bIsOxygenRestored = Oxygen == MaxOxygen ? true : false;
+	bIsOxygenRestored = Oxygen == MaxOxygen;
 }
