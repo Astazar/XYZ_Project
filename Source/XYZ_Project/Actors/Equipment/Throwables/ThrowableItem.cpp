@@ -2,8 +2,19 @@
 #include "Actors/Projectiles/XYZProjectile.h"
 #include "Characters/XYZBaseCharacter.h"
 
+void AThrowableItem::BeginPlay()
+{
+	Super::BeginPlay();
+	SetThrowAmmo(MaxThrowAmmo);
+}
+
 void AThrowableItem::Throw()
 {
+	if (!CanThrow())
+	{
+		return;
+	}
+
 	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("AThrowableItem::Throw() can work only with AXYZBaseCharacter"));
 	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
 
@@ -32,5 +43,35 @@ void AThrowableItem::Throw()
 	{
 		Projectile->SetOwner(GetOwner());
 		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal());
+		SetThrowAmmo(--ThrowAmmo);
 	}
+}
+
+bool AThrowableItem::CanThrow()
+{
+	return ThrowAmmo > 0;
+}
+
+EAmunitionType AThrowableItem::GetThrowAmmoType() const
+{
+	return ThrowAmmoType;
+}
+
+int32 AThrowableItem::GetThrowAmmo() const
+{
+	return ThrowAmmo;
+}
+
+void AThrowableItem::SetThrowAmmo(int32 NewAmmo)
+{
+	ThrowAmmo = NewAmmo;
+	if (OnThrowAmmoChanged.IsBound())
+	{
+		OnThrowAmmoChanged.Broadcast(ThrowAmmo);
+	}
+}
+
+int32 AThrowableItem::GetMaxThrowAmmo() const
+{
+	return MaxThrowAmmo;
 }

@@ -9,6 +9,8 @@ typedef TArray<class AEquipableItem*, TInlineAllocator<(uint32)EEquipmentSlots::
 typedef TArray<int32, TInlineAllocator<(uint32)EAmunitionType::MAX>> TAmunitionArray;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCurrentWeaponAmmoChanged, int32, int32);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCurrentThrowItemAmmoChanged, int32);
+
 
 class ARangeWeaponItem;
 class AThrowableItem;
@@ -42,8 +44,10 @@ public:
 
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
 
-	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
+	AThrowableItem* GetCurrentThrowableItem() const;
 
+	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
+	FOnCurrentThrowItemAmmoChanged OnCurrentThrowItemAmmoChangedEvent;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
 	TMap<EAmunitionType, int32> MaxAmunitionAmount;
@@ -67,6 +71,9 @@ private:
 
 	UFUNCTION()
 	void OnCurrentWeaponAmmoChanged(int32 Ammo);
+
+	UFUNCTION()
+	void OnCurrentThrowItemAmmoChanged(int32 Ammo);
 
 	bool bIsEquiping = false;
 	FTimerHandle EquipTimer;

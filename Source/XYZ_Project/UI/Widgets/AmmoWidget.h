@@ -15,12 +15,18 @@ class XYZ_PROJECT_API UAmmoWidget : public UUserWidget
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ammo")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ammo | Weapon")
 	int32 Ammo;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ammo")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ammo | Weapon")
 	int32 TotalAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ammo | Throwable")
+	int32 TotalThrowAmmo;
 
 private:
 	UFUNCTION()
 	void UpdateAmmoCount(int32 NewAmmo, int32 NewTotalAmmo);
+
+	UFUNCTION()
+	void UpdateThrowAmmoCount(int32 NewTotalAmmo);
 };
