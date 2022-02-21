@@ -2,15 +2,10 @@
 #include "Actors/Projectiles/XYZProjectile.h"
 #include "Characters/XYZBaseCharacter.h"
 
-void AThrowableItem::BeginPlay()
-{
-	Super::BeginPlay();
-	SetThrowAmmo(MaxThrowAmmo);
-}
 
 void AThrowableItem::Throw()
 {
-	if (!CanThrow())
+	if (!CanUse())
 	{
 		return;
 	}
@@ -38,40 +33,20 @@ void AThrowableItem::Throw()
 	FVector SocketInViewSpace = PlayerViewTransform.InverseTransformPosition(ThrowableSocketLocation);
 
 	FVector SpawnLocation = PlayerViewPoint + PlayerViewDirection * SocketInViewSpace.X;
-	AXYZProjectile* Projectile = GetWorld()->SpawnActor<AXYZProjectile>(ProjectileClass, SpawnLocation, FRotator::ZeroRotator);
+	AXYZProjectile* Projectile = GetWorld()->SpawnActor<AXYZProjectile>(ProjectileClass, SpawnLocation, LaunchDirection.ToOrientationRotator());
 	if (IsValid(Projectile))
 	{
 		Projectile->SetOwner(GetOwner());
 		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal());
-		SetThrowAmmo(--ThrowAmmo);
+		SetAmmo(--Ammo);
 	}
 }
 
-bool AThrowableItem::CanThrow()
+void AThrowableItem::SetAmmo(int32 NewAmmo)
 {
-	return ThrowAmmo > 0;
-}
-
-EAmunitionType AThrowableItem::GetThrowAmmoType() const
-{
-	return ThrowAmmoType;
-}
-
-int32 AThrowableItem::GetThrowAmmo() const
-{
-	return ThrowAmmo;
-}
-
-void AThrowableItem::SetThrowAmmo(int32 NewAmmo)
-{
-	ThrowAmmo = NewAmmo;
+	Super::SetAmmo(NewAmmo);
 	if (OnThrowAmmoChanged.IsBound())
 	{
-		OnThrowAmmoChanged.Broadcast(ThrowAmmo);
+		OnThrowAmmoChanged.Broadcast(Ammo);
 	}
-}
-
-int32 AThrowableItem::GetMaxThrowAmmo() const
-{
-	return MaxThrowAmmo;
 }

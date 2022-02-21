@@ -6,11 +6,6 @@
 #include "XYZ_ProjectTypes.h"
 #include <Characters/XYZBaseCharacter.h>
 
-void ARangeWeaponItem::BeginPlay()
-{
-	Super::BeginPlay();
-	SetAmmo(MaxAmmo);
-}
 
 ARangeWeaponItem::ARangeWeaponItem()
 {
@@ -132,39 +127,22 @@ float ARangeWeaponItem::GetAimLookUpModifier() const
 	return AimLookUpModifier;
 }
 
-int32 ARangeWeaponItem::GetAmmo() const
-{
-	return Ammo;
-}
 
 void ARangeWeaponItem::SetAmmo(int32 NewAmmo)
 {
-	Ammo = NewAmmo;
+	Super::SetAmmo(NewAmmo);
 	if (OnAmmoChanged.IsBound())
 	{
 		OnAmmoChanged.Broadcast(Ammo);
 	}
 }
 
-bool ARangeWeaponItem::CanShoot()
-{
-	return Ammo > 0;
-}
-
-int32 ARangeWeaponItem::GetMaxAmmo() const
-{
-	return MaxAmmo;
-}
 
 FTransform ARangeWeaponItem::GetForeGripTransform() const
 {
 	return WeaponMesh->GetSocketTransform(SocketWeaponForeGrip);
 }
 
-EAmunitionType ARangeWeaponItem::GetAmmoType() const
-{
-	return AmmoType;
-}
 
 void ARangeWeaponItem::OnShotTimerElapsed()
 {
@@ -194,7 +172,7 @@ void ARangeWeaponItem::MakeShot()
 	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
 	APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
 
-	if (!CanShoot())
+	if (!CanUse())
 	{
 		StopFire();
 		if (Ammo == 0 && bAutoReload)

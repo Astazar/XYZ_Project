@@ -307,8 +307,8 @@ void AXYZPlayerController::CreateAndInitializeWidgets()
 		UAmmoWidget* AmmoWidget = PlayerHUDWidget->GetAmmoWidget();
 		if (IsValid(AmmoWidget))
 		{
-			CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable()->OnCurrentWeaponAmmoChangedEvent.AddUFunction(AmmoWidget, FName("UpdateAmmoCount"));
-			CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable()->OnCurrentThrowItemAmmoChangedEvent.AddUFunction(AmmoWidget, FName("UpdateThrowAmmoCount"));
+			CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable()->OnCurrentWeaponAmmoChangedEvent.AddUObject(AmmoWidget, &UAmmoWidget::UpdateAmmoCount);
+			CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable()->OnCurrentThrowItemAmmoChangedEvent.AddUObject(AmmoWidget, &UAmmoWidget::UpdateThrowAmmoCount);
 		}
 
 		UCharacterAttributesWidget* AttributesWidget = PlayerHUDWidget->GetCharacterAttributesWidget();

@@ -68,6 +68,10 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 	CurrentEquippedItem = ItemsArray[(uint32)Slot];
 	CurrentEquippedWeapon = Cast<ARangeWeaponItem>(CurrentEquippedItem);
 	CurrentThrowableItem = Cast<AThrowableItem>(CurrentEquippedItem);
+	if (CurrentThrowableItem && !CurrentThrowableItem->CanUse())
+	{
+		return;
+	}
 
 	if (IsValid(CurrentEquippedWeapon))
 	{
@@ -78,12 +82,8 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 
 	if (IsValid(CurrentThrowableItem))
 	{
-		if (!CurrentThrowableItem->CanThrow())
-		{
-			return;
-		}
 		CurrentThrowableItem->OnThrowAmmoChanged.AddUFunction(this, FName("OnCurrentThrowItemAmmoChanged"));
-		OnCurrentThrowItemAmmoChanged(CurrentThrowableItem->GetThrowAmmo());
+		OnCurrentThrowItemAmmoChanged(CurrentThrowableItem->GetAmmo());
 	}
 
 	if (IsValid(CurrentEquippedItem))
@@ -221,7 +221,7 @@ void UCharacterEquipmentComponent::CreateLoadout()
 		if (Item->GetItemType() == EEquipableItemType::Throwable)
 		{
 			AThrowableItem* ThrowItem = Cast<AThrowableItem>(Item);
-			OnCurrentThrowItemAmmoChanged(ThrowItem->GetMaxThrowAmmo());
+			OnCurrentThrowItemAmmoChanged(ThrowItem->GetMaxAmmo());
 		}
 	}
 }
