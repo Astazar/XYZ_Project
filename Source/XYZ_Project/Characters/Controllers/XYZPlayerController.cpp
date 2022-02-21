@@ -302,6 +302,7 @@ void AXYZPlayerController::CreateAndInitializeWidgets()
 		if (IsValid(ReticleWidget))
 		{
 			CachedBaseCharacter->OnAmimingStateChanged.AddUFunction(ReticleWidget, FName("OnAimingStateChanged"));
+			CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable()->OnEquippedItemChanged.AddUFunction(ReticleWidget, FName("OnEquippedItemChanged"));
 		}
 
 		UAmmoWidget* AmmoWidget = PlayerHUDWidget->GetAmmoWidget();

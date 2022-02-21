@@ -102,6 +102,11 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 		CurrentEquippedSlot = Slot;
 		CurrentEquippedItem->Equip();
 	}
+
+	if (OnEquippedItemChanged.IsBound())
+	{
+		OnEquippedItemChanged.Broadcast(CurrentEquippedItem);
+	}
 }
 
 void UCharacterEquipmentComponent::AttachCurrentItemToEquippedSocket()

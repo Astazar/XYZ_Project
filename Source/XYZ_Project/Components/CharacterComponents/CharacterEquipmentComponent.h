@@ -10,7 +10,7 @@ typedef TArray<int32, TInlineAllocator<(uint32)EAmunitionType::MAX>> TAmunitionA
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCurrentWeaponAmmoChanged, int32, int32);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCurrentThrowItemAmmoChanged, int32);
-
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnEquippedItemChanged, const AEquipableItem*);
 
 class ARangeWeaponItem;
 class AThrowableItem;
@@ -48,6 +48,8 @@ public:
 
 	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
 	FOnCurrentThrowItemAmmoChanged OnCurrentThrowItemAmmoChangedEvent;
+	FOnEquippedItemChanged OnEquippedItemChanged;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
 	TMap<EAmunitionType, int32> MaxAmunitionAmount;

@@ -47,6 +47,8 @@ public:
 
 	virtual void SetAmmo(int32 NewAmmo) override;
 
+	virtual EReticleType GetReticleType() const override;
+
 	FTransform GetForeGripTransform() const;
 
 	FOnAmmoChanged OnAmmoChanged;
@@ -97,6 +99,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo")
 	bool bAutoReload = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Reticle")
+	EReticleType AimReticleType = EReticleType::Default;
 
 private:
 	bool bIsReloading = false;

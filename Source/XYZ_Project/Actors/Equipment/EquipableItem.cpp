@@ -35,3 +35,8 @@ void AEquipableItem::Unequip()
 		OnEquipmentStateChanged.Broadcast(false);
 	}
 }
+
+EReticleType AEquipableItem::GetReticleType() const
+{
+	return ReticleType;
+}

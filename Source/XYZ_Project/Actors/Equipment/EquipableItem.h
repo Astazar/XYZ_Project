@@ -27,6 +27,8 @@ public:
 	virtual void Equip();
 	virtual void Unequip();
 
+	virtual EReticleType GetReticleType() const;
+
 protected:
 	UPROPERTY(BlueprintAssignable)
 	FOnEquipmentStateChanged OnEquipmentStateChanged;
@@ -42,4 +44,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipable item")
 	FName EquippedSocketName = NAME_None;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Reticle")
+	EReticleType ReticleType = EReticleType::None;
 };
