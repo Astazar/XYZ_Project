@@ -37,7 +37,7 @@ void AThrowableItem::Throw()
 	if (IsValid(Projectile))
 	{
 		Projectile->SetOwner(GetOwner());
-		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal());
+		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal(), SpawnLocation);
 		SetAmmo(--Ammo);
 	}
 }

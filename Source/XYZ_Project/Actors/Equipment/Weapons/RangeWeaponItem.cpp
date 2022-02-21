@@ -196,7 +196,7 @@ void ARangeWeaponItem::MakeShot()
 	FRotator PlayerViewRotation;
 	Controller->GetPlayerViewPoint(PlayerViewPoint, PlayerViewRotation);
 	FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
-	WeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, Controller, GetCurrentBulletSpreadAngle());
+	WeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, GetCurrentBulletSpreadAngle());
 	SetAmmo(--Ammo);
 
 	GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ARangeWeaponItem::OnShotTimerElapsed, GetShotTimerInterval(), false);

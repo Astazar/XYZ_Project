@@ -201,12 +201,15 @@ float APlayerCharacter::GetDefaultFOV() const
 
 float APlayerCharacter::GetAimLookUpModifier() const
 {
-	return IsAiming() ? CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimLookUpModifier() : 1.0f;
+	ARangeWeaponItem* Weapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	return IsAiming() && IsValid(Weapon) ? Weapon->GetAimLookUpModifier() : 1.0f;
 }
+	
 
 float APlayerCharacter::GetAimTurnModifier() const
 {
-	return IsAiming() ? CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimTurnModifier() : 1.0f;
+	ARangeWeaponItem* Weapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	return IsAiming() && IsValid(Weapon) ? CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimTurnModifier() : 1.0f;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -277,8 +280,12 @@ void APlayerCharacter::OnStopAimingInternal()
 
 void APlayerCharacter::UpdateCameraAimingTimeline(const float Alpha)
 {
-	float PlayerFOV = UKismetMathLibrary::Lerp(GetDefaultFOV(), CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimFOV(), Alpha);
-	UpdateFOV(PlayerFOV);
+	ARangeWeaponItem* Weapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	if (IsValid(Weapon))
+	{
+		float PlayerFOV = UKismetMathLibrary::Lerp(GetDefaultFOV(), CharacterEquipmentComponent->GetCurrentRangeWeapon()->GetAimFOV(), Alpha);
+		UpdateFOV(PlayerFOV);
+	}
 }
 
 void APlayerCharacter::UpdateFOV(float NewFOV)
