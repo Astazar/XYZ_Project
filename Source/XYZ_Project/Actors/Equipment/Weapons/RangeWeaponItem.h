@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Actors/Equipment/Weapons/WeaponItem.h"
+#include "Actors/Equipment/EquipableItem.h"
 #include "RangeWeaponItem.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnReloadComplete);
@@ -23,13 +23,15 @@ enum class EReloadType : uint8
 
 class UAnimMontage;
 
-UCLASS()
-class XYZ_PROJECT_API ARangeWeaponItem : public AWeaponItem
+UCLASS(Blueprintable)
+class XYZ_PROJECT_API ARangeWeaponItem : public AEquipableItem
 {
 	GENERATED_BODY()
 	
 public:
 	ARangeWeaponItem();
+
+	virtual void BeginPlay() override;
 
 	void StartFire();
 	void StopFire();
@@ -45,7 +47,14 @@ public:
 	float GetAimTurnModifier() const;
 	float GetAimLookUpModifier() const;
 
-	virtual void SetAmmo(int32 NewAmmo) override;
+	bool CanShoot();
+
+	int32 GetAmmo() const;
+	void SetAmmo(int32 NewAmmo);
+
+	int32 GetMaxAmmo() const;
+
+	EAmunitionType GetAmmoType() const;
 
 	virtual EReticleType GetReticleType() const override;
 
@@ -97,6 +106,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Aiming", meta = (UIMin = 0.0f, ClampMin = 0.0f))
 	float AimLookUpModifier = 0.5f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo", meta = (UIMin = 0, ClampMin = 0))
+	int32 Ammo = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo", meta = (UIMin = 1, ClampMin = 1))
+	int32 MaxAmmo = 30;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo")
+	EAmunitionType AmmoType;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo")
 	bool bAutoReload = false;
 

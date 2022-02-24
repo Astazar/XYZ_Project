@@ -3,9 +3,15 @@
 #include "Characters/XYZBaseCharacter.h"
 
 
+void AThrowableItem::BeginPlay()
+{
+	Super::BeginPlay();
+	SetThrowAmmo(MaxThrowAmmo);
+}
+
 void AThrowableItem::Throw()
 {
-	if (!CanUse())
+	if (!CanThrow())
 	{
 		return;
 	}
@@ -38,15 +44,35 @@ void AThrowableItem::Throw()
 	{
 		Projectile->SetOwner(GetOwner());
 		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal(), SpawnLocation);
-		SetAmmo(--Ammo);
+		SetThrowAmmo(--ThrowAmmo);
 	}
 }
 
-void AThrowableItem::SetAmmo(int32 NewAmmo)
+bool AThrowableItem::CanThrow() const
 {
-	Super::SetAmmo(NewAmmo);
+	return ThrowAmmo > 0;
+}
+
+EAmunitionType AThrowableItem::GetThrowAmmoType() const
+{
+	return ThrowAmmoType;
+}
+
+int32 AThrowableItem::GetThrowAmmo() const
+{
+	return ThrowAmmo;
+}
+
+int32 AThrowableItem::GetMaxThrowAmmo() const
+{
+	return MaxThrowAmmo;
+}
+
+void AThrowableItem::SetThrowAmmo(int32 NewAmmo)
+{
+	ThrowAmmo = NewAmmo;
 	if (OnThrowAmmoChanged.IsBound())
 	{
-		OnThrowAmmoChanged.Broadcast(Ammo);
+		OnThrowAmmoChanged.Broadcast(ThrowAmmo);
 	}
 }

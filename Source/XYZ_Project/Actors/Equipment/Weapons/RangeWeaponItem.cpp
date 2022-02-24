@@ -7,6 +7,12 @@
 #include <Characters/XYZBaseCharacter.h>
 
 
+void ARangeWeaponItem::BeginPlay()
+{
+	Super::BeginPlay();
+	SetAmmo(MaxAmmo);
+}
+
 ARangeWeaponItem::ARangeWeaponItem()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
@@ -129,16 +135,33 @@ float ARangeWeaponItem::GetAimLookUpModifier() const
 	return AimLookUpModifier;
 }
 
+int32 ARangeWeaponItem::GetAmmo() const
+{
+	return Ammo;
+}
 
 void ARangeWeaponItem::SetAmmo(int32 NewAmmo)
 {
-	Super::SetAmmo(NewAmmo);
+	Ammo = NewAmmo;
 	if (OnAmmoChanged.IsBound())
 	{
 		OnAmmoChanged.Broadcast(Ammo);
 	}
 }
 
+bool ARangeWeaponItem::CanShoot()
+{
+	return Ammo > 0;
+}
+int32 ARangeWeaponItem::GetMaxAmmo() const
+{
+	return MaxAmmo;
+}
+
+EAmunitionType ARangeWeaponItem::GetAmmoType() const
+{
+	return AmmoType;
+}
 
 EReticleType ARangeWeaponItem::GetReticleType() const
 {
@@ -179,7 +202,7 @@ void ARangeWeaponItem::MakeShot()
 	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
 	APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
 
-	if (!CanUse())
+	if (!CanShoot())
 	{
 		StopFire();
 		if (Ammo == 0 && bAutoReload)
