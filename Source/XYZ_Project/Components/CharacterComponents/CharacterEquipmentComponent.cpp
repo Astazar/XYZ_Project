@@ -1,5 +1,6 @@
 #include "CharacterEquipmentComponent.h"
 #include "Actors/Equipment/Weapons/RangeWeaponItem.h"
+#include "Actors/Equipment/Weapons/MeleeWeaponItem.h"
 #include "Actors/Equipment/Throwables/ThrowableItem.h"
 #include "Characters/XYZBaseCharacter.h"
 #include "XYZ_ProjectTypes.h"
@@ -68,6 +69,8 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 	CurrentEquippedItem = ItemsArray[(uint32)Slot];
 	CurrentEquippedWeapon = Cast<ARangeWeaponItem>(CurrentEquippedItem);
 	CurrentThrowableItem = Cast<AThrowableItem>(CurrentEquippedItem);
+	CurrentMeleeWeapon = Cast<AMeleeWeaponItem>(CurrentEquippedItem);
+
 	if (CurrentThrowableItem && !CurrentThrowableItem->CanThrow())
 	{
 		return;
@@ -200,6 +203,11 @@ ARangeWeaponItem* UCharacterEquipmentComponent::GetCurrentRangeWeapon() const
 AThrowableItem* UCharacterEquipmentComponent::GetCurrentThrowableItem() const
 {
 	return CurrentThrowableItem;
+}
+
+AMeleeWeaponItem* UCharacterEquipmentComponent::GetCurrentMeleeWeapon() const
+{
+	return CurrentMeleeWeapon;
 }
 
 void UCharacterEquipmentComponent::CreateLoadout()

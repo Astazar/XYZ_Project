@@ -69,6 +69,9 @@ private:
 
 	void EquipPrimaryItem();
 
+	void PrimaryMeleeAttack();
+	void SecondaryMeleeAttack();
+
 	void CreateAndInitializeWidgets();
 
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;

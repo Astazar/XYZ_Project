@@ -14,6 +14,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnEquippedItemChanged, const AEquipableItem
 
 class ARangeWeaponItem;
 class AThrowableItem;
+class AMeleeWeaponItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class XYZ_PROJECT_API UCharacterEquipmentComponent : public UActorComponent
@@ -41,10 +42,10 @@ public:
 	void LaunchCurrentThrowableItem();
 
 	EEquipableItemType GetCurrentEquippedItemType() const;
-
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
-
 	AThrowableItem* GetCurrentThrowableItem() const;
+	AMeleeWeaponItem* GetCurrentMeleeWeapon() const;
+
 
 	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
 	FOnCurrentThrowItemAmmoChanged OnCurrentThrowItemAmmoChangedEvent;
@@ -91,6 +92,7 @@ private:
 	AEquipableItem* CurrentEquippedItem;
 	ARangeWeaponItem* CurrentEquippedWeapon;
 	AThrowableItem* CurrentThrowableItem;
+	AMeleeWeaponItem* CurrentMeleeWeapon;
 
 	TWeakObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 };
