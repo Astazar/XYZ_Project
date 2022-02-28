@@ -1,4 +1,19 @@
 #include "EquipableItem.h"
+#include "Characters/XYZBaseCharacter.h"
+
+void AEquipableItem::SetOwner(AActor* NewOwner)
+{
+	Super::SetOwner(NewOwner);
+	if (IsValid(NewOwner))
+	{
+		checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("AEquipableItem::SetOwner() only AXYZBaseCharacter can be an owner of AEquipableItem."));
+		CachedCharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
+	}
+	else
+	{
+		CachedCharacterOwner = nullptr;
+	}
+}
 
 EEquipableItemType AEquipableItem::GetItemType() const
 {
@@ -39,4 +54,9 @@ void AEquipableItem::Unequip()
 EReticleType AEquipableItem::GetReticleType() const
 {
 	return ReticleType;
+}
+
+AXYZBaseCharacter* AEquipableItem::GetCharacterOwner() const
+{
+	return CachedCharacterOwner.Get();
 }

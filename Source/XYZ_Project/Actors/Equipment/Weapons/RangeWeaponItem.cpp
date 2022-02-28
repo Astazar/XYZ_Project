@@ -56,8 +56,11 @@ void ARangeWeaponItem::StopAim()
 
 void ARangeWeaponItem::StartReload()
 {
-	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::StartReload() can work only with AXYZBaseCharacter"));
-	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
+	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
+	if (!IsValid(CharacterOwner))
+	{
+		return;
+	}
 
 	bIsReloading = true;
 	if (IsValid(CharacterReloadMontage))
@@ -82,17 +85,20 @@ void ARangeWeaponItem::EndReload(bool bIsSuccess)
 		return;
 	}
 
+	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
+	if (!IsValid(CharacterOwner))
+	{
+		return;
+	}
+
 	if (!bIsSuccess)
 	{
-		checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::StartReload() can work only with AXYZBaseCharacter"));
-		AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
 		CharacterOwner->StopAnimMontage(CharacterReloadMontage);
 		StopAnimMontage(WeaponReloadMontage);
 	}
 
 	if (ReloadType == EReloadType::ByBullet)
 	{
-		AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
 		UAnimInstance* CharacterAnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
 		if (IsValid(CharacterAnimInstance))
 		{
@@ -198,9 +204,12 @@ void ARangeWeaponItem::OnShotTimerElapsed()
 
 void ARangeWeaponItem::MakeShot()
 {
-	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("ARangeWeaponItem::Fire() can work only with AXYZBaseCharacter"));
-	AXYZBaseCharacter* CharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
+	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
 	APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
+	if (!IsValid(CharacterOwner) || !IsValid(Controller))
+	{
+		return;
+	}
 
 	if (!CanShoot())
 	{
@@ -216,11 +225,6 @@ void ARangeWeaponItem::MakeShot()
 
 	CharacterOwner->PlayAnimMontage(CharacterFireMontage);
 	PlayAnimMontage(WeaponFireMontage);
-
-	if (!IsValid(Controller))
-	{
-		return;
-	}
 
 	FVector PlayerViewPoint;
 	FRotator PlayerViewRotation;
