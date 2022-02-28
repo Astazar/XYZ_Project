@@ -4,6 +4,7 @@
 #define ECC_InteractionVolume ECC_GameTraceChannel2
 #define ECC_WallRunnable ECC_GameTraceChannel3
 #define ECC_Bullet ECC_GameTraceChannel4
+#define ECC_Melee ECC_GameTraceChannel5
 
 const FName FXParamTraceEnd = FName("TraceEnd");
 
@@ -18,12 +19,14 @@ const FName SectionMontageReloadEnd = FName("ReloadEnd");
 const FName CollisionProfilePawn = FName("Pawn");
 const FName CollisionProfilePawnInteractionVolume = FName("PawnInteractionVolume");
 const FName CollisionProfileRagdoll = FName("Ragdoll");
+const FName CollisionProfileNoCollision = FName("NoCollision");
 
 const FName DebugCategoryLedgeDetection = FName("LedgeDetection");
 const FName DebugCategoryWallrun = FName("Wallrun");
 const FName DebugCategorySlide= FName("Slide");
 const FName DebugCategoryCharacterAttributes = FName("CharacterAttributes");
 const FName DebugCategoryRangeWeapon = FName("RangeWeapon");
+const FName DebugCategoryMeleeWeapon = FName("MeleeWeapon");
 
 UENUM(BlueprintType)
 enum class EWallrunSide : uint8

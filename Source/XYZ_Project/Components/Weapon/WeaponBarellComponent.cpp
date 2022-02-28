@@ -105,13 +105,13 @@ void UWeaponBarellComponent::ProcessHit(const FHitResult& HitResult, const FVect
 		DamageEvent.ShotDirection = Direction;
 		DamageEvent.DamageTypeClass = DamageTypeClass;
 		HitActor->TakeDamage(AppliedDamage, DamageEvent, GetController(), GetOwner());
+	}
 
-		UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DefaultDecalInfo.DecalMaterial, DefaultDecalInfo.DecalSize, HitResult.ImpactPoint, HitResult.ImpactNormal.ToOrientationRotator());
-		if (IsValid(DecalComponent))
-		{
-			DecalComponent->SetFadeScreenSize(0.0001f);
-			DecalComponent->SetFadeOut(DefaultDecalInfo.DecalLifeTime, DefaultDecalInfo.DecalFadeOutTime);
-		}
+	UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DefaultDecalInfo.DecalMaterial, DefaultDecalInfo.DecalSize, HitResult.ImpactPoint, HitResult.ImpactNormal.ToOrientationRotator());
+	if (IsValid(DecalComponent))
+	{
+		DecalComponent->SetFadeScreenSize(0.0001f);
+		DecalComponent->SetFadeOut(DefaultDecalInfo.DecalLifeTime, DefaultDecalInfo.DecalFadeOutTime);
 	}
 }
 
