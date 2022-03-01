@@ -17,6 +17,7 @@
 #include "Components/CharacterComponents/CharacterEquipmentComponent.h"
 #include <Actors/Equipment/Weapons/RangeWeaponItem.h>
 #include "Actors/Equipment/Weapons/MeleeWeaponItem.h"
+#include <AIController.h>
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -331,6 +332,11 @@ void AXYZBaseCharacter::NotifyJumpApex()
 	CurrentFallApex = GetActorLocation();
 }
 
+FGenericTeamId AXYZBaseCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId((uint8)Team);
+}
+
 const UCharacterEquipmentComponent* AXYZBaseCharacter::GetCharacterEquipmentComponent() const
 {
 	return CharacterEquipmentComponent;
@@ -410,6 +416,17 @@ void AXYZBaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	CharacterAttributesComponent->OnDeathEvent.AddUObject(this, &AXYZBaseCharacter::OnDeath);
 	CharacterAttributesComponent->OutOfStaminaEvent.AddUObject(XYZBaseCharacterMovementComponent, &UXYZBaseMovementComponent::SetIsOutOfStamina);
+}
+
+void AXYZBaseCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	AAIController* AIController = Cast<AAIController>(NewController);
+	if (IsValid(AIController))
+	{
+		FGenericTeamId TeamID((uint8)Team);
+		AIController->SetGenericTeamId(TeamID);
+	}
 }
 
 void AXYZBaseCharacter::StartFire()

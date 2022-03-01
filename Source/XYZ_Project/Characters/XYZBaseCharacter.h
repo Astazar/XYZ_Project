@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include <Components/TimelineComponent.h>
 #include <Curves/CurveVector.h>
+#include "XYZ_ProjectTypes.h"
+#include <GenericTeamAgentInterface.h>
 #include "XYZBaseCharacter.generated.h"
 
 USTRUCT(BlueprintType)
@@ -54,8 +56,8 @@ class AInteractiveActor;
 class UCharacterEquipmentComponent;
 typedef TArray<AInteractiveActor*, TInlineAllocator<10>> TInteractiveActorsArray; 
 
-UCLASS(Abstract, NotBlueprintable)
-class XYZ_PROJECT_API AXYZBaseCharacter : public ACharacter
+UCLASS(Abstract, NotBlueprintable) 
+class XYZ_PROJECT_API AXYZBaseCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -63,6 +65,8 @@ public:
 	AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void BeginPlay() override;
+
+	virtual void PossessedBy(AController* NewController) override;
 
 	void StartFire();
 	void StopFire();
@@ -129,6 +133,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	class UCharacterAttributesComponent* GetCharacterAttributesComponent() const { return CharacterAttributesComponent; }
 
+	const UCharacterEquipmentComponent* GetCharacterEquipmentComponent() const;
+
+	UCharacterEquipmentComponent* GetCharacterEquipmentComponent_Mutable() const;
+
 	float GetIKRightFootOffset() const { return IKRightFootOffset; }
 	float GetIKLeftFootOffset() const { return IKLeftFootOffset; }
 	float GetIKPelvisOffset() const { return IKPelvisOffset; }
@@ -153,8 +161,10 @@ public:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void NotifyJumpApex() override;
 
-	const UCharacterEquipmentComponent* GetCharacterEquipmentComponent() const;
-	UCharacterEquipmentComponent* GetCharacterEquipmentComponent_Mutable() const;
+/* IGenericTeamAgentInterface */
+	virtual FGenericTeamId GetGenericTeamId() const override;
+/* ~IGenericTeamAgentInterface */
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
 	UXYZBaseMovementComponent* XYZBaseCharacterMovementComponent;
@@ -205,6 +215,9 @@ protected:
 	float OutOfOxygenDamage = 20.0f;
 
 	void OutOfOxygenTakeDamage();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chatacer | Team")
+	ETeams Team = ETeams::Enemy;
 
 private:
 	FVector CurrentFallApex;
