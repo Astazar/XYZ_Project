@@ -7,12 +7,6 @@
 #include <Characters/XYZBaseCharacter.h>
 
 
-void ARangeWeaponItem::BeginPlay()
-{
-	Super::BeginPlay();
-	SetAmmo(MaxAmmo);
-}
-
 ARangeWeaponItem::ARangeWeaponItem()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
@@ -22,10 +16,18 @@ ARangeWeaponItem::ARangeWeaponItem()
 
 	WeaponBarell = CreateDefaultSubobject<UWeaponBarellComponent>(TEXT("WeaponBarell"));
 	WeaponBarell->SetupAttachment(WeaponMesh, SocketWeaponMuzzle);
+	CurrentWeaponBarell = WeaponBarell;
+	CurrentBarellIndex = 0;
 
 	ReticleType = EReticleType::Default;
 
 	EquippedSocketName = SocketCharacterWeapon;
+}
+
+void ARangeWeaponItem::BeginPlay()
+{
+	Super::BeginPlay();
+	GetComponents(BarellsArray);
 }
 
 void ARangeWeaponItem::StartFire()
@@ -121,6 +123,19 @@ void ARangeWeaponItem::EndReload(bool bIsSuccess)
 	}
 }
 
+void ARangeWeaponItem::NextWeaponBarell()
+{
+	if (CurrentBarellIndex != BarellsArray.Num() - 1)
+	{
+		CurrentBarellIndex++;
+	}
+	else
+	{
+		CurrentBarellIndex = 0;
+	}
+	CurrentWeaponBarell = BarellsArray[CurrentBarellIndex];
+}
+
 float ARangeWeaponItem::GetAimFOV() const
 {
 	return AimFOV;
@@ -141,32 +156,9 @@ float ARangeWeaponItem::GetAimLookUpModifier() const
 	return AimLookUpModifier;
 }
 
-int32 ARangeWeaponItem::GetAmmo() const
+UWeaponBarellComponent* ARangeWeaponItem::GetCurrentBarellComponent() const
 {
-	return Ammo;
-}
-
-void ARangeWeaponItem::SetAmmo(int32 NewAmmo)
-{
-	Ammo = NewAmmo;
-	if (OnAmmoChanged.IsBound())
-	{
-		OnAmmoChanged.Broadcast(Ammo);
-	}
-}
-
-bool ARangeWeaponItem::CanShoot()
-{
-	return Ammo > 0;
-}
-int32 ARangeWeaponItem::GetMaxAmmo() const
-{
-	return MaxAmmo;
-}
-
-EAmunitionType ARangeWeaponItem::GetAmmoType() const
-{
-	return AmmoType;
+	return CurrentWeaponBarell;
 }
 
 EReticleType ARangeWeaponItem::GetReticleType() const
@@ -211,10 +203,10 @@ void ARangeWeaponItem::MakeShot()
 		return;
 	}
 
-	if (!CanShoot())
+	if (!CurrentWeaponBarell->CanShoot())
 	{
 		StopFire();
-		if (Ammo == 0 && bAutoReload)
+		if (CurrentWeaponBarell->GetAmmo() == 0 && bAutoReload)
 		{
 			CharacterOwner->Reload();
 		}
@@ -230,8 +222,8 @@ void ARangeWeaponItem::MakeShot()
 	FRotator PlayerViewRotation;
 	Controller->GetPlayerViewPoint(PlayerViewPoint, PlayerViewRotation);
 	FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
-	WeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, GetCurrentBulletSpreadAngle());
-	SetAmmo(--Ammo);
+	CurrentWeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, GetCurrentBulletSpreadAngle());
+	CurrentWeaponBarell->SetAmmo(CurrentWeaponBarell->GetAmmo()-1);
 
 	GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ARangeWeaponItem::OnShotTimerElapsed, GetShotTimerInterval(), false);
 }

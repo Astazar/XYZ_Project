@@ -5,7 +5,6 @@
 #include "RangeWeaponItem.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnReloadComplete);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmmoChanged, int32);
 
 UENUM(BlueprintType)
 enum class EWeaponFireMode : uint8 
@@ -22,6 +21,7 @@ enum class EReloadType : uint8
 };
 
 class UAnimMontage;
+class UWeaponBarellComponent;
 
 UCLASS(Blueprintable)
 class XYZ_PROJECT_API ARangeWeaponItem : public AEquipableItem
@@ -42,25 +42,18 @@ public:
 	void StartReload();
 	void EndReload(bool bIsSuccess);
 
+	void NextWeaponBarell();
+
 	float GetAimFOV() const;
 	float GetAimMovementMaxSpeed() const;
 	float GetAimTurnModifier() const;
 	float GetAimLookUpModifier() const;
 
-	bool CanShoot();
-
-	int32 GetAmmo() const;
-	void SetAmmo(int32 NewAmmo);
-
-	int32 GetMaxAmmo() const;
-
-	EAmunitionType GetAmmoType() const;
+	UWeaponBarellComponent* GetCurrentBarellComponent() const;
 
 	virtual EReticleType GetReticleType() const override;
 
 	FTransform GetForeGripTransform() const;
-
-	FOnAmmoChanged OnAmmoChanged;
 
 	FOnReloadComplete OnReloadComplete;
 
@@ -69,7 +62,7 @@ protected:
 	class USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UWeaponBarellComponent* WeaponBarell;
+	UWeaponBarellComponent* WeaponBarell;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animations | Weapon")
 	UAnimMontage* WeaponFireMontage;	
@@ -106,17 +99,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Aiming", meta = (UIMin = 0.0f, ClampMin = 0.0f))
 	float AimLookUpModifier = 0.5f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo", meta = (UIMin = 0, ClampMin = 0))
-	int32 Ammo = 0;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo", meta = (UIMin = 1, ClampMin = 1))
-	int32 MaxAmmo = 30;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo")
-	EAmunitionType AmmoType;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Parameters | Ammo")
 	bool bAutoReload = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Reticle")
 	EReticleType AimReticleType = EReticleType::Default;
+
+	UWeaponBarellComponent* CurrentWeaponBarell;
+	TArray<UWeaponBarellComponent*> BarellsArray;
+	int32 CurrentBarellIndex;
 
 private:
 	bool bIsReloading = false;

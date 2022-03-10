@@ -51,6 +51,7 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("EquipPrimaryItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryItem);
 	InputComponent->BindAction("PrimaryMeleeAttack", EInputEvent::IE_Pressed, this, &AXYZPlayerController::PrimaryMeleeAttack);
 	InputComponent->BindAction("SecondaryMeleeAttack", EInputEvent::IE_Pressed, this, &AXYZPlayerController::SecondaryMeleeAttack);
+	InputComponent->BindAction("NextWeaponBarell", EInputEvent::IE_Pressed, this, &AXYZPlayerController::NextWeaponBarell);
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -276,6 +277,14 @@ void AXYZPlayerController::PreviousItem()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->PreviousItem();
+	}
+}
+
+void AXYZPlayerController::NextWeaponBarell()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->NextWeaponBarell();
 	}
 }
 

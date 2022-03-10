@@ -2,8 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include <XYZ_ProjectTypes.h>
 #include "WeaponBarellComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmmoChanged, int32);
 
 UENUM(BlueprintType)
 enum class EHitRegistrationType : uint8
@@ -38,9 +40,29 @@ class XYZ_PROJECT_API UWeaponBarellComponent : public USceneComponent
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
+
 	void Shot(FVector ShotStart, FVector ShotDirection, float SpreadAngle);
 
+	bool CanShoot();
+
+	int32 GetAmmo() const;
+	void SetAmmo(int32 NewAmmo);
+
+	int32 GetMaxAmmo() const;
+
+	EAmunitionType GetAmmoType() const;
+
+	FOnAmmoChanged OnAmmoChanged;
+
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Ammo", meta = (UIMin = 0, ClampMin = 0))
+	int32 Ammo = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Ammo", meta = (UIMin = 1, ClampMin = 1))
+	int32 MaxAmmo = 30;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Ammo")
+	EAmunitionType AmmoType;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes")
 	float FiringRange = 5000.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes", meta = (ClampMin = 1, UIMin = 1))

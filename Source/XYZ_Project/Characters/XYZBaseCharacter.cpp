@@ -579,6 +579,11 @@ void AXYZBaseCharacter::PreviousItem()
 	CharacterEquipmentComponent->EquipPreviousItem();
 }
 
+void AXYZBaseCharacter::NextWeaponBarell()
+{
+	CharacterEquipmentComponent->NextWeaponBarell();
+}
+
 void AXYZBaseCharacter::EquipPrimaryItem()
 {
 	CharacterEquipmentComponent->EquipItemInSlot(EEquipmentSlots::PrimaryItemSlot);

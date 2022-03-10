@@ -54,6 +54,7 @@ enum class EAmunitionType : uint8
 	Rifle,
 	ShotgunShells,
 	FragGrenades,
+	RifleGrenades,
 	MAX UMETA(Hidden)
 };
 

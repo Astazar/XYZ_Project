@@ -88,6 +88,8 @@ public:
 	void NextItem();
 	void PreviousItem();
 
+	void NextWeaponBarell();
+
 	void EquipPrimaryItem();
 
 	void PrimaryMeleeAttack();

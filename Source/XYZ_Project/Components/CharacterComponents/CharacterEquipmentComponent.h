@@ -39,6 +39,8 @@ public:
 	void EquipNextItem();
 	void EquipPreviousItem();
 
+	void NextWeaponBarell();
+
 	void LaunchCurrentThrowableItem();
 
 	EEquipableItemType GetCurrentEquippedItemType() const;
@@ -81,7 +83,7 @@ private:
 	bool bIsEquiping = false;
 	FTimerHandle EquipTimer;
 
-	FDelegateHandle OnCurrentWeaponAmmoChangedHandle;
+	FDelegateHandle OnCurrentWeaponBarellAmmoChangedHandle;
 	FDelegateHandle OnCurrentWeaponReloadedHandle;
 
 	TItemsArray ItemsArray;

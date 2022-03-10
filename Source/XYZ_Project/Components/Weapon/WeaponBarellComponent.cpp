@@ -9,6 +9,40 @@
 #include "Actors/Projectiles/XYZProjectile.h"
 
 
+void UWeaponBarellComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	SetAmmo(MaxAmmo);
+}
+
+int32 UWeaponBarellComponent::GetAmmo() const
+{
+	return Ammo;
+}
+
+void UWeaponBarellComponent::SetAmmo(int32 NewAmmo)
+{
+	Ammo = FMath::Clamp(NewAmmo, 0, MaxAmmo);
+	if (OnAmmoChanged.IsBound())
+	{
+		OnAmmoChanged.Broadcast(Ammo);
+	}
+}
+
+bool UWeaponBarellComponent::CanShoot()
+{
+	return Ammo > 0;
+}
+int32 UWeaponBarellComponent::GetMaxAmmo() const
+{
+	return MaxAmmo;
+}
+
+EAmunitionType UWeaponBarellComponent::GetAmmoType() const
+{
+	return AmmoType;
+}
+
 void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, float SpreadAngle)
 {
 	FVector MuzzleLocation = GetComponentLocation();

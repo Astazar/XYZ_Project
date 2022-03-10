@@ -1,4 +1,5 @@
 #include "CharacterEquipmentComponent.h"
+#include "Components/Weapon/WeaponBarellComponent.h"
 #include "Actors/Equipment/Weapons/RangeWeaponItem.h"
 #include "Actors/Equipment/Weapons/MeleeWeaponItem.h"
 #include "Actors/Equipment/Throwables/ThrowableItem.h"
@@ -30,8 +31,8 @@ void UCharacterEquipmentComponent::ReloadCurrentWeapon()
 void UCharacterEquipmentComponent::ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo /*= 0*/, bool bCheckIsFull /*= false*/)
 {
 	int32 AvailableAmunition = GetAvailableAmunitionForCurrentWeapon();
-	int32 CurrentAmmo = CurrentEquippedWeapon->GetAmmo();
-	int32 AmmoToReload = CurrentEquippedWeapon->GetMaxAmmo() - CurrentAmmo;
+	int32 CurrentAmmo = CurrentEquippedWeapon->GetCurrentBarellComponent()->GetAmmo();
+	int32 AmmoToReload = CurrentEquippedWeapon->GetCurrentBarellComponent()->GetMaxAmmo() - CurrentAmmo;
 	int32 ReloadedAmmo = FMath::Min(AvailableAmunition, AmmoToReload);
 
 	if (NumberOfAmmo > 0)
@@ -39,13 +40,13 @@ void UCharacterEquipmentComponent::ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo 
 		ReloadedAmmo = FMath::Min(ReloadedAmmo, NumberOfAmmo);
 	}
 
-	AmunitionArray[(uint32)CurrentEquippedWeapon->GetAmmoType()] -= ReloadedAmmo;
-	CurrentEquippedWeapon->SetAmmo(CurrentAmmo + ReloadedAmmo);
+	AmunitionArray[(uint32)CurrentEquippedWeapon->GetCurrentBarellComponent()->GetAmmoType()] -= ReloadedAmmo;
+	CurrentEquippedWeapon->GetCurrentBarellComponent()->SetAmmo(CurrentAmmo + ReloadedAmmo);
 
 	if (bCheckIsFull)
 	{
 		AvailableAmunition = GetAvailableAmunitionForCurrentWeapon();
-		bool bIsFullyReloaded = CurrentEquippedWeapon->GetAmmo() == CurrentEquippedWeapon->GetMaxAmmo();
+		bool bIsFullyReloaded = CurrentEquippedWeapon->GetCurrentBarellComponent()->GetAmmo() == CurrentEquippedWeapon->GetCurrentBarellComponent()->GetMaxAmmo();
 		if (AvailableAmunition == 0 || bIsFullyReloaded)
 		{
 			CurrentEquippedWeapon->EndReload(true);
@@ -78,9 +79,9 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 
 	if (IsValid(CurrentEquippedWeapon))
 	{
-		OnCurrentWeaponAmmoChangedHandle = CurrentEquippedWeapon->OnAmmoChanged.AddUFunction(this, FName("OnCurrentWeaponAmmoChanged"));
+		OnCurrentWeaponBarellAmmoChangedHandle = CurrentEquippedWeapon->GetCurrentBarellComponent()->OnAmmoChanged.AddUFunction(this, FName("OnCurrentWeaponAmmoChanged"));
 		OnCurrentWeaponReloadedHandle = CurrentEquippedWeapon->OnReloadComplete.AddUFunction(this, FName("OnWeaponReloadComplete"));
-		OnCurrentWeaponAmmoChanged(CurrentEquippedWeapon->GetAmmo());
+		OnCurrentWeaponAmmoChanged(CurrentEquippedWeapon->GetCurrentBarellComponent()->GetAmmo());
 	}
 
 	if (IsValid(CurrentThrowableItem))
@@ -132,7 +133,7 @@ void UCharacterEquipmentComponent::UnequipCurrentItem()
 	{
 		CurrentEquippedWeapon->StopFire();
 		CurrentEquippedWeapon->EndReload(false);
-		CurrentEquippedWeapon->OnAmmoChanged.Remove(OnCurrentWeaponAmmoChangedHandle);
+		CurrentEquippedWeapon->GetCurrentBarellComponent()->OnAmmoChanged.Remove(OnCurrentWeaponBarellAmmoChangedHandle);
 		CurrentEquippedWeapon->OnReloadComplete.Remove(OnCurrentWeaponReloadedHandle);
 	}
 	PreviousEquippedSlot = CurrentEquippedSlot;
@@ -171,6 +172,19 @@ void UCharacterEquipmentComponent::EquipPreviousItem()
 	if (CurrentSlotIndex != PreviousSlotIndex)
 	{
 		EquipItemInSlot((EEquipmentSlots)PreviousSlotIndex);
+	}
+}
+
+void UCharacterEquipmentComponent::NextWeaponBarell()
+{
+	UWeaponBarellComponent* CurrentBarell = CurrentEquippedWeapon->GetCurrentBarellComponent();
+	CurrentBarell->OnAmmoChanged.Remove(OnCurrentWeaponBarellAmmoChangedHandle);
+	if (IsValid(CurrentEquippedWeapon))
+	{
+		CurrentEquippedWeapon->NextWeaponBarell();
+		UWeaponBarellComponent* NewBarell = CurrentEquippedWeapon->GetCurrentBarellComponent();
+		OnCurrentWeaponBarellAmmoChangedHandle = NewBarell->OnAmmoChanged.AddUFunction(this, FName("OnCurrentWeaponAmmoChanged"));
+		OnCurrentWeaponAmmoChanged(NewBarell->GetAmmo());
 	}
 }
 
@@ -266,7 +280,7 @@ uint32 UCharacterEquipmentComponent::PreviousItemsArraySlotIndex(uint32 CurrentS
 int32 UCharacterEquipmentComponent::GetAvailableAmunitionForCurrentWeapon()
 {
 	checkf(IsValid(CurrentEquippedWeapon), TEXT("UCharacterEquipmentComponent::GetAvailableAmunitionForCurrentWeapon() CurrentEquippedWeapon is not valid"));
-	return AmunitionArray[(uint32)CurrentEquippedWeapon->GetAmmoType()];
+	return AmunitionArray[(uint32)CurrentEquippedWeapon->GetCurrentBarellComponent()->GetAmmoType()];
 }
 
 void UCharacterEquipmentComponent::OnWeaponReloadComplete()
