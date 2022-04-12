@@ -543,6 +543,7 @@ bool AXYZBaseCharacter::CanSprint()
 void AXYZBaseCharacter::OnDeath()
 {
 	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	if (IsValid(OnDeathAnimMontage) && GetCharacterMovementComponent()->MovementMode == MOVE_Walking)
 	{
 		PlayAnimMontage(OnDeathAnimMontage);
