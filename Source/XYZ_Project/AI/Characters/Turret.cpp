@@ -2,6 +2,8 @@
 #include <Components/Weapon/WeaponBarellComponent.h>
 #include <AIController.h>
 #include <GenericTeamAgentInterface.h>
+#include <Kismet/GameplayStatics.h>
+#include <Particles/ParticleSystem.h>
 
 
 ATurret::ATurret()
@@ -18,6 +20,13 @@ ATurret::ATurret()
 	
 	WeaponBarell = CreateDefaultSubobject<UWeaponBarellComponent>(TEXT("WeaponBarell"));
 	WeaponBarell->SetupAttachment(TurretBarellComponent);
+}
+
+void ATurret::BeginPlay()
+{
+	Super::BeginPlay();
+	CurrentHealth = MaxHealth;
+	OnTakeAnyDamage.AddDynamic(this, &ATurret::OnTakeDamage);
 }
 
 void ATurret::PossessedBy(AController* NewController)
@@ -52,8 +61,24 @@ void ATurret::Tick(float DeltaTime)
 
 void ATurret::SetCurrentTarget(AActor* NewTarget)
 {
+	if (CurrentTarget == NewTarget)
+	{
+		return;
+	}
+
+	PreviousTurretState = CurrentTurretState;
 	CurrentTarget = NewTarget;
-	ETurretState NewState = IsValid(CurrentTarget) ? ETurretState::Firing : ETurretState::Searching;
+
+	ETurretState NewState;
+	if (IsValid(CurrentTarget))
+	{
+		NewState = ETurretState::Firing;
+	}
+	else
+	{
+		NewState = ETurretState::Searching;
+		CurrentTarget = nullptr;
+	}
 	SetCurrentTurretState(NewState);
 }
 
@@ -126,7 +151,24 @@ void ATurret::SetCurrentTurretState(ETurretState NewState)
 			GetWorldTimerManager().SetTimer(ShotTimer, this, &ATurret::MakeShot, GetFireInterval(), true, FireDelayTimer);
 			break;
 		}
-
 	}
+}
+
+void ATurret::OnTakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
+	if (CurrentHealth <= 0.0f)
+	{
+		DestroyTurret();
+	}
+}
+
+void ATurret::DestroyTurret()
+{
+	if (IsValid(ExplosionVFX))
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation());
+	}
+	Destroy();
 }
 

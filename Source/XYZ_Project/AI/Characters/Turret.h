@@ -22,6 +22,8 @@ class XYZ_PROJECT_API ATurret : public APawn
 public:
 	ATurret();
 
+	virtual void BeginPlay() override;
+
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void Tick(float DeltaTime) override;
@@ -69,6 +71,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Turret parameters | Team")
 	ETeams Team = ETeams::Enemy;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Turret parameters | Attributes", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float CurrentHealth = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Turret parameters | Attributes", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Turret parameters")
+	UParticleSystem* ExplosionVFX;
+
 private:
 	void SearchingMovement(float DeltaTime);
 	void FiringMovement(float DeltaTime);
@@ -78,8 +89,14 @@ private:
 	void MakeShot();
 
 	void SetCurrentTurretState(ETurretState NewState);
+
+	UFUNCTION()
+	void OnTakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 	
+	void DestroyTurret();
+
 	ETurretState CurrentTurretState = ETurretState::Searching;
+	ETurretState PreviousTurretState = ETurretState::Searching;
 	AActor* CurrentTarget = nullptr;
 
 	FTimerHandle ShotTimer;

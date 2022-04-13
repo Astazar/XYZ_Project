@@ -7,6 +7,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <Components/DecalComponent.h>
 #include "Actors/Projectiles/XYZProjectile.h"
+#include <AI/Perception/Senses/AISense_DamageSight.h>
 
 
 void UWeaponBarellComponent::BeginPlay()
@@ -111,7 +112,7 @@ void UWeaponBarellComponent::LaunchProjectile(const FVector& LaunchStart, const 
 APawn* UWeaponBarellComponent::GetOwningPawn() const
 {
 	APawn* PawnOwner = Cast<APawn>(GetOwner());
-	if (IsValid(PawnOwner))
+	if (!IsValid(PawnOwner))
 	{
 		PawnOwner = Cast<APawn>(GetOwner()->GetOwner());
 	}
@@ -139,6 +140,7 @@ void UWeaponBarellComponent::ProcessHit(const FHitResult& HitResult, const FVect
 		DamageEvent.ShotDirection = Direction;
 		DamageEvent.DamageTypeClass = DamageTypeClass;
 		HitActor->TakeDamage(AppliedDamage, DamageEvent, GetController(), GetOwner());
+		UAISense_DamageSight::ReportDamageSightEvent(GetWorld(), HitActor, GetOwningPawn(), AppliedDamage, GetOwningPawn()->GetActorLocation(), HitResult.ImpactPoint);
 	}
 
 	UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DefaultDecalInfo.DecalMaterial, DefaultDecalInfo.DecalSize, HitResult.ImpactPoint, HitResult.ImpactNormal.ToOrientationRotator());
