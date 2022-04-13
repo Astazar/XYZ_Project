@@ -126,6 +126,7 @@ public:
 	virtual void SwimDive() {};
 
 	virtual void OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime);
+	UFUNCTION(BlueprintCallable)
 	void Mantle(bool bForce = false);
 	virtual bool CanMantle() const;
 
