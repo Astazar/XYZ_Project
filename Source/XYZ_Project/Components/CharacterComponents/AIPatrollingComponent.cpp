@@ -5,14 +5,14 @@
 
 bool UAIPatrollingComponent::CanPatrol() const
 {
-	return IsValid(PatrollingPath) && PatrollingPath->GetWaypoints().Num() > 1;
+	return IsValid(PatrolSettings.PatrollingPath) && PatrolSettings.PatrollingPath->GetWaypoints().Num() > 1;
 }
 
 FVector UAIPatrollingComponent::SelectClosestWayPoint()
 {
 	FVector OwnerLocation = GetOwner()->GetActorLocation();
-	const TArray<FVector> WayPoints = PatrollingPath->GetWaypoints();
-	FTransform PathTransform = PatrollingPath->GetActorTransform();
+	const TArray<FVector> WayPoints = PatrolSettings.PatrollingPath->GetWaypoints();
+	FTransform PathTransform = PatrolSettings.PatrollingPath->GetActorTransform();
 
 	FVector ClosestWayPoint;
 	float MinSquaredDistance = FLT_MAX;
@@ -32,12 +32,47 @@ FVector UAIPatrollingComponent::SelectClosestWayPoint()
 
 FVector UAIPatrollingComponent::SelectNextWayPoint()
 {
+	switch (PatrolSettings.PatrolType)
+	{
+	case EPatrolType::Circle:
+	{
+		NextPointCircle();
+		break;
+	}
+	case EPatrolType::PingPing:
+	{
+		NextPointPingPong();
+		break;
+	}
+	}
+
+	const TArray<FVector> WayPoints = PatrolSettings.PatrollingPath->GetWaypoints();
+	FTransform PathTransform = PatrolSettings.PatrollingPath->GetActorTransform();
+	return PathTransform.TransformPosition(WayPoints[CurrentWayPointIndex]);
+}
+
+void UAIPatrollingComponent::NextPointCircle()
+{
 	++CurrentWayPointIndex;
-	const TArray<FVector> WayPoints = PatrollingPath->GetWaypoints();
-	if (CurrentWayPointIndex == PatrollingPath->GetWaypoints().Num())
+	const TArray<FVector> WayPoints = PatrolSettings.PatrollingPath->GetWaypoints();
+	if (CurrentWayPointIndex == PatrolSettings.PatrollingPath->GetWaypoints().Num())
 	{
 		CurrentWayPointIndex = 0;
 	}
-	FTransform PathTransform = PatrollingPath->GetActorTransform();
-	return PathTransform.TransformPosition(WayPoints[CurrentWayPointIndex]);
+}
+
+void UAIPatrollingComponent::NextPointPingPong()
+{
+	CurrentWayPointIndex+=PingPongIncrement;
+	const TArray<FVector> WayPoints = PatrolSettings.PatrollingPath->GetWaypoints();
+	if (CurrentWayPointIndex >= WayPoints.Num())
+	{
+		PingPongIncrement*=-1;
+		CurrentWayPointIndex = (WayPoints.Num()-1) + PingPongIncrement;
+	}
+	if (CurrentWayPointIndex < 0)
+	{
+		PingPongIncrement *= -1;
+		CurrentWayPointIndex+=2;
+	}
 }

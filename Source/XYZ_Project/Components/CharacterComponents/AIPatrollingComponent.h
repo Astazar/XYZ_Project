@@ -8,6 +8,24 @@
 
 class APatrollingPath;
 
+UENUM(BlueprintType)
+enum class EPatrolType : uint8
+{
+	Circle = 0,
+	PingPing
+};
+
+USTRUCT(BlueprintType)
+struct FPatrolSettings
+{
+	GENERATED_BODY();
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	EPatrolType PatrolType = EPatrolType::Circle;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	APatrollingPath* PatrollingPath;
+};
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class XYZ_PROJECT_API UAIPatrollingComponent : public UActorComponent
 {
@@ -20,7 +38,12 @@ public:
 
 protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Path")
-	APatrollingPath* PatrollingPath;
+	FPatrolSettings PatrolSettings;
 
 	int32 CurrentWayPointIndex = -1;
+
+private:
+	void NextPointCircle();
+	void NextPointPingPong();
+	int32 PingPongIncrement = 1;
 };
