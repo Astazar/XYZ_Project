@@ -46,6 +46,11 @@ void ARangeWeaponItem::StopFire()
 	bIsFiring = false;
 }
 
+bool ARangeWeaponItem::IsFiring() const
+{
+	return bIsFiring;
+}
+
 void ARangeWeaponItem::StartAim()
 {
 	bIsAiming = true;
@@ -54,6 +59,11 @@ void ARangeWeaponItem::StartAim()
 void ARangeWeaponItem::StopAim()
 {
 	bIsAiming = false;
+}
+
+bool ARangeWeaponItem::IsReloading() const
+{
+	return bIsReloading;
 }
 
 void ARangeWeaponItem::StartReload()
@@ -197,8 +207,7 @@ void ARangeWeaponItem::OnShotTimerElapsed()
 void ARangeWeaponItem::MakeShot()
 {
 	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
-	APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
-	if (!IsValid(CharacterOwner) || !IsValid(Controller))
+	if (!IsValid(CharacterOwner))
 	{
 		return;
 	}
@@ -218,13 +227,22 @@ void ARangeWeaponItem::MakeShot()
 	CharacterOwner->PlayAnimMontage(CharacterFireMontage);
 	PlayAnimMontage(WeaponFireMontage);
 
-	FVector PlayerViewPoint;
-	FRotator PlayerViewRotation;
-	Controller->GetPlayerViewPoint(PlayerViewPoint, PlayerViewRotation);
-	FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
-	CurrentWeaponBarell->Shot(PlayerViewPoint, PlayerViewDirection, GetCurrentBulletSpreadAngle());
-	CurrentWeaponBarell->SetAmmo(CurrentWeaponBarell->GetAmmo()-1);
+	FVector ShotLocation;
+	FRotator ShotRotation;
+	if (CharacterOwner->IsPlayerControlled())
+	{
+		APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
+		Controller->GetPlayerViewPoint(ShotLocation, ShotRotation);
+	}
+	else
+	{
+		ShotLocation = WeaponBarell->GetComponentLocation();
+		ShotRotation = CharacterOwner->GetBaseAimRotation();
+	}
 
+	FVector ShotDirection = ShotRotation.RotateVector(FVector::ForwardVector);
+	CurrentWeaponBarell->Shot(ShotLocation, ShotDirection, GetCurrentBulletSpreadAngle());
+	CurrentWeaponBarell->SetAmmo(CurrentWeaponBarell->GetAmmo()-1);
 	GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ARangeWeaponItem::OnShotTimerElapsed, GetShotTimerInterval(), false);
 }
 

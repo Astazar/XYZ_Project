@@ -2,6 +2,8 @@
 #include "AI/Characters/XYZAICharacter.h"
 #include <Perception/AISense_Sight.h>
 #include "Components/CharacterComponents/AIPatrollingComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "XYZ_ProjectTypes.h"
 
 void AXYZAICharacterController::SetPawn(APawn* InPawn)
 {
@@ -10,6 +12,7 @@ void AXYZAICharacterController::SetPawn(APawn* InPawn)
 	{
 		checkf(InPawn->IsA<AXYZAICharacter>(), TEXT("AXYZAICharacterController::SetPawn AICharacterController can work only with AXYZAICharacter"));
 		CachedAICharacter = StaticCast<AXYZAICharacter*>(InPawn);
+		RunBehaviorTree(CachedAICharacter->GetBehaviorTree());
 	}
 	else
 	{
@@ -44,7 +47,11 @@ void AXYZAICharacterController::BeginPlay()
 	if (PatrollingComponent->CanPatrol())
 	{
 		FVector ClosestWayPoint = PatrollingComponent->SelectClosestWayPoint();
-		MoveToLocation(ClosestWayPoint);
+		if (IsValid(Blackboard))
+		{
+			Blackboard->SetValueAsVector(BB_NextLocation, ClosestWayPoint);
+			Blackboard->SetValueAsObject(BB_CurrentTarget, nullptr);
+		}
 		bIsPatrolling = true;
 	}
 }
@@ -55,18 +62,21 @@ void AXYZAICharacterController::TryMoveToNextTarget()
 	AActor* ClosestActor = GetClosestSensedActor(UAISense_Sight::StaticClass());
 	if (IsValid(ClosestActor))
 	{
-		if (!IsTargetReached(ClosestActor->GetActorLocation()))
+		if (IsValid(Blackboard))
 		{
-			MoveToActor(ClosestActor);
+			Blackboard->SetValueAsObject(BB_CurrentTarget, ClosestActor);
+			SetFocus(ClosestActor, EAIFocusPriority::Gameplay);
 		}
 		bIsPatrolling = false;
 	}
 	else if (PatrollingComponent->CanPatrol())
 	{
 		FVector WayPoint = bIsPatrolling ? PatrollingComponent->SelectNextWayPoint() : PatrollingComponent->SelectClosestWayPoint();
-		if (!IsTargetReached(WayPoint))
+		if (IsValid(Blackboard))
 		{
-			MoveToLocation(WayPoint);
+			ClearFocus(EAIFocusPriority::Gameplay);
+			Blackboard->SetValueAsVector(BB_NextLocation, WayPoint);
+			Blackboard->SetValueAsObject(BB_CurrentTarget, nullptr);
 		}
 		bIsPatrolling = true;
 	}

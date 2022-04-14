@@ -14,6 +14,7 @@ void UCharacterEquipmentComponent::BeginPlay()
 	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("UCharacterEquipmentComponent::BeginPlay() can work only with AXYZBaseCharacter"));
 	CachedBaseCharacter = StaticCast<AXYZBaseCharacter*>(GetOwner());
 	CreateLoadout();
+	AutoEquip();
 }
 
 void UCharacterEquipmentComponent::ReloadCurrentWeapon()
@@ -250,6 +251,14 @@ void UCharacterEquipmentComponent::CreateLoadout()
 			AThrowableItem* ThrowItem = Cast<AThrowableItem>(Item);
 			OnCurrentThrowItemAmmoChanged(ThrowItem->GetMaxThrowAmmo());
 		}
+	}
+}
+
+void UCharacterEquipmentComponent::AutoEquip()
+{
+	if (AutoEquippedSlot != EEquipmentSlots::None)
+	{
+		EquipItemInSlot(AutoEquippedSlot);
 	}
 }
 

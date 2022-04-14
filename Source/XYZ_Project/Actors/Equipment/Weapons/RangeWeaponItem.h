@@ -35,9 +35,11 @@ public:
 
 	void StartFire();
 	void StopFire();
+	bool IsFiring() const;
 
 	void StartAim();
 	void StopAim();
+	bool IsReloading() const;
 
 	void StartReload();
 	void EndReload(bool bIsSuccess);
@@ -48,6 +50,8 @@ public:
 	float GetAimMovementMaxSpeed() const;
 	float GetAimTurnModifier() const;
 	float GetAimLookUpModifier() const;
+
+	
 
 	UWeaponBarellComponent* GetCurrentBarellComponent() const;
 

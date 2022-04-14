@@ -6,6 +6,7 @@
 
 
 class UAIPatrollingComponent;
+class UBehaviorTree;
 
 UCLASS(Blueprintable)
 class XYZ_PROJECT_API AXYZAICharacter : public AXYZBaseCharacter
@@ -17,8 +18,12 @@ public:
 
 	UAIPatrollingComponent* GetPatrollingComponent() const;
 
+	UBehaviorTree* GetBehaviorTree() const;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UAIPatrollingComponent* AIPatrollingComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+	UBehaviorTree* BehaviorTree;
 };

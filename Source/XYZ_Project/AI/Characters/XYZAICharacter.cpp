@@ -11,3 +11,8 @@ UAIPatrollingComponent* AXYZAICharacter::GetPatrollingComponent() const
 {
 	return AIPatrollingComponent;
 }
+
+UBehaviorTree* AXYZAICharacter::GetBehaviorTree() const
+{
+	return BehaviorTree;
+}
