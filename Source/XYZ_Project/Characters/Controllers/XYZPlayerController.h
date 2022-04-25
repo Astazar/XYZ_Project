@@ -69,6 +69,7 @@ private:
 	void EquipSecondaryWeapon();
 	void EquipPrimaryItem();
 	void EquipMeleeWeapon();
+	void UnequipCurrentItem();
 
 	void NextItem();
 	void PreviousItem();

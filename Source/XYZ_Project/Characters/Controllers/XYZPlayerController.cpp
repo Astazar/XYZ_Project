@@ -60,6 +60,8 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("EquipSecondaryWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipSecondaryWeapon);
 	InputComponent->BindAction("EquipPrimaryItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryItem);
 	InputComponent->BindAction("EquipMeleeWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipMeleeWeapon);
+	InputComponent->BindAction("UnequipCurrentItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::UnequipCurrentItem);
+	
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -328,6 +330,18 @@ void AXYZPlayerController::EquipMeleeWeapon()
 		if (IsValid(EquipmentComponent))
 		{
 			EquipmentComponent->EquipItemInSlot(EEquipmentSlots::MeleeWeapon);
+		}
+	}
+}
+
+void AXYZPlayerController::UnequipCurrentItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		UCharacterEquipmentComponent* EquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+		if (IsValid(EquipmentComponent))
+		{
+			EquipmentComponent->EquipItemInSlot(EEquipmentSlots::None);
 		}
 	}
 }
