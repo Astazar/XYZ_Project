@@ -167,6 +167,8 @@ public:
 	virtual void LimitControl();
 	virtual void UnlimitControl();
 
+	void SelectMovementSettings(bool bEnableFreeLook);
+
 /* IGenericTeamAgentInterface */
 	virtual FGenericTeamId GetGenericTeamId() const override;
 /* ~IGenericTeamAgentInterface */

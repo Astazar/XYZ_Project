@@ -793,6 +793,20 @@ void UXYZBaseMovementComponent::SwimDive()
 	CurrentSwimState = ESwimState::UnderWater;
 }
 
+void UXYZBaseMovementComponent::SelectMovementSettings(bool bEnableFreeLook)
+{
+	if (bEnableFreeLook)
+	{
+		bOrientRotationToMovement = true;
+		GetBaseCharacterOwner()->bUseControllerRotationYaw = false;
+	}
+	else
+	{
+		bOrientRotationToMovement = false;
+		GetBaseCharacterOwner()->bUseControllerRotationYaw = true;
+	}
+}
+
 void UXYZBaseMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
    	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);

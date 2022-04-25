@@ -344,6 +344,11 @@ void AXYZBaseCharacter::UnlimitControl()
 	GetController()->SetIgnoreMoveInput(false);
 }
 
+void AXYZBaseCharacter::SelectMovementSettings(bool bEnableFreeLook)
+{
+	XYZBaseCharacterMovementComponent->SelectMovementSettings(bEnableFreeLook);
+}
+
 FGenericTeamId AXYZBaseCharacter::GetGenericTeamId() const
 {
 	return FGenericTeamId((uint8)Team);

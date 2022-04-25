@@ -25,6 +25,8 @@ class XYZ_PROJECT_API UCharacterEquipmentComponent : public UActorComponent
 public:
 	virtual void BeginPlay() override;
 
+	void SelectMovementSettings(const AEquipableItem* EquippedItem);
+
 	void ReloadCurrentWeapon();
 	void ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo = 0, bool bCheckIsFull = false);
 
@@ -46,6 +48,7 @@ public:
 
 	void LaunchCurrentThrowableItem();
 
+	AEquipableItem* GetCurrentEquippedItem() const;
 	EEquipableItemType GetCurrentEquippedItemType() const;
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
 	AThrowableItem* GetCurrentThrowableItem() const;

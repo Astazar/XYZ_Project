@@ -13,8 +13,14 @@ void UCharacterEquipmentComponent::BeginPlay()
 	Super::BeginPlay();
 	checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("UCharacterEquipmentComponent::BeginPlay() can work only with AXYZBaseCharacter"));
 	CachedBaseCharacter = StaticCast<AXYZBaseCharacter*>(GetOwner());
+	OnEquippedItemChanged.AddUObject(this, &UCharacterEquipmentComponent::SelectMovementSettings);
 	CreateLoadout();
 	AutoEquip();
+}
+
+void UCharacterEquipmentComponent::SelectMovementSettings(const AEquipableItem* EquippedItem)
+{
+	CachedBaseCharacter->SelectMovementSettings(GetCurrentEquippedItemType() == EEquipableItemType::None);
 }
 
 void UCharacterEquipmentComponent::ReloadCurrentWeapon()
@@ -204,6 +210,11 @@ void UCharacterEquipmentComponent::LaunchCurrentThrowableItem()
 			bShouldEquipPrevious = false;
 		}
 	}
+}
+
+AEquipableItem* UCharacterEquipmentComponent::GetCurrentEquippedItem() const
+{
+	return CurrentEquippedItem;
 }
 
 EEquipableItemType UCharacterEquipmentComponent::GetCurrentEquippedItemType() const

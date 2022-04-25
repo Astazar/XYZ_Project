@@ -159,6 +159,8 @@ public:
 	ESwimState GetCurrentSwimState() const { return CurrentSwimState; }
 	void SetCurrentSwimState(ESwimState NewSwimState) { CurrentSwimState = NewSwimState; }
 
+	void SelectMovementSettings(bool bEnableFreeLook);
+
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
