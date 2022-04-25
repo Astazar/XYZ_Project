@@ -60,6 +60,11 @@ bool UCharacterEquipmentComponent::IsEquipping() const
 	return bIsEquiping;
 }
 
+void UCharacterEquipmentComponent::SetShouldEquipPrevious(bool bEquipPrevious)
+{
+	bShouldEquipPrevious = bEquipPrevious;
+}
+
 void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 {
 	if (bIsEquiping)
@@ -72,11 +77,6 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 	CurrentEquippedWeapon = Cast<ARangeWeaponItem>(CurrentEquippedItem);
 	CurrentThrowableItem = Cast<AThrowableItem>(CurrentEquippedItem);
 	CurrentMeleeWeapon = Cast<AMeleeWeaponItem>(CurrentEquippedItem);
-
-	if (CurrentThrowableItem && !CurrentThrowableItem->CanThrow())
-	{
-		return;
-	}
 
 	if (IsValid(CurrentEquippedWeapon))
 	{
@@ -102,6 +102,8 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 		}
 		else
 		{
+			//It calls OnEquipAnimationFinished delegate, which needs to start throwing item, when it's not equipped. 
+			EquipAnimationFinished();
 			AttachCurrentItemToEquippedSocket();
 		}
 		CurrentEquippedSlot = Slot;
@@ -145,6 +147,7 @@ void UCharacterEquipmentComponent::EquipAnimationFinished()
 {
 	bIsEquiping = false;
 	AttachCurrentItemToEquippedSocket();
+	OnEquipAnimationFinished.ExecuteIfBound();
 }
 
 void UCharacterEquipmentComponent::EquipNextItem()
@@ -193,9 +196,13 @@ void UCharacterEquipmentComponent::LaunchCurrentThrowableItem()
 {
 	if (IsValid(CurrentThrowableItem))
 	{
-		CurrentThrowableItem->Throw();
-		bIsEquiping = false;
-		EquipItemInSlot(PreviousEquippedSlot);
+		CurrentThrowableItem->LaunchItemProjectile();
+		OnEquipAnimationFinished.Unbind();
+		if(bShouldEquipPrevious)
+		{
+			EquipItemInSlot(PreviousEquippedSlot);
+			bShouldEquipPrevious = false;
+		}
 	}
 }
 
@@ -223,6 +230,17 @@ AThrowableItem* UCharacterEquipmentComponent::GetCurrentThrowableItem() const
 AMeleeWeaponItem* UCharacterEquipmentComponent::GetCurrentMeleeWeapon() const
 {
 	return CurrentMeleeWeapon;
+}
+
+
+EEquipmentSlots UCharacterEquipmentComponent::GetCurrentEquippedSlot() const
+{
+	return CurrentEquippedSlot;
+}
+
+AEquipableItem* UCharacterEquipmentComponent::GetItemInSlot(EEquipmentSlots Slot) const
+{
+	return ItemsArray[uint32(Slot)];
 }
 
 void UCharacterEquipmentComponent::CreateLoadout()

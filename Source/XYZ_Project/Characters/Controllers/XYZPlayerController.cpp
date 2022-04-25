@@ -9,6 +9,7 @@
 #include "Components/CharacterComponents/CharacterEquipmentComponent.h"
 #include "Components/CharacterComponents/CharacterAttributesComponent.h"
 #include "UI/Widgets/CharacterAttributesWidget.h"
+#include "XYZ_ProjectTypes.h"
 
 void AXYZPlayerController::SetPawn(APawn* InPawn)
 {
@@ -48,10 +49,17 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Reload", EInputEvent::IE_Pressed, this, &AXYZPlayerController::Reload);
 	InputComponent->BindAction("NextItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::NextItem);
 	InputComponent->BindAction("PreviousItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::PreviousItem);
-	InputComponent->BindAction("EquipPrimaryItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryItem);
+	InputComponent->BindAction("EquipAndThrowPrimaryItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipAndThrowPrimaryItem);
+	InputComponent->BindAction("ThrowPrimaryItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ThrowPrimaryItem);
 	InputComponent->BindAction("PrimaryMeleeAttack", EInputEvent::IE_Pressed, this, &AXYZPlayerController::PrimaryMeleeAttack);
 	InputComponent->BindAction("SecondaryMeleeAttack", EInputEvent::IE_Pressed, this, &AXYZPlayerController::SecondaryMeleeAttack);
 	InputComponent->BindAction("NextWeaponBarell", EInputEvent::IE_Pressed, this, &AXYZPlayerController::NextWeaponBarell);
+	//Equip Actions
+	InputComponent->BindAction("EquipSideArm", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipSideArm);
+	InputComponent->BindAction("EquipPrimaryWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryWeapon);
+	InputComponent->BindAction("EquipSecondaryWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipSecondaryWeapon);
+	InputComponent->BindAction("EquipPrimaryItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryItem);
+	InputComponent->BindAction("EquipMeleeWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipMeleeWeapon);
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -264,6 +272,66 @@ void AXYZPlayerController::Reload()
 	}
 }
 
+void AXYZPlayerController::EquipSideArm()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		UCharacterEquipmentComponent* EquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+		if (IsValid(EquipmentComponent))
+		{
+			EquipmentComponent->EquipItemInSlot(EEquipmentSlots::SideArm);
+		}
+	}
+}
+
+void AXYZPlayerController::EquipPrimaryWeapon()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		UCharacterEquipmentComponent* EquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+		if (IsValid(EquipmentComponent))
+		{
+			EquipmentComponent->EquipItemInSlot(EEquipmentSlots::PrimaryWeapon);
+		}
+	}
+}
+
+void AXYZPlayerController::EquipSecondaryWeapon()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		UCharacterEquipmentComponent* EquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+		if (IsValid(EquipmentComponent))
+		{
+			EquipmentComponent->EquipItemInSlot(EEquipmentSlots::SecondaryWeapon);
+		}
+	}
+}
+
+void AXYZPlayerController::EquipPrimaryItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		UCharacterEquipmentComponent* EquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+		if (IsValid(EquipmentComponent))
+		{
+			EquipmentComponent->EquipItemInSlot(EEquipmentSlots::PrimaryItemSlot);
+		}
+	}
+}
+
+void AXYZPlayerController::EquipMeleeWeapon()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		UCharacterEquipmentComponent* EquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+		if (IsValid(EquipmentComponent))
+		{
+			EquipmentComponent->EquipItemInSlot(EEquipmentSlots::MeleeWeapon);
+		}
+	}
+}
+
 void AXYZPlayerController::NextItem()
 {
 	if (CachedBaseCharacter.IsValid())
@@ -288,11 +356,19 @@ void AXYZPlayerController::NextWeaponBarell()
 	}
 }
 
-void AXYZPlayerController::EquipPrimaryItem()
+void AXYZPlayerController::EquipAndThrowPrimaryItem()
 {
 	if (CachedBaseCharacter.IsValid())
 	{
-		CachedBaseCharacter->EquipPrimaryItem();
+		CachedBaseCharacter->ThrowPrimaryItem(true);
+	}
+}
+
+void AXYZPlayerController::ThrowPrimaryItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ThrowPrimaryItem(false);
 	}
 }
 

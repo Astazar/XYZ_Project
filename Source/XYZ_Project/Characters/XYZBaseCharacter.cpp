@@ -18,6 +18,7 @@
 #include <Actors/Equipment/Weapons/RangeWeaponItem.h>
 #include "Actors/Equipment/Weapons/MeleeWeaponItem.h"
 #include <AIController.h>
+#include "Actors/Equipment/Throwables/ThrowableItem.h"
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -585,9 +586,31 @@ void AXYZBaseCharacter::NextWeaponBarell()
 	CharacterEquipmentComponent->NextWeaponBarell();
 }
 
-void AXYZBaseCharacter::EquipPrimaryItem()
+void AXYZBaseCharacter::ThrowPrimaryItem(bool bShouldEquip)
 {
-	CharacterEquipmentComponent->EquipItemInSlot(EEquipmentSlots::PrimaryItemSlot);
+	AThrowableItem* ThrowableItem = Cast<AThrowableItem>(CharacterEquipmentComponent->GetItemInSlot(EEquipmentSlots::PrimaryItemSlot));
+	if (!IsValid(ThrowableItem) || CharacterEquipmentComponent->IsEquipping())
+	{
+		return;
+	}
+
+	if (bShouldEquip)
+	{
+		if (CharacterEquipmentComponent->GetCurrentEquippedSlot() != EEquipmentSlots::PrimaryItemSlot)
+		{
+			CharacterEquipmentComponent->OnEquipAnimationFinished.BindUObject(ThrowableItem, &AThrowableItem::Throw);
+			CharacterEquipmentComponent->EquipItemInSlot(EEquipmentSlots::PrimaryItemSlot);
+			CharacterEquipmentComponent->SetShouldEquipPrevious(true);
+		}
+		else
+		{
+			ThrowableItem->Throw();
+		}
+	}
+	else if(CharacterEquipmentComponent->GetCurrentEquippedSlot() == EEquipmentSlots::PrimaryItemSlot)
+	{
+		ThrowableItem->Throw();
+	}
 }
 
 void AXYZBaseCharacter::PrimaryMeleeAttack()

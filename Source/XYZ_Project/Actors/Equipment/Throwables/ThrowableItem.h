@@ -16,8 +16,13 @@ public:
 	virtual void BeginPlay() override;
 
 	void Throw();
+	void LaunchItemProjectile();
 
 	bool CanThrow() const;
+
+	bool GetIsThrowing() const;
+
+	void ThrowAnimationFinished();
 
 	EAmunitionType GetThrowAmmoType() const;
 
@@ -37,9 +42,16 @@ protected:
 	EAmunitionType ThrowAmmoType;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Throwables")
+	UAnimMontage* ThrowMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Throwables")
 	TSubclassOf<class AXYZProjectile> ProjectileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Throwables", meta = (ClampMin = -90.0f, UIMin = -90.0f, ClampMax = 90.0f, UIMax = 90.0f))
 	float ThrowAngle = 0.0f;
 
+private:
+	bool bIsThrowing = false;
+
+	FTimerHandle ThrowTimer;
 };

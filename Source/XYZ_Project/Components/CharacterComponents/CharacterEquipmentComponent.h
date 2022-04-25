@@ -11,6 +11,7 @@ typedef TArray<int32, TInlineAllocator<(uint32)EAmunitionType::MAX>> TAmunitionA
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCurrentWeaponAmmoChanged, int32, int32);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCurrentThrowItemAmmoChanged, int32);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnEquippedItemChanged, const AEquipableItem*);
+DECLARE_DELEGATE(FOnEquipAnimationFinished);
 
 class ARangeWeaponItem;
 class AThrowableItem;
@@ -28,6 +29,8 @@ public:
 	void ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo = 0, bool bCheckIsFull = false);
 
 	bool IsEquipping() const;
+
+	void SetShouldEquipPrevious(bool bEquipPrevious);
 
 	void EquipItemInSlot(EEquipmentSlots Slot);
 	void UnequipCurrentItem();
@@ -47,11 +50,13 @@ public:
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
 	AThrowableItem* GetCurrentThrowableItem() const;
 	AMeleeWeaponItem* GetCurrentMeleeWeapon() const;
-
+	EEquipmentSlots GetCurrentEquippedSlot() const; 
+	AEquipableItem* GetItemInSlot(EEquipmentSlots Slot) const;
 
 	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
 	FOnCurrentThrowItemAmmoChanged OnCurrentThrowItemAmmoChangedEvent;
 	FOnEquippedItemChanged OnEquippedItemChanged;
+	FOnEquipAnimationFinished OnEquipAnimationFinished;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loadout")
@@ -87,6 +92,9 @@ private:
 
 	bool bIsEquiping = false;
 	FTimerHandle EquipTimer;
+
+	//Determines whether the previous weapon should be equipped
+	bool bShouldEquipPrevious = false;
 
 	FDelegateHandle OnCurrentWeaponBarellAmmoChangedHandle;
 	FDelegateHandle OnCurrentWeaponReloadedHandle;

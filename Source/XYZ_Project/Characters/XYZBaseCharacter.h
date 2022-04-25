@@ -90,7 +90,7 @@ public:
 
 	void NextWeaponBarell();
 
-	void EquipPrimaryItem();
+	void ThrowPrimaryItem(bool bShouldEquip);
 
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();

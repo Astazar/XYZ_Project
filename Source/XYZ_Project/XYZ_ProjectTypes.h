@@ -65,9 +65,9 @@ UENUM(BlueprintType)
 enum class  EEquipmentSlots : uint8
 {
 	None,
-	SideArm, 
 	PrimaryWeapon,
 	SecondaryWeapon,
+	SideArm,
 	PrimaryItemSlot,
 	MeleeWeapon,
 	MAX UMETA(Hidden)

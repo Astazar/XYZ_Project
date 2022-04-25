@@ -11,37 +11,50 @@ void AThrowableItem::BeginPlay()
 
 void AThrowableItem::Throw()
 {
-	if (!CanThrow())
+	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
+	if (!IsValid(CharacterOwner) || !IsValid(ThrowMontage) || !CanThrow())
 	{
 		return;
 	}
 
+	bIsThrowing = true;
+	float ThrowDuration = CharacterOwner->PlayAnimMontage(ThrowMontage);
+	GetWorld()->GetTimerManager().SetTimer(ThrowTimer, this, &AThrowableItem::ThrowAnimationFinished, ThrowDuration, false);
+}
+
+void AThrowableItem::LaunchItemProjectile()
+{
 	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
 	if (!IsValid(CharacterOwner))
 	{
 		return;
 	}
 
-	APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
-	if (!IsValid(Controller))
+	FVector LaunchDirection;
+	FVector SpawnLocation;
+	if (CharacterOwner->IsPlayerControlled())
 	{
-		return;
+		FVector PlayerViewPoint;
+		FRotator PlayerViewRotation;
+		APlayerController* Controller = CharacterOwner->GetController<APlayerController>();
+		Controller->GetPlayerViewPoint(PlayerViewPoint, PlayerViewRotation);
+		FTransform PlayerViewTransform(PlayerViewRotation, PlayerViewPoint);
+		FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
+		FVector ViewUpVector = PlayerViewRotation.RotateVector(FVector::UpVector);
+
+		LaunchDirection = PlayerViewDirection + FMath::Tan(FMath::DegreesToRadians(ThrowAngle)) * ViewUpVector;
+
+		FVector	ThrowableSocketLocation = CharacterOwner->GetMesh()->GetSocketLocation(SocketCharacterThrowable);
+		FVector SocketInViewSpace = PlayerViewTransform.InverseTransformPosition(ThrowableSocketLocation);
+
+		SpawnLocation = PlayerViewPoint + PlayerViewDirection * SocketInViewSpace.X;
+	}
+	else
+	{
+		LaunchDirection = CharacterOwner->GetActorForwardVector() + FMath::Tan(FMath::DegreesToRadians(ThrowAngle)) * CharacterOwner->GetActorUpVector();
+		SpawnLocation = CharacterOwner->GetMesh()->GetSocketLocation(SocketCharacterThrowable);
 	}
 
-	FVector PlayerViewPoint;
-	FRotator PlayerViewRotation;
-	Controller->GetPlayerViewPoint(PlayerViewPoint, PlayerViewRotation);
-
-	FTransform PlayerViewTransform(PlayerViewRotation, PlayerViewPoint);
-	FVector PlayerViewDirection = PlayerViewRotation.RotateVector(FVector::ForwardVector);
-	FVector ViewUpVector = PlayerViewRotation.RotateVector(FVector::UpVector);
-
-	FVector LaunchDirection = PlayerViewDirection + FMath::Tan(FMath::DegreesToRadians(ThrowAngle)) * ViewUpVector;
-
-	FVector	ThrowableSocketLocation = CharacterOwner->GetMesh()->GetSocketLocation(SocketCharacterThrowable);
-	FVector SocketInViewSpace = PlayerViewTransform.InverseTransformPosition(ThrowableSocketLocation);
-
-	FVector SpawnLocation = PlayerViewPoint + PlayerViewDirection * SocketInViewSpace.X;
 	AXYZProjectile* Projectile = GetWorld()->SpawnActor<AXYZProjectile>(ProjectileClass, SpawnLocation, LaunchDirection.ToOrientationRotator());
 	if (IsValid(Projectile))
 	{
@@ -53,7 +66,17 @@ void AThrowableItem::Throw()
 
 bool AThrowableItem::CanThrow() const
 {
-	return ThrowAmmo > 0;
+	return ThrowAmmo > 0 && !bIsThrowing;
+}
+
+bool AThrowableItem::GetIsThrowing() const
+{
+	return bIsThrowing;
+}
+
+void AThrowableItem::ThrowAnimationFinished()
+{
+	bIsThrowing = false;
 }
 
 EAmunitionType AThrowableItem::GetThrowAmmoType() const

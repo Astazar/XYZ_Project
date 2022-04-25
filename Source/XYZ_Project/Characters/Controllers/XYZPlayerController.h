@@ -64,12 +64,19 @@ private:
 
 	void Reload();
 
+	void EquipSideArm();
+	void EquipPrimaryWeapon();
+	void EquipSecondaryWeapon();
+	void EquipPrimaryItem();
+	void EquipMeleeWeapon();
+
 	void NextItem();
 	void PreviousItem();
 
 	void NextWeaponBarell();
 
-	void EquipPrimaryItem();
+	void EquipAndThrowPrimaryItem();
+	void ThrowPrimaryItem();
 
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();
