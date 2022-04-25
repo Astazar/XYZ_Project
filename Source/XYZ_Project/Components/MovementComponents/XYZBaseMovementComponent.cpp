@@ -379,7 +379,7 @@ void UXYZBaseMovementComponent::DetachFromLadder(EDetachFromLadderMethod DetachF
 		SetMovementMode(MOVE_Falling);
 		FVector JumpVelocity = JumpDirection * JumpOffFromLadderSpeed;
 		ForceTargetRotation = JumpDirection.ToOrientationRotator();
-		bForceRotation=true;
+		bForceRotation = true;
 		Launch(JumpVelocity);
 		break;
 	}
@@ -401,7 +401,6 @@ void UXYZBaseMovementComponent::DetachFromLadder(EDetachFromLadderMethod DetachF
 	}
 	}
 }
-	
 
 bool UXYZBaseMovementComponent::IsOnLadder() const
 {
@@ -434,7 +433,7 @@ void UXYZBaseMovementComponent::AttachToZipline(const class AZipline* Zipline)
 	CurrentZipline = Zipline;
 	FVector MovingDirection = CalcZiplineMovingDirection(CurrentZipline);
 	FRotator TargetOrientationRotation = MovingDirection.ToOrientationRotator();
-	GetOwner()->SetActorRelativeRotation(TargetOrientationRotation);
+	GetOwner()->SetActorRelativeRotation(FRotator(0.0f, TargetOrientationRotation.Yaw, 0.0f));
 
 	FVector ZiplineUpVector = CurrentZipline->GetCableMesh()->GetUpVector();
 	float Projection = GetActorToCurrentZiplineProjection(GetActorLocation());
@@ -480,20 +479,19 @@ FVector UXYZBaseMovementComponent::CalcZiplineMovingDirection(const class AZipli
 
 void UXYZBaseMovementComponent::ZiplineClimbForward(float Value)
 {
-	GetBaseCharacterOwner()->AddMovementInput(GetOwner()->GetActorForwardVector(), Value);
+	GetBaseCharacterOwner()->AddMovementInput(CalcZiplineMovingDirection(GetBaseCharacterOwner()->GetAvailableZipline()), Value);
 }
 
 void UXYZBaseMovementComponent::ZiplineTurnAround()
 {
-	FVector MovingDirection = CalcZiplineMovingDirection(GetBaseCharacterOwner()->GetAvailableZipline());
-	MovingDirection *= -1;
-	FRotator MovingDirectionRotator = MovingDirection.ToOrientationRotator();
-	GetOwner()->SetActorRotation(MovingDirectionRotator);
+	FRotator Rot = GetOwner()->GetActorRotation();
+	Rot.Yaw+=180;
+	GetOwner()->SetActorRotation(Rot);
 }
 
 void UXYZBaseMovementComponent::PhysicsRotation(float DeltaTime)
 {	
-	if (IsOnLadder() && !bForceRotation)
+	if ((IsOnLadder() || IsZiplining()) && !bForceRotation)
 	{
 		return;
 	}

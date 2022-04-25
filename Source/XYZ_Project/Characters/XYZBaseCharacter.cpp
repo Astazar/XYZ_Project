@@ -17,8 +17,9 @@
 #include "Components/CharacterComponents/CharacterEquipmentComponent.h"
 #include <Actors/Equipment/Weapons/RangeWeaponItem.h>
 #include "Actors/Equipment/Weapons/MeleeWeaponItem.h"
-#include <AIController.h>
 #include "Actors/Equipment/Throwables/ThrowableItem.h"
+#include <AIController.h>
+
 
 
 AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer)	
@@ -331,6 +332,16 @@ void AXYZBaseCharacter::NotifyJumpApex()
 {
 	Super::NotifyJumpApex();
 	CurrentFallApex = GetActorLocation();
+}
+
+void AXYZBaseCharacter::LimitControl()
+{
+	GetController()->SetIgnoreMoveInput(true);
+}
+
+void AXYZBaseCharacter::UnlimitControl()
+{
+	GetController()->SetIgnoreMoveInput(false);
 }
 
 FGenericTeamId AXYZBaseCharacter::GetGenericTeamId() const

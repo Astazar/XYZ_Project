@@ -164,6 +164,9 @@ public:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void NotifyJumpApex() override;
 
+	virtual void LimitControl();
+	virtual void UnlimitControl();
+
 /* IGenericTeamAgentInterface */
 	virtual FGenericTeamId GetGenericTeamId() const override;
 /* ~IGenericTeamAgentInterface */

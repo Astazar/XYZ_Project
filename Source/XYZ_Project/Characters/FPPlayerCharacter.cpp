@@ -9,6 +9,7 @@
 #include "XYZ_Project/XYZ_ProjectTypes.h"
 #include "Controllers/XYZPlayerController.h"
 #include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
+#include <Actors/Interactive/Environment/Zipline.h>
 
 
 
@@ -42,32 +43,20 @@ void AFPPlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, u
 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
 	if (GetCharacterMovementComponent()->IsOnLadder())
 	{
-		if (XYZPlayerController.IsValid())
-		{
-			XYZPlayerController->SetIgnoreCameraPitch(true);
-			bUseControllerRotationYaw = false;
-			//float CharacterYaw = XYZPlayerController->GetControlRotation().Yaw;
-			float CharacterYaw = GetActorRotation().Yaw;
-			APlayerCameraManager* CameraManager = XYZPlayerController->PlayerCameraManager;
-			CameraManager->ViewPitchMin = LadderCameraMinPitch;
-			CameraManager->ViewPitchMax = LadderCameraMaxPitch;
-			CameraManager->ViewYawMin = LadderCameraMinYaw + CharacterYaw;
-			CameraManager->ViewYawMax = LadderCameraMaxYaw + CharacterYaw;
-		}
+		SetOnLadderViewLimits();
 	}
 	else if (PrevMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Ladder)
 	{
-		if (XYZPlayerController.IsValid())
-		{
-			XYZPlayerController->SetIgnoreCameraPitch(false);
-			bUseControllerRotationYaw = true;
-			APlayerCameraManager* CameraManager = XYZPlayerController->PlayerCameraManager;
-			APlayerCameraManager* DefaultCameraManager = CameraManager->GetClass()->GetDefaultObject<APlayerCameraManager>();
-			CameraManager->ViewPitchMin = DefaultCameraManager->ViewPitchMin;
-			CameraManager->ViewPitchMax = DefaultCameraManager->ViewPitchMax;
-			CameraManager->ViewYawMin = DefaultCameraManager->ViewYawMin;
-			CameraManager->ViewYawMax = DefaultCameraManager->ViewYawMax;
-		}
+		ResetViewLimits();
+	}
+
+	if (GetCharacterMovementComponent()->IsZiplining())
+	{
+		SetOnZiplineViewLimits();
+	}
+	else if (PrevMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Zipline)
+	{
+		ResetViewLimits();
 	}
 }
 
@@ -124,6 +113,51 @@ void AFPPlayerCharacter::OnMantle(const FMantlingSettings* MantlingSettings, flo
 	}
 }
 
+void AFPPlayerCharacter::SetOnLadderViewLimits()
+{
+	if (XYZPlayerController.IsValid())
+	{
+		XYZPlayerController->SetIgnoreCameraPitch(true);
+		bUseControllerRotationYaw = false;
+		float CharacterYaw = GetActorRotation().Yaw;
+		APlayerCameraManager* CameraManager = XYZPlayerController->PlayerCameraManager;
+		CameraManager->ViewPitchMin = LadderCameraMinPitch;
+		CameraManager->ViewPitchMax = LadderCameraMaxPitch;
+		CameraManager->ViewYawMin = LadderCameraMinYaw + CharacterYaw;
+		CameraManager->ViewYawMax = LadderCameraMaxYaw + CharacterYaw;
+	}
+}
+
+void AFPPlayerCharacter::SetOnZiplineViewLimits()
+{
+	if (XYZPlayerController.IsValid())
+	{
+		XYZPlayerController->SetIgnoreCameraPitch(true);
+		bUseControllerRotationYaw = false;
+		float CharacterYaw = GetActorRotation().Yaw;
+		APlayerCameraManager* CameraManager = XYZPlayerController->PlayerCameraManager;
+		CameraManager->ViewPitchMin = ZiplineCameraMinPitch;
+		CameraManager->ViewPitchMax = ZiplineCameraMaxPitch;
+		CameraManager->ViewYawMin = ZiplineCameraMinYaw + CharacterYaw;
+		CameraManager->ViewYawMax = ZiplineCameraMaxYaw + CharacterYaw;
+	}
+}
+
+void AFPPlayerCharacter::ResetViewLimits()
+{
+	if (XYZPlayerController.IsValid())
+	{
+		XYZPlayerController->SetIgnoreCameraPitch(false);
+		bUseControllerRotationYaw = true;
+		APlayerCameraManager* CameraManager = XYZPlayerController->PlayerCameraManager;
+		APlayerCameraManager* DefaultCameraManager = CameraManager->GetClass()->GetDefaultObject<APlayerCameraManager>();
+		CameraManager->ViewPitchMin = DefaultCameraManager->ViewPitchMin;
+		CameraManager->ViewPitchMax = DefaultCameraManager->ViewPitchMax;
+		CameraManager->ViewYawMin = DefaultCameraManager->ViewYawMin;
+		CameraManager->ViewYawMax = DefaultCameraManager->ViewYawMax;
+	}
+}
+
 FRotator AFPPlayerCharacter::GetViewRotation() const 
 {
 	FRotator Result = Super::GetViewRotation();
@@ -136,6 +170,17 @@ FRotator AFPPlayerCharacter::GetViewRotation() const
 		Result.Roll = SocketRotation.Roll;
 	}
 	return Result;
+}
+
+void AFPPlayerCharacter::ZiplineTurnAround()
+{
+	if (!(XYZBaseCharacterMovementComponent->IsZiplining() && GetAvailableZipline()->GetZiplineMovementType() == EZiplineMovementType::Climb))
+	{
+		return;
+	}
+	ResetViewLimits();
+	Super::ZiplineTurnAround();
+	SetOnZiplineViewLimits();
 }
 
 bool AFPPlayerCharacter::IsFPMontagePlaying() const

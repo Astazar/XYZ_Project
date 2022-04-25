@@ -28,6 +28,7 @@ public:
 
 	virtual FRotator GetViewRotation() const override;
 
+	virtual void ZiplineTurnAround() override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -38,6 +39,10 @@ protected:
 	
 	virtual void OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime) override;
 
+	void SetOnLadderViewLimits();
+	void SetOnZiplineViewLimits();
+	void ResetViewLimits();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Ladder", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax  = 89.0f))
 	float LadderCameraMinPitch = -60.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Ladder", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
@@ -47,6 +52,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Ladder", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
 	float LadderCameraMaxYaw = 45.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Zipline", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
+	float ZiplineCameraMinPitch = -60.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Zipline", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
+	float ZiplineCameraMaxPitch = 80.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Zipline", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
+	float ZiplineCameraMinYaw = -45.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Zipline", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
+	float ZiplineCameraMaxYaw = 45.0f;
 
 private:
 	FTimerHandle FPMontageTimer;
