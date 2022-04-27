@@ -30,6 +30,11 @@ public:
 
 	virtual void ZiplineTurnAround() override;
 
+	virtual void HardLanded() override;
+
+	virtual void LimitControl() override;
+	virtual void UnlimitControl() override;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class USkeletalMeshComponent* FirstPersonMeshComponent;
@@ -60,6 +65,9 @@ protected:
 	float ZiplineCameraMinYaw = -45.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | First person | Camera | Zipline", meta = (ClampMin = -89.0f, UIMin = -89.0f, ClampMax = 89.0f, UIMax = 89.0f))
 	float ZiplineCameraMaxYaw = 45.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Animations")
+	class UAnimMontage* FPHardLandingAnimMontage;
 
 private:
 	FTimerHandle FPMontageTimer;

@@ -163,6 +163,7 @@ public:
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void NotifyJumpApex() override;
+	virtual void HardLanded();
 
 	virtual void LimitControl();
 	virtual void UnlimitControl();
@@ -212,6 +213,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Animations")
 	class UAnimMontage* OnDeathAnimMontage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Animations")
+	class UAnimMontage* HardLandingAnimMontage;
+	//The height from which the hard landing montage will play (in meters)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Animations")
+	float HardLandingHeight = 8.0f;
 
 	//Damage depending from fall height (in meters)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Attributes | Damage")
@@ -256,4 +262,5 @@ private:
 	float IKScale = 0.0f;
 
 	FTimerHandle OutOfOxygenDamageTimer;
+	FTimerHandle HardLandingTimer;
 };

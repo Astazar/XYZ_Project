@@ -19,6 +19,7 @@
 #include "Actors/Equipment/Weapons/MeleeWeaponItem.h"
 #include "Actors/Equipment/Throwables/ThrowableItem.h"
 #include <AIController.h>
+#include <GameFramework/PhysicsVolume.h>
 
 
 
@@ -320,11 +321,18 @@ void AXYZBaseCharacter::Falling()
 void AXYZBaseCharacter::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
+	//in meters
 	float FallHeight = (CurrentFallApex - GetActorLocation()).Z * 0.01;
 	if (IsValid(FallDamageCurve))
 	{
 		float DamageAmount = FallDamageCurve->GetFloatValue(FallHeight);
 		TakeDamage(DamageAmount, FDamageEvent(), GetController(), Hit.Actor.Get());
+	}
+	APhysicsVolume* Volume = Cast<APhysicsVolume>(Hit.Actor);
+	bool bIsWater = Volume != nullptr ? Volume->bWaterVolume : false;
+	if (FallHeight >= HardLandingHeight && !bIsWater)
+	{
+		HardLanded();
 	}
 }
 
@@ -332,6 +340,21 @@ void AXYZBaseCharacter::NotifyJumpApex()
 {
 	Super::NotifyJumpApex();
 	CurrentFallApex = GetActorLocation();
+}
+
+void AXYZBaseCharacter::HardLanded()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!IsValid(AnimInstance))
+	{
+		return;
+	}
+	if (IsValid(HardLandingAnimMontage))
+	{
+		float Duration = AnimInstance->Montage_Play(HardLandingAnimMontage, 1.0f, EMontagePlayReturnType::Duration);
+		LimitControl();
+		GetWorld()->GetTimerManager().SetTimer(HardLandingTimer, this, &AXYZBaseCharacter::UnlimitControl, Duration, false);
+	}
 }
 
 void AXYZBaseCharacter::LimitControl()

@@ -183,6 +183,32 @@ void AFPPlayerCharacter::ZiplineTurnAround()
 	SetOnZiplineViewLimits();
 }
 
+void AFPPlayerCharacter::HardLanded()
+{
+	Super::HardLanded();
+	UAnimInstance* FPAnimInstance = FirstPersonMeshComponent->GetAnimInstance();
+	if (!IsValid(FPAnimInstance))
+	{
+		return;
+	}
+	if (IsValid(FPHardLandingAnimMontage))
+	{
+		FPAnimInstance->Montage_Play(FPHardLandingAnimMontage);
+	}
+}
+
+void AFPPlayerCharacter::LimitControl()
+{
+	Super::LimitControl();
+	GetController()->SetIgnoreLookInput(true);
+}
+
+void AFPPlayerCharacter::UnlimitControl()
+{
+	Super::UnlimitControl();
+	GetController()->SetIgnoreLookInput(false);
+}
+
 bool AFPPlayerCharacter::IsFPMontagePlaying() const
 {
 	UAnimInstance* FPAnimInstance = FirstPersonMeshComponent->GetAnimInstance();
