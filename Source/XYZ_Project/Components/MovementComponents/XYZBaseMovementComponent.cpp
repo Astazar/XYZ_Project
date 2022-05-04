@@ -18,6 +18,22 @@
 #include "GameFramework/PhysicsVolume.h"
 
 
+FNetworkPredictionData_Client* UXYZBaseMovementComponent::GetPredictionData_Client() const
+{
+	if (ClientPredictionData == nullptr)
+	{
+		UXYZBaseMovementComponent* MovementComponent_Mutable = const_cast<UXYZBaseMovementComponent*>(this);
+		MovementComponent_Mutable->ClientPredictionData = new FNetworkPredictionData_Client_XYZCharacter(*this);
+	}
+	return ClientPredictionData;
+}
+
+void UXYZBaseMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
+{
+	Super::UpdateFromCompressedFlags(Flags);
+	bIsSprinting = (Flags & FSavedMove_XYZCharacter::FLAG_IsSprinting) != 0;
+}
+
 void UXYZBaseMovementComponent::Wallrun()
 {
 	UCapsuleComponent* CharacterCapsule = GetBaseCharacterOwner()->GetCapsuleComponent();
@@ -1022,13 +1038,13 @@ void UXYZBaseMovementComponent::PhysLadder(float deltaTime, int32 Iterations)
 
 	if (NewPosProjection < MinLadderBottomOffset)
 	{
-		DetachFromLadder(EDetachFromLadderMethod::ReachingTheBottom);
-		return;
+DetachFromLadder(EDetachFromLadderMethod::ReachingTheBottom);
+return;
 	}
 	else if (NewPosProjection > (CurrentLadder->GetLadderHeight() - MaxLadderTopOffset))
 	{
-		DetachFromLadder(EDetachFromLadderMethod::ReachingTheTop);
-		return;
+	DetachFromLadder(EDetachFromLadderMethod::ReachingTheTop);
+	return;
 	}
 
 	FHitResult Hit;
@@ -1101,3 +1117,56 @@ void UXYZBaseMovementComponent::PhysWallrun(float deltaTime, int32 Iterations)
 	}
 }
 
+void FSavedMove_XYZCharacter::Clear()
+{
+	Super::Clear();
+	bSavedIsSprinting = false;
+}
+
+uint8 FSavedMove_XYZCharacter::GetCompressedFlags() const
+{
+	uint8 Result = Super::GetCompressedFlags();
+
+	if (bSavedIsSprinting)
+	{
+		Result |= FLAG_IsSprinting;
+	}
+	return Result;
+}
+
+bool FSavedMove_XYZCharacter::CanCombineWith(const FSavedMovePtr& NewMovePtr, ACharacter* InCharacter, float MaxDelta) const
+{
+	const FSavedMove_XYZCharacter* NewMove = StaticCast<const FSavedMove_XYZCharacter*>(NewMovePtr.Get());
+	if (bSavedIsSprinting != NewMove->bSavedIsSprinting)
+	{
+		return false;
+	}
+
+	return Super::CanCombineWith(NewMovePtr, InCharacter, MaxDelta);
+}
+
+void FSavedMove_XYZCharacter::SetMoveFor(ACharacter* InCharacter, float InDeltaTime, FVector const& NewAccel, class FNetworkPredictionData_Client_Character& ClientData)
+{
+	Super::SetMoveFor(InCharacter, InDeltaTime, NewAccel, ClientData);
+
+	UXYZBaseMovementComponent* MovementComponent = StaticCast<UXYZBaseMovementComponent*>(InCharacter->GetMovementComponent());
+	bSavedIsSprinting = MovementComponent->bIsSprinting;
+}
+
+void FSavedMove_XYZCharacter::PrepMoveFor(ACharacter* Character)
+{
+	Super::PrepMoveFor(Character);
+
+	UXYZBaseMovementComponent* MovementComponent = StaticCast<UXYZBaseMovementComponent*>(Character->GetMovementComponent());
+	MovementComponent->bIsSprinting = bSavedIsSprinting;
+}
+
+FNetworkPredictionData_Client_XYZCharacter::FNetworkPredictionData_Client_XYZCharacter(const UCharacterMovementComponent& ClientMovement)
+	:Super(ClientMovement)
+{
+}
+
+FSavedMovePtr FNetworkPredictionData_Client_XYZCharacter::AllocateNewMove()
+{
+	return FSavedMovePtr(new FSavedMove_XYZCharacter());
+}

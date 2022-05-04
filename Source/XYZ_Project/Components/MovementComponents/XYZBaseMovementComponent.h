@@ -8,6 +8,8 @@
 #include "XYZ_Project/XYZ_ProjectTypes.h"
 #include "XYZBaseMovementComponent.generated.h"
 
+#define FLAG_IsSprinting FLAG_Custom_0
+
 UENUM(BlueprintType)
 enum class ESwimState : uint8 
 {
@@ -15,7 +17,6 @@ enum class ESwimState : uint8
 	OnWaterSurface,
 	UnderWater
 };
-
 
 struct FMantlingMovementParameters
 {
@@ -47,7 +48,6 @@ enum class ECustomMovementMode : uint8
 	CMOVE_Max UMETA(Hidden)
 };
 
-
 UENUM(BlueprintType)
 enum class EMovementState : uint8
 {
@@ -64,14 +64,46 @@ enum class EDetachFromLadderMethod : uint8
 	JumpOff
 };
 
+class FSavedMove_XYZCharacter : public FSavedMove_Character
+{
+	typedef FSavedMove_Character Super;
 
+public: 
+	virtual void Clear() override;
+
+	virtual uint8 GetCompressedFlags() const override;
+
+	virtual bool CanCombineWith(const FSavedMovePtr& NewMovePtr, ACharacter* InCharacter, float MaxDelta) const override;
+
+	virtual void SetMoveFor(ACharacter* InCharacter, float InDeltaTime, FVector const& NewAccel, class FNetworkPredictionData_Client_Character & ClientData) override;
+
+	virtual void PrepMoveFor(ACharacter* Character) override;
+
+private:
+	uint8 bSavedIsSprinting : 1;
+};
+
+class FNetworkPredictionData_Client_XYZCharacter : public FNetworkPredictionData_Client_Character
+{
+	typedef FNetworkPredictionData_Client_Character Super;
+
+public:
+	FNetworkPredictionData_Client_XYZCharacter(const UCharacterMovementComponent& ClientMovement);
+
+	virtual FSavedMovePtr AllocateNewMove() override;
+};
 
 UCLASS()
 class XYZ_PROJECT_API UXYZBaseMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
 
+	friend class FSavedMove_XYZCharacter;
+
 public:
+	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
+	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+
 	virtual void Wallrun();
 	/** 
 	* Detecting a hit with wall.
