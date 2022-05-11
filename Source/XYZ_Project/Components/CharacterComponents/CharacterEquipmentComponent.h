@@ -109,8 +109,13 @@ private:
 	FDelegateHandle OnCurrentWeaponBarellAmmoChangedHandle;
 	FDelegateHandle OnCurrentWeaponReloadedHandle;
 
-	TItemsArray ItemsArray;
-	TAmunitionArray AmunitionArray;
+	UPROPERTY(ReplicatedUsing=OnRep_ItemsArray)
+	TArray<AEquipableItem*> ItemsArray;
+	UPROPERTY(Replicated)
+	TArray<int32> AmunitionArray;
+
+	UFUNCTION()
+	void OnRep_ItemsArray();
 
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentEquippedSlot)
 	EEquipmentSlots CurrentEquippedSlot;

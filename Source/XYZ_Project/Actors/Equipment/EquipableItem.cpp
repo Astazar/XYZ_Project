@@ -1,6 +1,11 @@
 #include "EquipableItem.h"
 #include "Characters/XYZBaseCharacter.h"
 
+AEquipableItem::AEquipableItem()
+{
+	SetReplicates(true);
+}
+
 void AEquipableItem::SetOwner(AActor* NewOwner)
 {
 	Super::SetOwner(NewOwner);
@@ -8,6 +13,10 @@ void AEquipableItem::SetOwner(AActor* NewOwner)
 	{
 		checkf(GetOwner()->IsA<AXYZBaseCharacter>(), TEXT("AEquipableItem::SetOwner() only AXYZBaseCharacter can be an owner of AEquipableItem."));
 		CachedCharacterOwner = StaticCast<AXYZBaseCharacter*>(GetOwner());
+		if (HasAuthority())
+		{
+			SetAutonomousProxy(true);
+		}
 	}
 	else
 	{

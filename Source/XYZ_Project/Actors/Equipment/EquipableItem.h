@@ -17,6 +17,8 @@ class XYZ_PROJECT_API AEquipableItem : public AActor
 	GENERATED_BODY()
 
 public:
+	AEquipableItem();
+
 	virtual void SetOwner(AActor* NewOwner) override;
 
 	EEquipableItemType GetItemType() const;
