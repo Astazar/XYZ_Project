@@ -15,7 +15,10 @@ void AXYZPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	CachedBaseCharacter = Cast<AXYZBaseCharacter>(InPawn);
-	CreateAndInitializeWidgets();
+	if (IsLocalController())
+	{
+		CreateAndInitializeWidgets();
+	}
 }
 
 void AXYZPlayerController::SetupInputComponent()
