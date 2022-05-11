@@ -175,7 +175,7 @@ AController* UWeaponBarellComponent::GetController() const
 void UWeaponBarellComponent::ProcessHit(const FHitResult& HitResult, const FVector& Direction, float ShotRange)
 {
 	AActor* HitActor = HitResult.GetActor();
-	if (IsValid(HitActor))
+	if (IsValid(HitActor) && GetOwner()->HasAuthority())
 	{
 		float AppliedDamage = DamageAmount;
 		if (IsValid(FallOffDamageDiagram))

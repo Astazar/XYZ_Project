@@ -10,12 +10,20 @@
 #include "XYZ_Project/Components/MovementComponents/XYZBaseMovementComponent.h"
 #include <GameFramework/Pawn.h>
 #include <TimerManager.h>
+#include <Net/UnrealNetwork.h>
 
 UCharacterAttributesComponent::UCharacterAttributesComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(true);
 }
 
+
+void UCharacterAttributesComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UCharacterAttributesComponent, CurrentHealth);
+}
 
 void UCharacterAttributesComponent::BeginPlay()
 {
@@ -28,7 +36,11 @@ void UCharacterAttributesComponent::BeginPlay()
 	SetCurrentHealthClamped(MaxHealth);
 	SetCurrentStaminaClamped(MaxStamina);
 	SetCurrentOxygenClamped(MaxOxygen);
-	CachedBaseCharacter->OnTakeAnyDamage.AddDynamic(this, &UCharacterAttributesComponent::OnTakeAnyDamage);
+
+	if (GetOwner()->HasAuthority())
+	{
+		CachedBaseCharacter->OnTakeAnyDamage.AddDynamic(this, &UCharacterAttributesComponent::OnTakeAnyDamage);
+	}
 }
 
 void UCharacterAttributesComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -87,10 +99,10 @@ void UCharacterAttributesComponent::UpdateOxygenValue(float DeltaTime)
 void UCharacterAttributesComponent::SetCurrentHealthClamped(float NewHealth)
 {
 	CurrentHealth = FMath::Clamp(NewHealth, 0.0f, MaxHealth);
-	if (OnCurrentHealthChangedEvent.IsBound())
-	{
-		OnCurrentHealthChangedEvent.Broadcast(CurrentHealth, MaxHealth);
-	}
+	//if (OnCurrentHealthChangedEvent.IsBound())
+	//{
+	//	OnCurrentHealthChangedEvent.Broadcast(CurrentHealth, MaxHealth);
+	//}
 }
 
 void UCharacterAttributesComponent::SetCurrentStaminaClamped(float NewStamina)
@@ -126,6 +138,26 @@ float UCharacterAttributesComponent::GetCurrentOxygenPercent() const
 	return CurrentOxygen/MaxOxygen;
 }
 
+void UCharacterAttributesComponent::OnRep_Health()
+{
+	OnHealthChanged();
+}
+
+void UCharacterAttributesComponent::OnHealthChanged()
+{
+	if (OnCurrentHealthChangedEvent.IsBound())
+	{
+		OnCurrentHealthChangedEvent.Broadcast(CurrentHealth, MaxHealth);
+	}
+	if (CurrentHealth <= 0.0f)
+	{
+		if (OnDeathEvent.IsBound())
+		{
+			OnDeathEvent.Broadcast();
+		}
+	}
+}
+
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 void UCharacterAttributesComponent::DebugDrawAttributes()
 {
@@ -153,14 +185,6 @@ void UCharacterAttributesComponent::OnTakeAnyDamage(AActor* DamagedActor, float 
 
 	SetCurrentHealthClamped(CurrentHealth - Damage);
 	UE_LOG(LogDamage, Warning, TEXT("UCharacterAttributesComponent::OnTakeAnyDamage %s received %.2f, amount of damage from %s"), *CachedBaseCharacter->GetName(), Damage, DamageCauser!=nullptr ? *DamageCauser->GetName() : TEXT("nullptr."));
-
-	if (CurrentHealth <= 0.0f)
-	{	
-		UE_LOG(LogDamage, Warning, TEXT("UCharacterAttributesComponent::OnTakeAnyDamage character %s is killed by %s"), *CachedBaseCharacter->GetName(), DamageCauser != nullptr ? *DamageCauser->GetName() : TEXT("nullptr."));
-		if (OnDeathEvent.IsBound())
-		{
-			OnDeathEvent.Broadcast();
-		}
-	}
+	OnHealthChanged();
 }
 

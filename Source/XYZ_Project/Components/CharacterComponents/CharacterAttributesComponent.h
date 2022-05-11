@@ -25,6 +25,8 @@ public:
 	FCurrentStaminaChanged OnCurrentStaminaChangedEvent;
 	FCurrentOxygenChanged OnCurrentOxygenChangedEvent;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	bool IsAlive() { return CurrentHealth > 0.0f; }
 
 	virtual void BeginPlay() override;
@@ -70,9 +72,15 @@ protected:
 	float OxygenConsumptionVelocity = 10.0f;
 
 private:
+	UPROPERTY(ReplicatedUsing=OnRep_Health)
 	float CurrentHealth = 0.0f;
 	float CurrentStamina = 0.0f;
 	float CurrentOxygen = 0.0f;
+
+	UFUNCTION()
+	void OnRep_Health();
+	void OnHealthChanged();
+
 
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT		
 	void DebugDrawAttributes();
