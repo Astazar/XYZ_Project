@@ -8,7 +8,22 @@
 #include <Components/DecalComponent.h>
 #include "Actors/Projectiles/XYZProjectile.h"
 #include <AI/Perception/Senses/AISense_DamageSight.h>
+#include <Net/UnrealNetwork.h>
 
+
+UWeaponBarellComponent::UWeaponBarellComponent()
+{
+	SetIsReplicatedByDefault(true);
+}
+
+void UWeaponBarellComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams RepParams;
+	RepParams.Condition = COND_SimulatedOnly;
+	RepParams.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(UWeaponBarellComponent, LastShotsInfo, RepParams);
+}
 
 void UWeaponBarellComponent::BeginPlay()
 {
@@ -46,42 +61,19 @@ EAmunitionType UWeaponBarellComponent::GetAmmoType() const
 
 void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, float SpreadAngle)
 {
-	FVector MuzzleLocation = GetComponentLocation();
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlashFX, MuzzleLocation, GetComponentRotation());
-
+	TArray<FShotInfo> ShotsInfo;
 	for (int i = 0; i < BulletsPerShot; i++)
 	{
 		ShotDirection += GetBulletSpreadOffset(FMath::RandRange(0.0f, SpreadAngle), ShotDirection.ToOrientationRotator());
-		FVector ShotEnd = ShotStart + FiringRange * ShotDirection;
-
-		bool bDrawDebug = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryRangeWeapon);
-
-		switch (HitRegistration)
-		{
-			case EHitRegistrationType::Hitscan:
-			{
-				bool bHasHit = HitScan(ShotStart, ShotEnd, ShotDirection);
-				if (bDrawDebug && bHasHit)
-				{
-					DrawDebugSphere(GetWorld(), ShotEnd, 10.0f, 24, FColor::Red, false, 1.0f);
-				}
-				break;
-			}
-			case  EHitRegistrationType::Projectile:
-			{
-				LaunchProjectile(ShotStart, ShotDirection);
-				break;
-			}
-		}
-
-		UNiagaraComponent* TraceFXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TraceFX, MuzzleLocation, GetComponentRotation());
-		TraceFXComponent->SetVectorParameter(FXParamTraceEnd, ShotEnd);
-
-		if (bDrawDebug)
-		{
-			DrawDebugLine(GetWorld(), MuzzleLocation, ShotEnd, FColor::Red, false, 1.0f, 0, 3.0f);
-		}
+		ShotDirection = ShotDirection.GetSafeNormal();
+		ShotsInfo.Emplace(ShotStart, ShotDirection);
 	}
+
+	if (GetOwner()->GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		Server_Shot(ShotsInfo);
+	}
+	ShotInternal(ShotsInfo);
 }
 
 
@@ -107,6 +99,61 @@ void UWeaponBarellComponent::LaunchProjectile(const FVector& LaunchStart, const 
 		Projectile->OnProjectileHit.AddDynamic(this, &UWeaponBarellComponent::ProcessHit);
 		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal(), LaunchStart);
 	}
+}
+
+void UWeaponBarellComponent::ShotInternal(const TArray<FShotInfo>& ShotsInfo)
+{
+	if (GetOwner()->HasAuthority())
+	{
+		LastShotsInfo = ShotsInfo;
+	}
+
+	FVector MuzzleLocation = GetComponentLocation();
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlashFX, MuzzleLocation, GetComponentRotation());
+
+	for (const FShotInfo& ShotInfo : ShotsInfo)
+	{
+		FVector ShotStart = ShotInfo.GetLocation();
+		FVector ShotDirection = ShotInfo.GetDirection();
+		FVector ShotEnd = ShotStart + FiringRange * ShotDirection;
+
+		bool bDrawDebug = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryRangeWeapon);
+		switch (HitRegistration)
+		{
+		case EHitRegistrationType::Hitscan:
+		{
+			bool bHasHit = HitScan(ShotStart, ShotEnd, ShotDirection);
+			if (bDrawDebug && bHasHit)
+			{
+				DrawDebugSphere(GetWorld(), ShotEnd, 10.0f, 24, FColor::Red, false, 1.0f);
+			}
+			break;
+		}
+		case  EHitRegistrationType::Projectile:
+		{
+			LaunchProjectile(ShotStart, ShotDirection);
+			break;
+		}
+		}
+
+		UNiagaraComponent* TraceFXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TraceFX, MuzzleLocation, GetComponentRotation());
+		TraceFXComponent->SetVectorParameter(FXParamTraceEnd, ShotEnd);
+
+		if (bDrawDebug)
+		{
+			DrawDebugLine(GetWorld(), MuzzleLocation, ShotEnd, FColor::Red, false, 1.0f, 0, 3.0f);
+		}
+	}
+}
+
+void UWeaponBarellComponent::Server_Shot_Implementation(const TArray<FShotInfo>& ShotsInfo)
+{
+	ShotInternal(ShotsInfo);
+}
+
+void UWeaponBarellComponent::OnRep_LastShotsInfo()
+{
+	ShotInternal(LastShotsInfo);
 }
 
 APawn* UWeaponBarellComponent::GetOwningPawn() const
