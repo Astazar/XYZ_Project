@@ -31,7 +31,17 @@ FNetworkPredictionData_Client* UXYZBaseMovementComponent::GetPredictionData_Clie
 void UXYZBaseMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 {
 	Super::UpdateFromCompressedFlags(Flags);
+	bool bWasMantling = GetBaseCharacterOwner()->bIsMantling;
 	bIsSprinting = (Flags & FSavedMove_XYZCharacter::FLAG_IsSprinting) != 0;
+	bool bIsMantling = (Flags & FSavedMove_XYZCharacter::FLAG_IsMantling) != 0;
+
+	if(GetBaseCharacterOwner()->GetLocalRole() == ROLE_Authority)
+	{
+		if (!bWasMantling && bIsMantling)
+		{
+			GetBaseCharacterOwner()->Mantle(true);
+		}
+	}
 }
 
 void UXYZBaseMovementComponent::Wallrun()
@@ -348,6 +358,7 @@ void UXYZBaseMovementComponent::StartMantle(const FMantlingMovementParameters& M
 
 void UXYZBaseMovementComponent::EndMantle()
 {
+	GetBaseCharacterOwner()->bIsMantling = false;
 	SetMovementMode(MOVE_Walking);
 }
 
@@ -965,6 +976,11 @@ void UXYZBaseMovementComponent::PhysSwimmingOnWaterSurface(float deltaTime, int3
 
 void UXYZBaseMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 {
+	if (GetBaseCharacterOwner()->GetLocalRole() == ROLE_SimulatedProxy)
+	{
+		return;
+	}
+
 	switch (CustomMovementMode)
 	{
 	case (uint8)ECustomMovementMode::CMOVE_Mantling:
@@ -1017,6 +1033,7 @@ void UXYZBaseMovementComponent::PhysMantling(float deltaTime, int32 Iterations)
 	FVector Delta = NewLocation - GetActorLocation();
 	FVector TargetDelta = CurrentMantlingParameters.Geometry->GetComponentLocation() - CurrentMantlingParameters.InitialGeometryLocation;
 	Delta += TargetDelta;
+	Velocity = Delta / deltaTime;
 	FHitResult Hit;
 	SafeMoveUpdatedComponent(Delta, NewRotation, false, Hit);
 }
@@ -1121,6 +1138,7 @@ void FSavedMove_XYZCharacter::Clear()
 {
 	Super::Clear();
 	bSavedIsSprinting = false;
+	bSavedIsMantling = false;
 }
 
 uint8 FSavedMove_XYZCharacter::GetCompressedFlags() const
@@ -1131,13 +1149,19 @@ uint8 FSavedMove_XYZCharacter::GetCompressedFlags() const
 	{
 		Result |= FLAG_IsSprinting;
 	}
+	if (bSavedIsMantling)
+	{
+		Result &= ~FLAG_JumpPressed;
+		Result |= FLAG_IsMantling;
+	}
 	return Result;
 }
 
 bool FSavedMove_XYZCharacter::CanCombineWith(const FSavedMovePtr& NewMovePtr, ACharacter* InCharacter, float MaxDelta) const
 {
 	const FSavedMove_XYZCharacter* NewMove = StaticCast<const FSavedMove_XYZCharacter*>(NewMovePtr.Get());
-	if (bSavedIsSprinting != NewMove->bSavedIsSprinting)
+	if (bSavedIsSprinting != NewMove->bSavedIsSprinting
+		|| bSavedIsMantling != NewMove->bSavedIsMantling)
 	{
 		return false;
 	}
@@ -1149,8 +1173,10 @@ void FSavedMove_XYZCharacter::SetMoveFor(ACharacter* InCharacter, float InDeltaT
 {
 	Super::SetMoveFor(InCharacter, InDeltaTime, NewAccel, ClientData);
 
+	AXYZBaseCharacter* BaseInCharacter = StaticCast<AXYZBaseCharacter*>(InCharacter);
 	UXYZBaseMovementComponent* MovementComponent = StaticCast<UXYZBaseMovementComponent*>(InCharacter->GetMovementComponent());
 	bSavedIsSprinting = MovementComponent->bIsSprinting;
+	bSavedIsMantling = BaseInCharacter->bIsMantling;
 }
 
 void FSavedMove_XYZCharacter::PrepMoveFor(ACharacter* Character)

@@ -9,6 +9,7 @@
 #include "XYZBaseMovementComponent.generated.h"
 
 #define FLAG_IsSprinting FLAG_Custom_0
+#define FLAG_IsMantling FLAG_Custom_1
 
 UENUM(BlueprintType)
 enum class ESwimState : uint8 
@@ -81,6 +82,7 @@ public:
 
 private:
 	uint8 bSavedIsSprinting : 1;
+	uint8 bSavedIsMantling : 1;
 };
 
 class FNetworkPredictionData_Client_XYZCharacter : public FNetworkPredictionData_Client_Character

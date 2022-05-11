@@ -20,6 +20,7 @@
 #include "Actors/Equipment/Throwables/ThrowableItem.h"
 #include <AIController.h>
 #include <GameFramework/PhysicsVolume.h>
+#include <Net/UnrealNetwork.h>
 
 
 
@@ -36,6 +37,12 @@ AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer
 
 	GetMesh()->CastShadow = true;
 	GetMesh()->bCastDynamicShadow = true;
+}
+
+void AXYZBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AXYZBaseCharacter, bIsMantling);
 }
 
 bool AXYZBaseCharacter::CanCrouch() const
@@ -185,6 +192,8 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 
 	if (IsDetected)
 	{
+		bIsMantling = true;
+
 		FMantlingMovementParameters MantlingParameters;
 		MantlingParameters.InitialLocation = GetActorLocation() + CrouchedOffset;
 		MantlingParameters.InitialRotation = GetActorRotation();
@@ -215,7 +224,10 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 		MantlingParameters.StartTime = FMath::GetMappedRangeValueClamped(SourceRange, TargetRange, MantlingHeight);
 		MantlingParameters.InitialAnimationLocation = MantlingParameters.TargetLocation - MantlingSettings->AnimationCorrectionZ * FVector::UpVector + MantlingSettings->AnimationCorrectionXY * LedgeDescription.LedgeNormal;
 
-		XYZBaseCharacterMovementComponent->StartMantle(MantlingParameters);
+		if (IsLocallyControlled() || GetLocalRole() == ROLE_Authority)
+		{
+			XYZBaseCharacterMovementComponent->StartMantle(MantlingParameters);
+		}
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		AnimInstance->Montage_Play(MantlingSettings->MantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingParameters.StartTime);
@@ -226,7 +238,6 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 
 void AXYZBaseCharacter::OnMantle(const FMantlingSettings* MantlingSettings, float MantlingAnimationStartTime)
 {
-
 }
 
 
@@ -238,6 +249,14 @@ bool AXYZBaseCharacter::CanMantle() const
 		   !XYZBaseCharacterMovementComponent->IsWallrunning();
 		   !XYZBaseCharacterMovementComponent->IsOnLadder() &&
 		   !XYZBaseCharacterMovementComponent->IsSliding();
+}
+
+void AXYZBaseCharacter::OnRep_IsMantling(bool bWasMantling)
+{
+	if (GetLocalRole() == ROLE_SimulatedProxy && !bWasMantling && bIsMantling)
+	{
+		Mantle(true);
+	}
 }
 
 UXYZBaseMovementComponent* AXYZBaseCharacter::GetCharacterMovementComponent() const

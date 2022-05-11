@@ -64,6 +64,8 @@ class XYZ_PROJECT_API AXYZBaseCharacter : public ACharacter, public IGenericTeam
 public:
 	AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual void BeginPlay() override;
 
 	virtual void PossessedBy(AController* NewController) override;
@@ -129,6 +131,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Mantle(bool bForce = false);
 	virtual bool CanMantle() const;
+	UPROPERTY(ReplicatedUsing=OnRep_IsMantling)
+	bool bIsMantling = false;
+	UFUNCTION()
+	void OnRep_IsMantling(bool bWasMantling);
 
 	UFUNCTION(BlueprintCallable)
 	virtual UXYZBaseMovementComponent* GetCharacterMovementComponent() const;
