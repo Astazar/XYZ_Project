@@ -22,17 +22,22 @@ class XYZ_PROJECT_API ATurret : public APawn
 public:
 	ATurret();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual void BeginPlay() override;
 
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void Tick(float DeltaTime) override;
 
-	void SetCurrentTarget(AActor* NewTarget);
+	void OnCurrentTargetSet();
 
 	virtual FVector GetPawnViewLocation() const override;
 
 	virtual FRotator GetViewRotation() const override;
+
+	UPROPERTY(ReplicatedUsing=OnRep_CurrentTarget);
+	AActor* CurrentTarget = nullptr;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -95,9 +100,11 @@ private:
 	
 	void DestroyTurret();
 
+	UFUNCTION()
+	void OnRep_CurrentTarget();
+
 	ETurretState CurrentTurretState = ETurretState::Searching;
 	ETurretState PreviousTurretState = ETurretState::Searching;
-	AActor* CurrentTarget = nullptr;
 
 	FTimerHandle ShotTimer;
 };

@@ -4,6 +4,7 @@
 #include <GenericTeamAgentInterface.h>
 #include <Kismet/GameplayStatics.h>
 #include <Particles/ParticleSystem.h>
+#include <Net/UnrealNetwork.h>
 
 
 ATurret::ATurret()
@@ -20,6 +21,14 @@ ATurret::ATurret()
 	
 	WeaponBarell = CreateDefaultSubobject<UWeaponBarellComponent>(TEXT("WeaponBarell"));
 	WeaponBarell->SetupAttachment(TurretBarellComponent);
+
+	SetReplicates(true);
+}
+
+void ATurret::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ATurret, CurrentTarget);
 }
 
 void ATurret::BeginPlay()
@@ -59,16 +68,8 @@ void ATurret::Tick(float DeltaTime)
 	}
 }
 
-void ATurret::SetCurrentTarget(AActor* NewTarget)
+void ATurret::OnCurrentTargetSet()
 {
-	if (CurrentTarget == NewTarget)
-	{
-		return;
-	}
-
-	PreviousTurretState = CurrentTurretState;
-	CurrentTarget = NewTarget;
-
 	ETurretState NewState;
 	if (IsValid(CurrentTarget))
 	{
@@ -170,5 +171,10 @@ void ATurret::DestroyTurret()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionVFX, GetActorLocation());
 	}
 	Destroy();
+}
+
+void ATurret::OnRep_CurrentTarget()
+{
+	OnCurrentTargetSet();
 }
 

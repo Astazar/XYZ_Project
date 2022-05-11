@@ -33,12 +33,14 @@ void AAITurretController::ActorsPerceptionUpdated(const TArray<AActor*>& Updated
 	{
 		if (IsValid(DamageInstigator))
 		{
-			CachedTurret->SetCurrentTarget(DamageInstigator);
+			CachedTurret->CurrentTarget = DamageInstigator;
+			CachedTurret->OnCurrentTargetSet();
 			return;
 		}
 	}
 
 	AActor* ClosestActor = GetClosestSensedActor(UAISense_Sight::StaticClass());
-	CachedTurret->SetCurrentTarget(ClosestActor);
+	CachedTurret->CurrentTarget = ClosestActor;
+	CachedTurret->OnCurrentTargetSet();
 }
 
