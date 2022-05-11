@@ -23,6 +23,10 @@ class XYZ_PROJECT_API UCharacterEquipmentComponent : public UActorComponent
 	GENERATED_BODY()
 	
 public:
+	UCharacterEquipmentComponent();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual void BeginPlay() override;
 
 	void SelectMovementSettings(const AEquipableItem* EquippedItem);
@@ -75,6 +79,9 @@ protected:
 	EEquipmentSlots AutoEquippedSlot = EEquipmentSlots::None;
 
 private:
+	UFUNCTION(Server, Reliable)
+	void Server_EquipItemInSlot(EEquipmentSlots Slot);
+
 	void CreateLoadout();
 
 	void AutoEquip();
@@ -105,7 +112,11 @@ private:
 	TItemsArray ItemsArray;
 	TAmunitionArray AmunitionArray;
 
+	UPROPERTY(ReplicatedUsing=OnRep_CurrentEquippedSlot)
 	EEquipmentSlots CurrentEquippedSlot;
+	UFUNCTION()
+	void OnRep_CurrentEquippedSlot(EEquipmentSlots CurrentEquippedSlot_Old);
+
 	EEquipmentSlots PreviousEquippedSlot;
 	AEquipableItem* CurrentEquippedItem;
 	ARangeWeaponItem* CurrentEquippedWeapon;

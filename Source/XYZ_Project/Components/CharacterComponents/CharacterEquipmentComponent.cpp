@@ -5,8 +5,20 @@
 #include "Actors/Equipment/Throwables/ThrowableItem.h"
 #include "Characters/XYZBaseCharacter.h"
 #include "XYZ_ProjectTypes.h"
+#include <Net/UnrealNetwork.h>
 
 
+
+UCharacterEquipmentComponent::UCharacterEquipmentComponent()
+{
+	SetIsReplicatedByDefault(true);
+}
+
+void UCharacterEquipmentComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UCharacterEquipmentComponent, CurrentEquippedSlot);
+}
 
 void UCharacterEquipmentComponent::BeginPlay()
 {
@@ -119,6 +131,11 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 	if (OnEquippedItemChanged.IsBound())
 	{
 		OnEquippedItemChanged.Broadcast(CurrentEquippedItem);
+	}
+
+	if (GetOwner()->GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		Server_EquipItemInSlot(CurrentEquippedSlot);
 	}
 }
 
@@ -254,6 +271,11 @@ AEquipableItem* UCharacterEquipmentComponent::GetItemInSlot(EEquipmentSlots Slot
 	return ItemsArray[uint32(Slot)];
 }
 
+void UCharacterEquipmentComponent::Server_EquipItemInSlot_Implementation(EEquipmentSlots Slot)
+{
+	EquipItemInSlot(Slot);
+}
+
 void UCharacterEquipmentComponent::CreateLoadout()
 {
 	AmunitionArray.AddZeroed((uint32)EAmunitionType::MAX);
@@ -340,4 +362,9 @@ void  UCharacterEquipmentComponent::OnCurrentThrowItemAmmoChanged(int32 Ammo)
 	{
 		OnCurrentThrowItemAmmoChangedEvent.Broadcast(Ammo);
 	}
+}
+
+void UCharacterEquipmentComponent::OnRep_CurrentEquippedSlot(EEquipmentSlots CurrentEquippedSlot_Old)
+{
+	EquipItemInSlot(CurrentEquippedSlot);
 }
