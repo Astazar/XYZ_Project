@@ -39,7 +39,7 @@ private:
 	void OnDetonationTimerElapsed();
 
 	UFUNCTION()
-	void OnExplosiveProjectileHit(const FHitResult& Hit, const FVector& Direction, const float ShotRange);
+	void OnExplosiveProjectileHit(AXYZProjectile* Projectile, const FHitResult& HitResult, const FVector& Direction, float ShotRange);
 
 	AController* GetController();
 

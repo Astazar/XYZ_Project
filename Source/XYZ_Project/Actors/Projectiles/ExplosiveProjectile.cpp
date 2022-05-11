@@ -32,7 +32,7 @@ void AExplosiveProjectile::OnDetonationTimerElapsed()
 	ExplosionComponent->Explode(GetController());
 }
 
-void AExplosiveProjectile::OnExplosiveProjectileHit(const FHitResult& Hit, const FVector& Direction, const float ShotRange)
+void AExplosiveProjectile::OnExplosiveProjectileHit(AXYZProjectile* Projectile, const FHitResult& HitResult, const FVector& Direction, float ShotRange)
 {
 	ExplosionComponent->Explode(GetController());
 }

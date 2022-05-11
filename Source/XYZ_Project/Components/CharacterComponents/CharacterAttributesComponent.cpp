@@ -99,10 +99,6 @@ void UCharacterAttributesComponent::UpdateOxygenValue(float DeltaTime)
 void UCharacterAttributesComponent::SetCurrentHealthClamped(float NewHealth)
 {
 	CurrentHealth = FMath::Clamp(NewHealth, 0.0f, MaxHealth);
-	//if (OnCurrentHealthChangedEvent.IsBound())
-	//{
-	//	OnCurrentHealthChangedEvent.Broadcast(CurrentHealth, MaxHealth);
-	//}
 }
 
 void UCharacterAttributesComponent::SetCurrentStaminaClamped(float NewStamina)

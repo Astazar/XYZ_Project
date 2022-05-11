@@ -14,6 +14,10 @@ AXYZProjectile::AXYZProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->InitialSpeed = 2000.0f;
+	ProjectileMovementComponent->bAutoActivate = false;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 void AXYZProjectile::BeginPlay()
@@ -30,6 +34,11 @@ void AXYZProjectile::LaunchProjectile(FVector Direction, FVector StartLocation)
 	OnProjectileLaunched();
 }
 
+void AXYZProjectile::SetProjectileActive_Implementation(bool bIsProjectileActive)
+{
+	ProjectileMovementComponent->SetActive(bIsProjectileActive);
+}
+
 void AXYZProjectile::OnProjectileLaunched()
 {
 
@@ -40,7 +49,7 @@ void AXYZProjectile::OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* O
 	if (OnProjectileHit.IsBound())
 	{
 		float ShotRange = (LaunchStartLocation - Hit.ImpactPoint).Size();
-		OnProjectileHit.Broadcast(Hit, ProjectileMovementComponent->Velocity.GetSafeNormal(), ShotRange);
+		OnProjectileHit.Broadcast(this, Hit, ProjectileMovementComponent->Velocity.GetSafeNormal(), ShotRange);
 	}
 }
 

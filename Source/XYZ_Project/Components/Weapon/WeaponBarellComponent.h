@@ -51,7 +51,7 @@ struct FShotInfo
 };
 
 class UNiagaraSystem;
-
+class AXYZProjectile;
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class XYZ_PROJECT_API UWeaponBarellComponent : public USceneComponent
 {
@@ -92,8 +92,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Hit registration")
 	EHitRegistrationType HitRegistration = EHitRegistrationType::Hitscan;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Hit registration", meta = (UIMin = 1, ClampMin = 1, EditCondition = "HitRegistration == EHitRegistrationType::Projectile"))
+	int32 ProjectilePoolSize = 10;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Hit registration", meta = (EditCondition = "HitRegistration == EHitRegistrationType::Projectile"))
-	TSubclassOf<class AXYZProjectile> ProjectileClass;
+	TSubclassOf<AXYZProjectile> ProjectileClass;
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
@@ -123,11 +125,21 @@ private:
 	UFUNCTION()
 	void OnRep_LastShotsInfo();
 
+	UPROPERTY(Replicated)
+	TArray<AXYZProjectile*> ProjectilePool;
+
+	UPROPERTY(Replicated)
+	int32 CurrentProjectileIndex;
+
+	const FVector ProjectilePoolLocation = FVector(0.0f, 0.0f, -100.0f);
+
 	APawn* GetOwningPawn() const;
 	AController* GetController() const;
 
 	UFUNCTION()
 	void ProcessHit(const FHitResult& HitResult, const FVector& Direction, float ShotRange);
+	UFUNCTION()
+	void ProcessProjectileHit(AXYZProjectile* Projectile, const FHitResult& HitResult, const FVector& Direction, float ShotRange);
 
 	bool HitScan(const FVector& ShotStart, OUT FVector& ShotEnd, const FVector& ShotDirection);
 	void LaunchProjectile(const FVector& LaunchStart, const FVector& LaunchDirection);

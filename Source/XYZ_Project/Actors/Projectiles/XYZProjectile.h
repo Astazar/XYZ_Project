@@ -4,7 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "XYZProjectile.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnProjectileHit, const FHitResult&, Hit, const FVector&, Direction, const float, ShotRange);
+class AXYZProjectile;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnProjectileHit, AXYZProjectile*, Projectile, const FHitResult&, Hit, const FVector&, Direction, const float, ShotRange);
 
 UCLASS()
 class XYZ_PROJECT_API AXYZProjectile : public AActor
@@ -21,6 +22,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnProjectileHit OnProjectileHit;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SetProjectileActive(bool bIsProjectileActive);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
