@@ -56,7 +56,7 @@ void UXYZBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	LeftFootEffectorLocation = FVector(-(CachedBaseCharacter->GetIKLeftFootOffset() + CachedBaseCharacter->GetIKPelvisOffset()), 0.0f, 0.0f);
 	PelvisOffsetLocation = FVector(0.0f, 0.0f, CachedBaseCharacter->GetIKPelvisOffset());
 
-	AimRotation = CachedBaseCharacter->GetBaseAimRotation();
+	AimRotation = CachedBaseCharacter->GetAimOffsetLocal();
 
 	const UCharacterEquipmentComponent* CharacterEquipment = CachedBaseCharacter->GetCharacterEquipmentComponent();
 	CurrentEquippedItemType = CharacterEquipment->GetCurrentEquippedItemType();

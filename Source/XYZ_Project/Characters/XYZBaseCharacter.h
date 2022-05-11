@@ -76,6 +76,7 @@ public:
 	void Reload();
 
 	FOnAmimingStateChanged OnAmimingStateChanged;
+	FRotator GetAimOffsetLocal();
 	void StartAiming();
 	void StopAiming();
 	bool IsAiming() const;

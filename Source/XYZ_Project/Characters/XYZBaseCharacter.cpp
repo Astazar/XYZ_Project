@@ -519,6 +519,13 @@ void AXYZBaseCharacter::Reload()
 	}
 }
 
+FRotator AXYZBaseCharacter::GetAimOffsetLocal()
+{
+	FVector AimDirectionWorld = GetBaseAimRotation().Vector();
+	FVector AimDirectionLocal = GetTransform().InverseTransformVectorNoScale(AimDirectionWorld);
+	return AimDirectionLocal.ToOrientationRotator();
+}
+
 void AXYZBaseCharacter::StartAiming()
 {
 	ARangeWeaponItem* CurrentRangeWeapon = GetCharacterEquipmentComponent()->GetCurrentRangeWeapon();
