@@ -64,6 +64,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	void CreateProjectilePool();
+
 	void Shot(FVector ShotStart, FVector ShotDirection, float SpreadAngle);
 
 	bool CanShoot();
@@ -92,11 +94,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Hit registration")
 	EHitRegistrationType HitRegistration = EHitRegistrationType::Hitscan;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Hit registration", meta = (UIMin = 1, ClampMin = 1, EditCondition = "HitRegistration == EHitRegistrationType::Projectile"))
-	int32 ProjectilePoolSize = 10;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Hit registration", meta = (EditCondition = "HitRegistration == EHitRegistrationType::Projectile"))
 	TSubclassOf<AXYZProjectile> ProjectileClass;
-
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
 	TSubclassOf<class UDamageType> DamageTypeClass;
@@ -128,10 +127,10 @@ private:
 	UPROPERTY(Replicated)
 	TArray<AXYZProjectile*> ProjectilePool;
 
-	UPROPERTY(Replicated)
 	int32 CurrentProjectileIndex;
+	int32 ProjectilePoolSize = 10;
 
-	const FVector ProjectilePoolLocation = FVector(0.0f, 0.0f, -100.0f);
+	const FVector ProjectilePoolLocation = FVector(0.0f, 0.0f, -300.0f);
 
 	APawn* GetOwningPawn() const;
 	AController* GetController() const;

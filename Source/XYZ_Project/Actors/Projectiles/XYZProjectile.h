@@ -26,6 +26,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetProjectileActive(bool bIsProjectileActive);
 
+	class UProjectileMovementComponent* GetProjectileMovementComponent() const { return ProjectileMovementComponent; }
+
+	class USphereComponent* GetCollisionSphere() const { return CollisionComponent; } 
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USphereComponent* CollisionComponent;

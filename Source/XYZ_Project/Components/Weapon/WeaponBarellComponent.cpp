@@ -24,19 +24,20 @@ void UWeaponBarellComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	RepParams.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(UWeaponBarellComponent, LastShotsInfo, RepParams);
 	DOREPLIFETIME(UWeaponBarellComponent, ProjectilePool);
-	DOREPLIFETIME(UWeaponBarellComponent, CurrentProjectileIndex);
 }
 
 void UWeaponBarellComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	SetAmmo(MaxAmmo);
-
-	if (GetOwnerRole() < ROLE_Authority)
+	if (HitRegistration == EHitRegistrationType::Projectile)
 	{
-		return;
+		ProjectilePoolSize = MaxAmmo;
 	}
+}
 
+void UWeaponBarellComponent::CreateProjectilePool()
+{
 	if (!IsValid(ProjectileClass))
 	{
 		return;

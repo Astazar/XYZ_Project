@@ -166,6 +166,19 @@ float ARangeWeaponItem::GetAimLookUpModifier() const
 	return AimLookUpModifier;
 }
 
+void ARangeWeaponItem::CreatePools() const
+{
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
+	{
+		return;
+	}
+
+	for (UWeaponBarellComponent* Barell : BarellsArray)
+	{
+		Barell->CreateProjectilePool();
+	}
+}
+
 UWeaponBarellComponent* ARangeWeaponItem::GetCurrentBarellComponent() const
 {
 	return CurrentWeaponBarell;

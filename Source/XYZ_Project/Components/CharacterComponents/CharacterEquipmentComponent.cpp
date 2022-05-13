@@ -206,6 +206,10 @@ void UCharacterEquipmentComponent::EquipPreviousItem()
 
 void UCharacterEquipmentComponent::NextWeaponBarell()
 {
+	if (!IsValid(CurrentEquippedWeapon))
+	{
+		return;
+	}
 	UWeaponBarellComponent* CurrentBarell = CurrentEquippedWeapon->GetCurrentBarellComponent();
 	CurrentBarell->OnAmmoChanged.Remove(OnCurrentWeaponBarellAmmoChangedHandle);
 	if (IsValid(CurrentEquippedWeapon))
@@ -308,6 +312,12 @@ void UCharacterEquipmentComponent::CreateLoadout()
 		{
 			AThrowableItem* ThrowItem = Cast<AThrowableItem>(Item);
 			OnCurrentThrowItemAmmoChanged(ThrowItem->GetMaxThrowAmmo());
+		}
+
+		ARangeWeaponItem* RangeWeaponItem = Cast<ARangeWeaponItem>(Item);
+		if (RangeWeaponItem)
+		{
+			RangeWeaponItem->CreatePools();
 		}
 	}
 }
