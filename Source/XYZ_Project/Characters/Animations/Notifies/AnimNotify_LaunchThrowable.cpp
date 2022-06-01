@@ -10,5 +10,9 @@ void UAnimNotify_LaunchThrowable::Notify(USkeletalMeshComponent* MeshComp, UAnim
 	{
 		return;
 	}
-	CharacterOwner->GetCharacterEquipmentComponent_Mutable()->LaunchCurrentThrowableItem();
+	
+	if (CharacterOwner->IsLocallyControlled())
+	{
+		CharacterOwner->GetCharacterEquipmentComponent_Mutable()->LaunchCurrentThrowableItem();
+	}
 }

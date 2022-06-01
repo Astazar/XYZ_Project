@@ -38,7 +38,7 @@ void UWeaponBarellComponent::BeginPlay()
 
 void UWeaponBarellComponent::CreateProjectilePool()
 {
-	if (!IsValid(ProjectileClass))
+	if (!IsValid(ProjectileClass) || HitRegistration != EHitRegistrationType::Projectile)
 	{
 		return;
 	}
@@ -115,17 +115,33 @@ bool UWeaponBarellComponent::HitScan(const FVector& ShotStart, OUT FVector& Shot
 void UWeaponBarellComponent::LaunchProjectile(const FVector& LaunchStart, const FVector& LaunchDirection)
 {
 	AXYZProjectile* Projectile = ProjectilePool[CurrentProjectileIndex];
+	if (!IsValid(Projectile))
+	{
+		return;
+	}
 	Projectile->SetActorLocation(LaunchStart);
 	Projectile->SetActorRotation(LaunchDirection.ToOrientationRotator());
 	Projectile->SetProjectileActive(true);
-	Projectile->OnProjectileHit.AddDynamic(this, &UWeaponBarellComponent::ProcessProjectileHit);
+	//If bSetInProjectile is true, the damage dealing logic should be in the projectile class 
+	if (!bSetDamageInProjectile)
+	{
+		Projectile->OnProjectileHit.AddDynamic(this, &UWeaponBarellComponent::ProcessProjectileHit);
+	}
+	Projectile->OnProjectileDestroy.AddDynamic(this, &UWeaponBarellComponent::BackProjectileToPool);
 	Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal(), LaunchStart);
-	
 	++CurrentProjectileIndex;
 	if (CurrentProjectileIndex == ProjectilePool.Num())
 	{
 		CurrentProjectileIndex = 0;
 	}
+}
+
+void UWeaponBarellComponent::BackProjectileToPool(AXYZProjectile* Projectile)
+{
+	Projectile->SetProjectileActive(false);
+	Projectile->SetActorLocation(ProjectilePoolLocation);
+	Projectile->SetActorRotation(FRotator::ZeroRotator);
+	Projectile->OnProjectileDestroy.RemoveAll(this);
 }
 
 void UWeaponBarellComponent::ShotInternal(const TArray<FShotInfo>& ShotsInfo)
@@ -229,9 +245,6 @@ void UWeaponBarellComponent::ProcessHit(const FHitResult& HitResult, const FVect
 
 void UWeaponBarellComponent::ProcessProjectileHit(AXYZProjectile* Projectile, const FHitResult& HitResult, const FVector& Direction, float ShotRange)
 {
-	Projectile->SetProjectileActive(false);
-	Projectile->SetActorLocation(ProjectilePoolLocation);
-	Projectile->SetActorRotation(FRotator::ZeroRotator);
 	Projectile->OnProjectileHit.RemoveAll(this);
 	ProcessHit(HitResult, Direction, ShotRange);
 }

@@ -51,7 +51,7 @@ public:
 	float GetAimTurnModifier() const;
 	float GetAimLookUpModifier() const;
 
-	void CreatePools() const;
+	virtual void CreatePools() override;
 
 	UWeaponBarellComponent* GetCurrentBarellComponent() const;
 

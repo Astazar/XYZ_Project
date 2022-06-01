@@ -166,7 +166,7 @@ float ARangeWeaponItem::GetAimLookUpModifier() const
 	return AimLookUpModifier;
 }
 
-void ARangeWeaponItem::CreatePools() const
+void ARangeWeaponItem::CreatePools()
 {
 	if (GetOwner()->GetLocalRole() < ROLE_Authority)
 	{

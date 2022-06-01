@@ -23,6 +23,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	EExplosionType GetExplosionType() const { return ExplosionType; }
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UExplosionComponent* ExplosionComponent;

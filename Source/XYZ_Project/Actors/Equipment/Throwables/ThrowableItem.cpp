@@ -1,12 +1,50 @@
 #include "ThrowableItem.h"
 #include "Actors/Projectiles/XYZProjectile.h"
 #include "Characters/XYZBaseCharacter.h"
+#include <Net/UnrealNetwork.h>
 
+
+AThrowableItem::AThrowableItem()
+{
+	ProjectilePoolSize = MaxThrowAmmo;
+}
 
 void AThrowableItem::BeginPlay()
 {
 	Super::BeginPlay();
 	SetThrowAmmo(MaxThrowAmmo);
+}
+
+void AThrowableItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams RepParams;
+	RepParams.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(AThrowableItem, CurrentThrowInfo, RepParams);
+	DOREPLIFETIME(AThrowableItem, ProjectilePool);
+	DOREPLIFETIME(AThrowableItem, bIsThrowing);
+}
+
+void AThrowableItem::CreatePools()
+{
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
+	{
+		return;
+	}
+
+	if (!IsValid(ProjectileClass))
+	{
+		return;
+	}
+
+	ProjectilePool.Reserve(ProjectilePoolSize);
+	for (int32 i = 0; i < ProjectilePoolSize; ++i)
+	{
+		AXYZProjectile* Projectile = GetWorld()->SpawnActor<AXYZProjectile>(ProjectileClass, ProjectilePoolLocation, FRotator::ZeroRotator);
+		Projectile->SetOwner(GetCharacterOwner());
+		Projectile->SetProjectileActive(false);
+		ProjectilePool.Add(Projectile);
+	}
 }
 
 void AThrowableItem::Throw()
@@ -17,9 +55,87 @@ void AThrowableItem::Throw()
 		return;
 	}
 
-	bIsThrowing = true;
+	if (CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		Server_Throw();
+	}
+
+	if (CharacterOwner->HasAuthority())
+	{
+		bIsThrowing = true;
+	}
+
 	float ThrowDuration = CharacterOwner->PlayAnimMontage(ThrowMontage);
 	GetWorld()->GetTimerManager().SetTimer(ThrowTimer, this, &AThrowableItem::ThrowAnimationFinished, ThrowDuration, false);
+	CharacterOwner->OnStartThrow();
+}
+
+void AThrowableItem::Server_Throw_Implementation()
+{
+	bIsThrowing = true;
+	PlayThrowMontage();
+}
+
+void AThrowableItem::LaunchItemProjectileInternal(const FThrowInfo& ThrowInfo)
+{
+	if (GetOwner()->HasAuthority())
+	{
+		CurrentThrowInfo = ThrowInfo;
+	}
+
+	AXYZProjectile* Projectile = ProjectilePool[CurrentProjectileIndex];
+	if (!IsValid(Projectile))
+	{
+		return;
+	}
+
+	FVector LaunchDirection = ThrowInfo.GetDirection();
+	FVector SpawnLocation = ThrowInfo.GetLocation();
+	Projectile->SetActorLocation(SpawnLocation);
+	Projectile->SetActorRotation(LaunchDirection.ToOrientationRotator());
+	Projectile->SetProjectileActive(true);
+	Projectile->OnProjectileDestroy.AddDynamic(this, &AThrowableItem::BackToPool);
+	Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal(), SpawnLocation);
+	SetThrowAmmo(--ThrowAmmo);
+	++CurrentProjectileIndex;
+	if (CurrentProjectileIndex == ProjectilePool.Num())
+	{
+		CurrentProjectileIndex = 0;
+	}
+}
+
+
+void AThrowableItem::PlayThrowMontage()
+{
+	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
+	float ThrowDuration = CharacterOwner->PlayAnimMontage(ThrowMontage);
+	GetWorld()->GetTimerManager().SetTimer(ThrowTimer, this, &AThrowableItem::ThrowAnimationFinished, ThrowDuration, false);
+}
+
+void AThrowableItem::Server_LaunchItemProjectile_Implementation(const FThrowInfo& ThrowInfo)
+{
+	LaunchItemProjectileInternal(ThrowInfo);
+}
+
+void AThrowableItem::OnRep_ThrowInfo()
+{
+	LaunchItemProjectileInternal(CurrentThrowInfo);
+}
+
+void AThrowableItem::OnRep_IsThrowing()
+{
+	if (bIsThrowing && GetLocalRole() == ROLE_SimulatedProxy)
+	{
+		PlayThrowMontage();
+	}
+}
+
+void AThrowableItem::BackToPool(AXYZProjectile* Projectile)
+{
+	Projectile->SetProjectileActive(false);
+	Projectile->SetActorLocation(ProjectilePoolLocation);
+	Projectile->SetActorRotation(FRotator::ZeroRotator);
+	Projectile->OnProjectileDestroy.RemoveAll(this);
 }
 
 void AThrowableItem::LaunchItemProjectile()
@@ -55,12 +171,15 @@ void AThrowableItem::LaunchItemProjectile()
 		SpawnLocation = CharacterOwner->GetMesh()->GetSocketLocation(SocketCharacterThrowable);
 	}
 
-	AXYZProjectile* Projectile = GetWorld()->SpawnActor<AXYZProjectile>(ProjectileClass, SpawnLocation, LaunchDirection.ToOrientationRotator());
-	if (IsValid(Projectile))
+	FThrowInfo ThrowInfo(SpawnLocation, LaunchDirection);
+
+	if (GetOwner()->GetLocalRole() == ROLE_AutonomousProxy)
 	{
-		Projectile->SetOwner(GetOwner());
-		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal(), SpawnLocation);
-		SetThrowAmmo(--ThrowAmmo);
+		Server_LaunchItemProjectile(ThrowInfo);
+	}
+	else if (GetOwner()->GetLocalRole() == ROLE_Authority)
+	{
+		LaunchItemProjectileInternal(ThrowInfo);
 	}
 }
 

@@ -226,7 +226,6 @@ void UCharacterEquipmentComponent::LaunchCurrentThrowableItem()
 	if (IsValid(CurrentThrowableItem))
 	{
 		CurrentThrowableItem->LaunchItemProjectile();
-		OnEquipAnimationFinished.Unbind();
 		if(bShouldEquipPrevious)
 		{
 			EquipItemInSlot(PreviousEquippedSlot);
@@ -307,17 +306,12 @@ void UCharacterEquipmentComponent::CreateLoadout()
 		Item->SetOwner(CachedBaseCharacter.Get());
 		Item->Unequip();
 		ItemsArray[(uint32)ItemPair.Key] = Item;
+		Item->CreatePools();
 
 		if (Item->GetItemType() == EEquipableItemType::Throwable)
 		{
 			AThrowableItem* ThrowItem = Cast<AThrowableItem>(Item);
 			OnCurrentThrowItemAmmoChanged(ThrowItem->GetMaxThrowAmmo());
-		}
-
-		ARangeWeaponItem* RangeWeaponItem = Cast<ARangeWeaponItem>(Item);
-		if (RangeWeaponItem)
-		{
-			RangeWeaponItem->CreatePools();
 		}
 	}
 }

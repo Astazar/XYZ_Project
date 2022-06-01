@@ -94,6 +94,7 @@ public:
 	void NextWeaponBarell();
 
 	void ThrowPrimaryItem(bool bShouldEquip);
+	void OnStartThrow();
 
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();

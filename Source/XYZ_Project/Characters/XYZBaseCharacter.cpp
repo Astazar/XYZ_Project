@@ -678,6 +678,11 @@ void AXYZBaseCharacter::ThrowPrimaryItem(bool bShouldEquip)
 	}
 }
 
+void AXYZBaseCharacter::OnStartThrow()
+{
+	CharacterEquipmentComponent->OnEquipAnimationFinished.Unbind();
+}
+
 void AXYZBaseCharacter::PrimaryMeleeAttack()
 {
 	AMeleeWeaponItem* CurrentMeleeWeapon = CharacterEquipmentComponent->GetCurrentMeleeWeapon();

@@ -34,6 +34,8 @@ public:
 
 	virtual EReticleType GetReticleType() const;
 
+	virtual void CreatePools() {};
+
 protected:
 	UPROPERTY(BlueprintAssignable)
 	FOnEquipmentStateChanged OnEquipmentStateChanged;

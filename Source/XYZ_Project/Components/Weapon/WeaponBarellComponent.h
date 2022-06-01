@@ -97,11 +97,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Hit registration", meta = (EditCondition = "HitRegistration == EHitRegistrationType::Projectile"))
 	TSubclassOf<AXYZProjectile> ProjectileClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
+	//If true damage settings will be configurable in projectile and not in the barell
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage", meta = (EditCondition = "HitRegistration == EHitRegistrationType::Projectile"))
+	bool bSetDamageInProjectile = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage", meta = (EditCondition = "!bSetDamageInProjectile"))
 	TSubclassOf<class UDamageType> DamageTypeClass;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage", meta = (EditCondition = "!bSetDamageInProjectile"))
 	float DamageAmount = 20.0f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage", meta = (EditCondition = "!bSetDamageInProjectile"))
 	class UCurveFloat* FallOffDamageDiagram;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | VFX")
@@ -111,6 +114,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Decals")
 	FDecalInfo DefaultDecalInfo;
+
+	UFUNCTION()
+	void BackProjectileToPool(AXYZProjectile* Projectile);
 
 private:
 	void ShotInternal(const TArray<FShotInfo>& ShotsInfo);
@@ -128,7 +134,7 @@ private:
 	TArray<AXYZProjectile*> ProjectilePool;
 
 	int32 CurrentProjectileIndex;
-	int32 ProjectilePoolSize = 10;
+	int32 ProjectilePoolSize = 0;
 
 	const FVector ProjectilePoolLocation = FVector(0.0f, 0.0f, -300.0f);
 
