@@ -41,7 +41,10 @@ public:
 	void StopAim();
 	bool IsReloading() const;
 
-	void StartReload();
+	UFUNCTION(Server, Unreliable)
+	void Server_StartReload();
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_StartReload();
 	void EndReload(bool bIsSuccess);
 
 	void NextWeaponBarell();

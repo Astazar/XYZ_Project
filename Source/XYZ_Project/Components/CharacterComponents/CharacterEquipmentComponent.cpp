@@ -46,7 +46,7 @@ void UCharacterEquipmentComponent::ReloadCurrentWeapon()
 		return; 	
 	}
 
-	CurrentEquippedWeapon->StartReload();
+	CurrentEquippedWeapon->Server_StartReload();
 }
 
 void UCharacterEquipmentComponent::ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo /*= 0*/, bool bCheckIsFull /*= false*/)

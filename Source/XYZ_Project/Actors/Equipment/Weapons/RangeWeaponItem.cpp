@@ -66,7 +66,12 @@ bool ARangeWeaponItem::IsReloading() const
 	return bIsReloading;
 }
 
-void ARangeWeaponItem::StartReload()
+void ARangeWeaponItem::Server_StartReload_Implementation()
+{
+	Multicast_StartReload();
+}
+
+void ARangeWeaponItem::Multicast_StartReload_Implementation()
 {
 	AXYZBaseCharacter* CharacterOwner = GetCharacterOwner();
 	if (!IsValid(CharacterOwner))

@@ -80,7 +80,8 @@ public:
 	FOnAmmoChanged OnAmmoChanged;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Ammo", meta = (UIMin = 0, ClampMin = 0))
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Barell attributes | Ammo", meta = (UIMin = 0, ClampMin = 0))
 	int32 Ammo = 0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Ammo", meta = (UIMin = 1, ClampMin = 1))
 	int32 MaxAmmo = 30;
