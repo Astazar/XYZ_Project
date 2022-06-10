@@ -57,6 +57,8 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("PrimaryMeleeAttack", EInputEvent::IE_Pressed, this, &AXYZPlayerController::PrimaryMeleeAttack);
 	InputComponent->BindAction("SecondaryMeleeAttack", EInputEvent::IE_Pressed, this, &AXYZPlayerController::SecondaryMeleeAttack);
 	InputComponent->BindAction("NextWeaponBarell", EInputEvent::IE_Pressed, this, &AXYZPlayerController::NextWeaponBarell);
+	FInputActionBinding& ToggleMainMenuBinding = InputComponent->BindAction("ToggleMainMenu", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ToggleMainMenu);
+	ToggleMainMenuBinding.bExecuteWhenPaused = true;
 	//Equip Actions
 	InputComponent->BindAction("EquipSideArm", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipSideArm);
 	InputComponent->BindAction("EquipPrimaryWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryWeapon);
@@ -64,7 +66,6 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("EquipPrimaryItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryItem);
 	InputComponent->BindAction("EquipMeleeWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipMeleeWeapon);
 	InputComponent->BindAction("UnequipCurrentItem", EInputEvent::IE_Pressed, this, &AXYZPlayerController::UnequipCurrentItem);
-	
 }
 
 void AXYZPlayerController::MoveForward(float Value)
@@ -415,6 +416,11 @@ void AXYZPlayerController::CreateAndInitializeWidgets()
 			PlayerHUDWidget->AddToViewport();
 		}
 	}
+
+	if (!IsValid(MainMenuWidget))
+	{
+		MainMenuWidget = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass);
+	}
 	
 	if (IsValid(PlayerHUDWidget) && CachedBaseCharacter.IsValid())
 	{
@@ -440,5 +446,32 @@ void AXYZPlayerController::CreateAndInitializeWidgets()
 			AttributesComponent->OnCurrentStaminaChangedEvent.AddUFunction(AttributesWidget, FName("UpdateStamina"));
 			AttributesComponent->OnCurrentOxygenChangedEvent.AddUFunction(AttributesWidget, FName("UpdateOxygen"));
 		}
+	}
+	SetInputMode(FInputModeGameOnly{});
+	bShowMouseCursor = false;
+}
+
+void AXYZPlayerController::ToggleMainMenu()
+{
+	if (!IsValid(MainMenuWidget) || !IsValid(PlayerHUDWidget))
+	{
+		return;
+	}
+
+	if (MainMenuWidget->IsVisible())
+	{
+		MainMenuWidget->RemoveFromParent();
+		PlayerHUDWidget->AddToViewport();
+		SetInputMode(FInputModeGameOnly {});
+		SetPause(false);
+		bShowMouseCursor = false;
+	}
+	else
+	{
+		MainMenuWidget->AddToViewport();
+		PlayerHUDWidget->RemoveFromParent();
+		SetInputMode(FInputModeGameAndUI {});
+		SetPause(true);
+		bShowMouseCursor = true;
 	}
 }

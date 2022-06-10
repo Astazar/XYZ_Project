@@ -8,7 +8,21 @@ public class XYZ_Project : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Niagara", "UMG", "AIModule", "GameplayTasks", "NavigationSystem" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core", 
+			"CoreUObject", 
+			"Engine", 
+			"InputCore", 
+			"Niagara", 
+			"UMG", 
+			"AIModule", 
+			"GameplayTasks", 
+			"NavigationSystem",
+            "OnlineSubsystem",
+            "OnlineSubsystemUtils"
+        });
+
+		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
