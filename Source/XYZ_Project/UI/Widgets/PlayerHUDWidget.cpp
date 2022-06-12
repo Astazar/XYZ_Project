@@ -8,6 +8,7 @@
 #include <Blueprint/WidgetTree.h>
 #include "AmmoWidget.h"
 #include "CharacterAttributesWidget.h"
+#include "HighlightInteractable.h"
 
 UReticleWidget* UPlayerHUDWidget::GetReticleWidget()
 {
@@ -22,6 +23,23 @@ class UAmmoWidget* UPlayerHUDWidget::GetAmmoWidget()
 class UCharacterAttributesWidget* UPlayerHUDWidget::GetCharacterAttributesWidget()
 {
 	return WidgetTree->FindWidget<UCharacterAttributesWidget>(CharacterAttributesWidgetName);
+}
+
+void UPlayerHUDWidget::SetHighlightInteractableVisibility(bool bIsVisible)
+{
+	if (IsValid(InteractableKey))
+	{
+		ESlateVisibility HighlightVisibility = bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+		InteractableKey->SetVisibility(HighlightVisibility);
+	}
+}
+
+void UPlayerHUDWidget::SetHighlightInteractableActionText(FName KeyName)
+{
+	if (IsValid(InteractableKey))
+	{
+		InteractableKey->SetActionText(KeyName);
+	}
 }
 
 float UPlayerHUDWidget::GetHealthPercent() const

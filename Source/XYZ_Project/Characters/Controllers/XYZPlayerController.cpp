@@ -10,14 +10,16 @@
 #include "Components/CharacterComponents/CharacterAttributesComponent.h"
 #include "UI/Widgets/CharacterAttributesWidget.h"
 #include "XYZ_ProjectTypes.h"
+#include <GameFramework/PlayerInput.h>
 
 void AXYZPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	CachedBaseCharacter = Cast<AXYZBaseCharacter>(InPawn);
-	if (IsLocalController())
+	if (CachedBaseCharacter.IsValid() && IsLocalController())
 	{
 		CreateAndInitializeWidgets();
+		CachedBaseCharacter->OnInteractableObjectFound.BindUObject(this, &AXYZPlayerController::OnInteractableObjectFound);
 	}
 }
 
@@ -59,6 +61,7 @@ void AXYZPlayerController::SetupInputComponent()
 	InputComponent->BindAction("NextWeaponBarell", EInputEvent::IE_Pressed, this, &AXYZPlayerController::NextWeaponBarell);
 	FInputActionBinding& ToggleMainMenuBinding = InputComponent->BindAction("ToggleMainMenu", EInputEvent::IE_Pressed, this, &AXYZPlayerController::ToggleMainMenu);
 	ToggleMainMenuBinding.bExecuteWhenPaused = true;
+	InputComponent->BindAction(ActionInteract, EInputEvent::IE_Pressed, this, &AXYZPlayerController::Interact);
 	//Equip Actions
 	InputComponent->BindAction("EquipSideArm", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipSideArm);
 	InputComponent->BindAction("EquipPrimaryWeapon", EInputEvent::IE_Pressed, this, &AXYZPlayerController::EquipPrimaryWeapon);
@@ -406,6 +409,14 @@ void AXYZPlayerController::SecondaryMeleeAttack()
 	}
 }
 
+void AXYZPlayerController::Interact()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Interact();
+	}
+}
+
 void AXYZPlayerController::CreateAndInitializeWidgets()
 {
 	if (!IsValid(PlayerHUDWidget))
@@ -474,4 +485,20 @@ void AXYZPlayerController::ToggleMainMenu()
 		SetPause(true);
 		bShowMouseCursor = true;
 	}
+}
+
+void AXYZPlayerController::OnInteractableObjectFound(FName ActionName)
+{
+	if (!IsValid(PlayerHUDWidget))
+	{
+		return;
+	}
+	TArray<FInputActionKeyMapping> ActionKeys = PlayerInput->GetKeysForAction(ActionName);
+	const bool HasAnyKeys = ActionKeys.Num() != 0;
+	if (HasAnyKeys)
+	{
+		FName ActionKey = ActionKeys[0].Key.GetFName();
+		PlayerHUDWidget->SetHighlightInteractableActionText(ActionKey);
+	}
+	PlayerHUDWidget->SetHighlightInteractableVisibility(HasAnyKeys);
 }

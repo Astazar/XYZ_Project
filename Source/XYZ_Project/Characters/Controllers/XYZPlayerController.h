@@ -85,9 +85,13 @@ private:
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();
 
+	void Interact();
+
 	void CreateAndInitializeWidgets();
 
 	void ToggleMainMenu();
+
+	void OnInteractableObjectFound(FName ActionName);
 
 	TSoftObjectPtr<class AXYZBaseCharacter> CachedBaseCharacter;
 

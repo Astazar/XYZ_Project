@@ -8,7 +8,11 @@
 #include <Curves/CurveVector.h>
 #include "XYZ_ProjectTypes.h"
 #include <GenericTeamAgentInterface.h>
+#include <UObject/ScriptInterface.h>
 #include "XYZBaseCharacter.generated.h"
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmimingStateChanged, bool);
+DECLARE_DELEGATE_OneParam(FOnInteractableObjectFound, FName)
 
 USTRUCT(BlueprintType)
 struct FMantlingSettings
@@ -49,11 +53,11 @@ struct FMantlingSettings
 	float MinHeightStartTime = 0.5f;
 };
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnAmimingStateChanged, bool);
 
 class UXYZBaseMovementComponent;
 class AInteractiveActor;
 class UCharacterEquipmentComponent;
+class IInteractable;
 typedef TArray<AInteractiveActor*, TInlineAllocator<10>> TInteractiveActorsArray; 
 
 UCLASS(Abstract, NotBlueprintable) 
@@ -67,6 +71,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -98,6 +104,9 @@ public:
 
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();
+
+	void Interact();
+	FOnInteractableObjectFound OnInteractableObjectFound;
 
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
@@ -240,6 +249,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chatacer | Team")
 	ETeams Team = ETeams::Enemy;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Chatacer | Interaction")
+	float LineOfSightDistance = 500.0f;
+
+	void TraceLineOfSight();
+
+	UPROPERTY()
+	TScriptInterface<IInteractable> LineOfSightObject;
 
 private:
 	FVector CurrentFallApex;

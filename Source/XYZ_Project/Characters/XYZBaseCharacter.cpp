@@ -18,6 +18,7 @@
 #include <Actors/Equipment/Weapons/RangeWeaponItem.h>
 #include "Actors/Equipment/Weapons/MeleeWeaponItem.h"
 #include "Actors/Equipment/Throwables/ThrowableItem.h"
+#include "Actors/Interactive/Interface/Interactable.h"
 #include <AIController.h>
 #include <GameFramework/PhysicsVolume.h>
 #include <Net/UnrealNetwork.h>
@@ -160,6 +161,7 @@ void AXYZBaseCharacter::Tick(float DeltaSeconds)
 	TryChangeSprintState(DeltaSeconds);
 	UpdateIKOffsets(DeltaSeconds);
 	UpdateOutOfOxygenDamage(DeltaSeconds);
+	TraceLineOfSight();
 }
 
 
@@ -477,6 +479,15 @@ void AXYZBaseCharacter::BeginPlay()
 	CharacterAttributesComponent->OutOfStaminaEvent.AddUObject(XYZBaseCharacterMovementComponent, &UXYZBaseMovementComponent::SetIsOutOfStamina);
 }
 
+void AXYZBaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (OnInteractableObjectFound.IsBound())
+	{
+		OnInteractableObjectFound.Unbind();
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void AXYZBaseCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -582,6 +593,31 @@ void AXYZBaseCharacter::OnStopAiming_Implementation()
 void AXYZBaseCharacter::OutOfOxygenTakeDamage()
 {
 	TakeDamage(OutOfOxygenDamage, FDamageEvent(), GetController(), nullptr);
+}
+
+void AXYZBaseCharacter::TraceLineOfSight()
+{
+	if (!IsPlayerControlled())
+	{
+		return;
+	}
+
+	FVector ViewLocation;
+	FRotator ViewRotation;
+
+	APlayerController* PlayerController = GetController<APlayerController>();
+	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation); 
+	FVector ViewDirection = ViewRotation.Vector();
+	FVector TraceEnd = ViewLocation + ViewDirection * LineOfSightDistance;
+
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(HitResult, ViewLocation, TraceEnd, ECC_Visibility);
+	if (LineOfSightObject.GetObject() != HitResult.Actor)
+	{
+		LineOfSightObject = HitResult.Actor.Get();
+		FName ActionName = LineOfSightObject.GetInterface() ? LineOfSightObject->GetActionEventName() : FName(NAME_None);
+		OnInteractableObjectFound.ExecuteIfBound(ActionName);
+	}
 }
 
 void AXYZBaseCharacter::OnSprintStart_Implementation()
@@ -698,6 +734,14 @@ void AXYZBaseCharacter::SecondaryMeleeAttack()
 	if (IsValid(CurrentMeleeWeapon))
 	{
 		CurrentMeleeWeapon->StartAttack(EMeleeAttackTypes::SecondaryAttack);
+	}
+}
+
+void AXYZBaseCharacter::Interact()
+{
+	if (LineOfSightObject.GetInterface())
+	{
+		LineOfSightObject->Interact(this);
 	}
 }
 
