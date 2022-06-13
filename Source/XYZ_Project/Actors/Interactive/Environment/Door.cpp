@@ -26,11 +26,30 @@ void ADoor::Interact(AXYZBaseCharacter* BaseCharacter)
 {
 	ensure(IsValid(DoorAnimationCurve));
 	InteractWithDoor();
+	if (OnInteractionEvent.IsBound())
+	{
+		OnInteractionEvent.Broadcast();
+	}
 }
 
 FName ADoor::GetActionEventName() const
 {
 	return ActionInteract;
+}
+
+bool ADoor::HasOnInteractionCallback() const
+{
+	return true;
+}
+
+FDelegateHandle ADoor::AddOnInteractionUFunction(UObject* Object, const FName& FunctionName)
+{
+	return OnInteractionEvent.AddUFunction(Object, FunctionName);
+}
+
+void ADoor::RemoveOnInteractionDelegate(FDelegateHandle DelegateHandle)
+{
+	OnInteractionEvent.Remove(DelegateHandle);
 }
 
 void ADoor::BeginPlay()

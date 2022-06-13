@@ -13,6 +13,7 @@ void AXYZAICharacterController::SetPawn(APawn* InPawn)
 		checkf(InPawn->IsA<AXYZAICharacter>(), TEXT("AXYZAICharacterController::SetPawn AICharacterController can work only with AXYZAICharacter"));
 		CachedAICharacter = StaticCast<AXYZAICharacter*>(InPawn);
 		RunBehaviorTree(CachedAICharacter->GetBehaviorTree());
+		SetupPatrolling();
 	}
 	else
 	{
@@ -40,9 +41,8 @@ void AXYZAICharacterController::OnMoveCompleted(FAIRequestID RequestID, const FP
 	TryMoveToNextTarget();
 }
 
-void AXYZAICharacterController::BeginPlay()
+void AXYZAICharacterController::SetupPatrolling()
 {
-	Super::BeginPlay();
 	UAIPatrollingComponent* PatrollingComponent = CachedAICharacter->GetPatrollingComponent();
 	if (PatrollingComponent->CanPatrol())
 	{

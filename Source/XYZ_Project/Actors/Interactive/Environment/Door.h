@@ -20,13 +20,21 @@ public:
 
 	virtual  FName GetActionEventName() const override;
 
+	virtual bool HasOnInteractionCallback() const override;
+
+	virtual FDelegateHandle AddOnInteractionUFunction(UObject* Object, const FName & FunctionName) override;
+
+	virtual void RemoveOnInteractionDelegate(FDelegateHandle DelegateHandle) override;
+
+	IInteractable::FOnInteraction OnInteractionEvent;
+
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interactive | Door")
 	UStaticMeshComponent* DoorMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interactive | Door")
 	USceneComponent* DoorPivot; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
