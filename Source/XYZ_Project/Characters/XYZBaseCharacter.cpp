@@ -22,6 +22,8 @@
 #include <AIController.h>
 #include <GameFramework/PhysicsVolume.h>
 #include <Net/UnrealNetwork.h>
+#include <Components/WidgetComponent.h>
+#include "UI/Widgets/World/XYZAttributeProgressBar.h"
 
 
 
@@ -32,6 +34,8 @@ AXYZBaseCharacter::AXYZBaseCharacter(const FObjectInitializer& ObjectInitializer
 	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
 	CharacterAttributesComponent = CreateDefaultSubobject<UCharacterAttributesComponent>(TEXT("CharacterAttributes"));
 	CharacterEquipmentComponent = CreateDefaultSubobject<UCharacterEquipmentComponent>(TEXT("EquipmentComponent"));
+	HealthBarProgressComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarProgressComponent"));
+	HealthBarProgressComponent->SetupAttachment(GetCapsuleComponent());
 
 	IKScale = GetActorScale().Z;
 	IKTraceDistance = (GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + UnderFeetTraceLenght)/IKScale;
@@ -477,6 +481,7 @@ void AXYZBaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	CharacterAttributesComponent->OnDeathEvent.AddUObject(this, &AXYZBaseCharacter::OnDeath);
 	CharacterAttributesComponent->OutOfStaminaEvent.AddUObject(XYZBaseCharacterMovementComponent, &UXYZBaseMovementComponent::SetIsOutOfStamina);
+	InitializeHealthProgress();
 }
 
 void AXYZBaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -618,6 +623,25 @@ void AXYZBaseCharacter::TraceLineOfSight()
 		FName ActionName = LineOfSightObject.GetInterface() ? LineOfSightObject->GetActionEventName() : FName(NAME_None);
 		OnInteractableObjectFound.ExecuteIfBound(ActionName);
 	}
+}
+
+void AXYZBaseCharacter::InitializeHealthProgress()
+{
+	UXYZAttributeProgressBar* ProgressBarWidget = Cast<UXYZAttributeProgressBar>(HealthBarProgressComponent->GetUserWidgetObject());
+	if (!IsValid(ProgressBarWidget))
+	{
+		HealthBarProgressComponent->SetVisibility(false);
+		return;
+	}
+
+	if (IsPlayerControlled() && IsLocallyControlled())
+	{
+		HealthBarProgressComponent->SetVisibility(false);
+	}
+
+	CharacterAttributesComponent->OnCurrentHealthChangedEvent.AddUObject(ProgressBarWidget, &UXYZAttributeProgressBar::OnProgressChanged);
+	CharacterAttributesComponent->OnDeathEvent.AddLambda([=]() { HealthBarProgressComponent->SetVisibility(false);});
+	ProgressBarWidget->SetProgressPercentage(CharacterAttributesComponent->GetCurrentHealthPercent());
 }
 
 void AXYZBaseCharacter::OnSprintStart_Implementation()

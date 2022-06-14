@@ -58,6 +58,7 @@ class UXYZBaseMovementComponent;
 class AInteractiveActor;
 class UCharacterEquipmentComponent;
 class IInteractable;
+class UWidgetComponent;
 typedef TArray<AInteractiveActor*, TInlineAllocator<10>> TInteractiveActorsArray; 
 
 UCLASS(Abstract, NotBlueprintable) 
@@ -203,6 +204,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Components")
 	class UCharacterEquipmentComponent* CharacterEquipmentComponent;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Character | Components")
+	UWidgetComponent* HealthBarProgressComponent;
+
+	void InitializeHealthProgress();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
 	void OnSprintStart();
