@@ -234,6 +234,34 @@ void UCharacterEquipmentComponent::LaunchCurrentThrowableItem()
 	}
 }
 
+void UCharacterEquipmentComponent::AddEquipmentItem(const TSubclassOf<AEquipableItem> EquipableItemClass)
+{
+	ARangeWeaponItem* Weapon = Cast<ARangeWeaponItem>(EquipableItemClass->GetDefaultObject());
+	if (!IsValid(Weapon))
+	{
+		return;
+	}
+
+	//Adding a clip 
+	UWeaponBarellComponent* WeaponBarell = Weapon->GetCurrentBarellComponent();
+	int32 WeaponAmmoIndex = (uint32)WeaponBarell->GetAmmoType();
+	int32 WeaponMaxAmmo = *(MaxAmunitionAmount.Find(WeaponBarell->GetAmmoType()));
+	int32 WeaponClip = WeaponBarell->GetMaxAmmo();
+	int32 Ammo = FMath::Min(AmunitionArray[WeaponAmmoIndex] + WeaponClip, WeaponMaxAmmo);
+	AmunitionArray[WeaponAmmoIndex] = Ammo;
+	
+	if (!IsValid(CurrentEquippedWeapon))
+	{
+		return;
+	}
+	UWeaponBarellComponent* CurrentWeaponBarell = CurrentEquippedWeapon->GetCurrentBarellComponent();
+	bool bIsCurrentAmmoChanged = WeaponBarell->GetAmmoType() == CurrentWeaponBarell->GetAmmoType();
+	if (IsValid(CurrentEquippedWeapon) && bIsCurrentAmmoChanged)
+	{
+		OnCurrentWeaponAmmoChanged(CurrentWeaponBarell->GetAmmo());
+	}
+}
+
 AEquipableItem* UCharacterEquipmentComponent::GetCurrentEquippedItem() const
 {
 	return CurrentEquippedItem;

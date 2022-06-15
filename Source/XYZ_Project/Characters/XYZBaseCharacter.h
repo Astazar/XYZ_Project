@@ -188,6 +188,8 @@ public:
 
 	void SelectMovementSettings(bool bEnableFreeLook);
 
+	void AddEquipmentItem(const TSubclassOf<class AEquipableItem> EquipableItemClass);
+
 /* IGenericTeamAgentInterface */
 	virtual FGenericTeamId GetGenericTeamId() const override;
 /* ~IGenericTeamAgentInterface */

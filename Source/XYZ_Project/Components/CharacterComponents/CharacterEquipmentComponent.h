@@ -52,6 +52,8 @@ public:
 
 	void LaunchCurrentThrowableItem();
 
+	void AddEquipmentItem(const TSubclassOf<AEquipableItem> EquipableItemClass);
+
 	AEquipableItem* GetCurrentEquippedItem() const;
 	EEquipableItemType GetCurrentEquippedItemType() const;
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;

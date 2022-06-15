@@ -397,6 +397,11 @@ void AXYZBaseCharacter::SelectMovementSettings(bool bEnableFreeLook)
 	XYZBaseCharacterMovementComponent->SelectMovementSettings(bEnableFreeLook);
 }
 
+void AXYZBaseCharacter::AddEquipmentItem(const TSubclassOf<class AEquipableItem> EquipableItemClass)
+{
+	CharacterEquipmentComponent->AddEquipmentItem(EquipableItemClass);
+}
+
 FGenericTeamId AXYZBaseCharacter::GetGenericTeamId() const
 {
 	return FGenericTeamId((uint8)Team);
