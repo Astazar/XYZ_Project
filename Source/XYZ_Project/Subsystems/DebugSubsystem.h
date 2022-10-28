@@ -17,7 +17,7 @@ class XYZ_PROJECT_API UDebugSubsystem : public UGameInstanceSubsystem
 public:
 	bool IsCategoryEnabled(const FName& CategoryName) const;
 
-	static UDebugSubsystem* GetDebugSubsystem();
+	static UDebugSubsystem* GetDebugSubsystem(UWorld* World);
 
 private:
 	UFUNCTION(Exec)

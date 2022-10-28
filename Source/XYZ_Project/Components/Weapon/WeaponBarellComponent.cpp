@@ -161,7 +161,7 @@ void UWeaponBarellComponent::ShotInternal(const TArray<FShotInfo>& ShotsInfo)
 		FVector ShotDirection = ShotInfo.GetDirection();
 		FVector ShotEnd = ShotStart + FiringRange * ShotDirection;
 
-		bool bDrawDebug = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryRangeWeapon);
+		bool bDrawDebug = UDebugSubsystem::GetDebugSubsystem(GetWorld())->IsCategoryEnabled(DebugCategoryRangeWeapon);
 		switch (HitRegistration)
 		{
 		case EHitRegistrationType::Hitscan:

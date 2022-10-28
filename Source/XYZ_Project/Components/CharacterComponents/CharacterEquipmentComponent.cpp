@@ -114,7 +114,7 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 	if (IsValid(CurrentEquippedItem))
 	{
 		UAnimMontage* EquipMontage = CurrentEquippedItem->GetCharacterEquipAnimMontage();
-		if (IsValid(EquipMontage))
+		if (IsValid(EquipMontage) && CachedBaseCharacter.IsValid())
 		{
 			bIsEquiping = true;
 			float EquipDuration = CachedBaseCharacter->PlayAnimMontage(EquipMontage) / EquipMontage->RateScale;

@@ -16,10 +16,9 @@ bool UDebugSubsystem::IsCategoryEnabled(const FName& CategoryName) const
 #endif
 }
 
-UDebugSubsystem* UDebugSubsystem::GetDebugSubsystem()
+UDebugSubsystem* UDebugSubsystem::GetDebugSubsystem(UWorld* World)
 {
-	UWorld* World = GEngine->GameViewport->GetWorld();
-	return UGameplayStatics::GetGameInstance(World)->GetSubsystem<UDebugSubsystem>();
+	return IsValid(World) ? UGameplayStatics::GetGameInstance(World)->GetSubsystem<UDebugSubsystem>() : nullptr;
 }
 
 void UDebugSubsystem::EnableDebugCategory(const FName& CategoryName, bool bIsEnabled)

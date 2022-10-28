@@ -189,7 +189,7 @@ void AXYZBaseCharacter::Mantle(bool bForce /*= false*/)
 	FLedgeDescription LedgeDescription;
 	bool IsDetected = LedgeDetectorComponent->DetectLedge(LedgeDescription);
     
-	bool IsDebugEnabled = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryLedgeDetection);
+	bool IsDebugEnabled = UDebugSubsystem::GetDebugSubsystem(GetWorld())->IsCategoryEnabled(DebugCategoryLedgeDetection);
 	if(IsDebugEnabled)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("Can Mantle:%s"), IsDetected ? TEXT("true") : TEXT("false")));	

@@ -30,7 +30,7 @@ void UMeleeHitRegistrator::ProcessHitRegistration()
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
 	QueryParams.AddIgnoredActor(GetOwner()->GetOwner());
-	bool bIsDebugEnabled = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryMeleeWeapon);
+	bool bIsDebugEnabled = UDebugSubsystem::GetDebugSubsystem(GetWorld())->IsCategoryEnabled(DebugCategoryMeleeWeapon);
 
 	bool bHasHit = XYZTraceUtils::SweepSphereSingleByChannel(
 			GetWorld(),

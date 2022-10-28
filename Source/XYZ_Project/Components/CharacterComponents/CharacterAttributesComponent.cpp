@@ -157,7 +157,7 @@ void UCharacterAttributesComponent::OnHealthChanged()
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 void UCharacterAttributesComponent::DebugDrawAttributes()
 {
-	if(UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryCharacterAttributes))
+	/*if(UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategoryCharacterAttributes))
 	{
 		FVector HealthTextLocation = CachedBaseCharacter->GetActorLocation() + (CachedBaseCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 10.0f) * FVector::UpVector;
 		DrawDebugString(GetWorld(), HealthTextLocation, FString::Printf(TEXT("Health: %.2f"), CurrentHealth), nullptr, FColor::Green, 0.0f, true);
@@ -168,7 +168,7 @@ void UCharacterAttributesComponent::DebugDrawAttributes()
 			FVector OxygenTextLocation = StaminaTextLocation - 10.0f * FVector::UpVector;
 			DrawDebugString(GetWorld(), OxygenTextLocation, FString::Printf(TEXT("Oxygen: %.2f"), CurrentOxygen), nullptr, FColor::Blue, 0.0f, true);
 		}
-	}
+	}*/
 }
 #endif
 

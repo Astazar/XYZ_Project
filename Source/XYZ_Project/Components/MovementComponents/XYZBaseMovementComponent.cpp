@@ -326,7 +326,7 @@ void UXYZBaseMovementComponent::StopSlide()
 	APlayerCharacter* CachedCharacter = StaticCast<APlayerCharacter*>(GetOwner());
 	CachedCharacter->OnEndSlide(HalfHeightAdjust);
 
-	bool IsDebugEnabled = UDebugSubsystem::GetDebugSubsystem()->IsCategoryEnabled(DebugCategorySlide);
+	bool IsDebugEnabled = UDebugSubsystem::GetDebugSubsystem(GetWorld())->IsCategoryEnabled(DebugCategorySlide);
 	if (!IsEnoughSpaceToStandUp(IsDebugEnabled))
 	{
 		PreviousMovementState = EMovementState::Crawling;
